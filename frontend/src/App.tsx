@@ -356,7 +356,7 @@ export function App() {
   return (
     <div
       className={`h-screen max-h-screen w-full flex flex-col overflow-hidden transition-colors duration-200 ${
-        isDark ? 'bg-[#070707] text-white' : 'bg-[#F4F4F6] text-slate-900'
+        isDark ? 'bg-[#1C1C20] text-white' : 'bg-[#EAEBED] text-slate-900'
       }`}
     >
       
@@ -373,8 +373,8 @@ export function App() {
         isSaving={isSaving}
       />
 
-      {/* Main Side-by-Side Dual-Pane Canvas (Strict 100vh Fit) */}
-      <main className="flex-1 w-full max-w-[1500px] mx-auto p-3 sm:p-4 grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch min-h-0 overflow-hidden">
+      {/* Main Side-by-Side Dual-Pane Canvas on Charcoal Background */}
+      <main className="flex-1 w-full max-w-[1500px] mx-auto p-3 sm:p-4 grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch min-h-0 overflow-hidden">
         
         {/* Left Pane: Interactive Mobile Smartphone Container (5 Cols) */}
         <div className="lg:col-span-5 flex justify-center items-center h-full min-h-0 overflow-hidden">

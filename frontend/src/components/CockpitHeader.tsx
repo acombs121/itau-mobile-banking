@@ -32,7 +32,7 @@ export const CockpitHeader: React.FC<CockpitHeaderProps> = ({
     <header
       className={`w-full h-14 px-4 sm:px-6 flex items-center justify-between z-40 sticky top-0 transition-colors duration-200 flex-shrink-0 ${
         isDark
-          ? 'bg-[#070707] border-b border-white/[0.08] text-white'
+          ? 'bg-[#151518] border-b border-white/[0.08] text-white'
           : 'bg-white border-b border-slate-200 text-slate-900 shadow-sm'
       }`}
     >
