@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CockpitHeader } from './components/CockpitHeader';
 import { PhoneContainer } from './components/PhoneContainer';
 import { AgentOrchestratorPanel } from './components/AgentOrchestratorPanel';
@@ -6,6 +6,11 @@ import { VoiceBankingModal } from './components/VoiceBankingModal';
 import { BankingProfile, SecurityAlert } from './types/banking';
 import { SubAgent, SecurityActionItem, IOSNotification, TelemetryLog } from './types/itau_concierge';
 import { Language, translations } from './i18n/translations';
+
+const STORAGE_KEYS = {
+  THEME: 'itau_cockpit_theme',
+  LANG: 'itau_cockpit_lang'
+};
 
 const INITIAL_PROFILE: BankingProfile = {
   account_id: "ITAU-7749-00912",
@@ -98,12 +103,21 @@ const INITIAL_ALERTS: SecurityAlert[] = [
 ];
 
 export function App() {
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
-  const [currentLang, setCurrentLang] = useState<Language>('pt');
+  // Initialize state with localStorage persistence
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    const savedTheme = localStorage.getItem(STORAGE_KEYS.THEME);
+    return savedTheme === 'light' ? 'light' : 'dark';
+  });
+
+  const [currentLang, setCurrentLang] = useState<Language>(() => {
+    const savedLang = localStorage.getItem(STORAGE_KEYS.LANG);
+    return savedLang === 'en' ? 'en' : 'pt';
+  });
+
   const [profile, setProfile] = useState<BankingProfile>(INITIAL_PROFILE);
   const [alerts, setAlerts] = useState<SecurityAlert[]>(INITIAL_ALERTS);
   const [subAgents, setSubAgents] = useState<SubAgent[]>([]);
-  const [actionItems, setActionItems] = useState<SecurityActionItem[]>(translations['pt'].actionPlan.initialItems);
+  const [actionItems, setActionItems] = useState<SecurityActionItem[]>(translations[currentLang].actionPlan.initialItems);
   const [notifications, setNotifications] = useState<IOSNotification[]>([]);
   const [telemetryLogs, setTelemetryLogs] = useState<TelemetryLog[]>([]);
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
@@ -112,10 +126,28 @@ export function App() {
   const [isSaving, setIsSaving] = useState(false);
   const [isProcessingAgent, setIsProcessingAgent] = useState<string | null>(null);
 
+  // Sync theme changes to localStorage
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.THEME, theme);
+  }, [theme]);
+
+  // Sync language changes to localStorage
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.LANG, currentLang);
+  }, [currentLang]);
+
   const t = translations[currentLang];
 
   const toggleTheme = () => {
-    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+    setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
+  };
+
+  const handleLanguageChange = (newLang: Language) => {
+    setCurrentLang(newLang);
+    // If no custom actions were taken yet, update the initial actions to the new language
+    if (actionItems.length === 2 && (actionItems[0].id === 'act_01' || actionItems[0].id === 'act_02')) {
+      setActionItems(translations[newLang].actionPlan.initialItems);
+    }
   };
 
   const triggerNotification = (title: string, subtitle: string) => {
@@ -316,7 +348,7 @@ export function App() {
       {/* Top Cockpit Header with Sun / Moon Toggle */}
       <CockpitHeader
         currentLang={currentLang}
-        onToggleLang={setCurrentLang}
+        onToggleLang={handleLanguageChange}
         theme={theme}
         onToggleTheme={toggleTheme}
         isCallActive={isCallActive}
@@ -330,7 +362,7 @@ export function App() {
       <main className="flex-1 w-full max-w-[1500px] mx-auto p-3 sm:p-4 grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch min-h-0 overflow-hidden">
         
         {/* Left Pane: Interactive Mobile Smartphone Container (5 Cols) */}
-        <div className="lg:col-span-5 flex justify-center items-center h-full min-h-0 overflow-hidden">
+        <div className="lg:col-span-5 flex justify-center items-center h-full min-min-0 overflow-hidden">
           <PhoneContainer
             profile={profile}
             alerts={alerts}
