@@ -31,7 +31,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
   const criticalAlert = alerts.find(a => a.severity === 'CRITICAL' && a.status !== 'blocked_and_reversed' && a.status !== 'approved_by_user');
 
   return (
-    <div className="w-full max-w-[365px] flex flex-col items-center select-none h-full max-h-[calc(100vh-4.5rem)]">
+    <div className="w-full max-w-[365px] flex flex-col items-center select-none h-full max-h-[calc(100vh-5.5rem)]">
       
       {/* Precision Hardware Frame */}
       <div

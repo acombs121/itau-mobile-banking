@@ -31,7 +31,7 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
 
   return (
     <div
-      className={`w-full h-full max-h-[calc(100vh-4.5rem)] rounded-[14px] shadow-2xl flex flex-col min-h-0 border transition-colors duration-200 ${
+      className={`w-full h-full max-h-[calc(100vh-5.5rem)] rounded-[14px] shadow-2xl flex flex-col min-h-0 border transition-colors duration-200 ${
         isDark
           ? 'bg-[#0E0E11] border-white/[0.08] text-white'
           : 'bg-white border-slate-200 text-slate-900 shadow-sm'

@@ -30,115 +30,115 @@ export const CockpitHeader: React.FC<CockpitHeaderProps> = ({
 
   return (
     <header
-      className={`w-full h-14 px-4 sm:px-6 flex items-center justify-between z-40 sticky top-0 transition-colors duration-200 flex-shrink-0 ${
+      className={`w-full h-16 sm:h-18 px-6 sm:px-8 flex items-center justify-between z-40 sticky top-0 transition-colors duration-200 flex-shrink-0 ${
         isDark
           ? 'bg-[#151518] border-b border-white/[0.08] text-white'
           : 'bg-white border-b border-slate-200 text-slate-900 shadow-sm'
       }`}
     >
-      {/* Brand & Context */}
-      <div className="flex items-center gap-3 min-w-0">
-        <div className="bg-brand-orange text-white font-bold text-xs px-2 py-1 rounded-[3px] tracking-tight select-none flex-shrink-0">
+      {/* Brand & Context - Prominent & Legible Typography */}
+      <div className="flex items-center gap-4 min-w-0">
+        <div className="bg-brand-orange text-white font-extrabold text-sm sm:text-base px-3 py-1.5 rounded-[4px] tracking-tight select-none flex-shrink-0 shadow-sm">
           itau
         </div>
-        <div className={`h-4 w-[1px] hidden sm:block flex-shrink-0 ${isDark ? 'bg-white/10' : 'bg-slate-200'}`} />
-        <span className={`text-xs font-medium tracking-tight truncate ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
+        <div className={`h-5 w-[1px] hidden sm:block flex-shrink-0 ${isDark ? 'bg-white/15' : 'bg-slate-300'}`} />
+        <span className={`text-sm sm:text-base md:text-lg font-bold tracking-tight truncate ${isDark ? 'text-white/95' : 'text-slate-900'}`}>
           {t.brandTitle}
         </span>
       </div>
 
-      {/* Right Controls - Unified Exact Height (h-8 / 32px) */}
-      <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+      {/* Right Controls - Enhanced Scale & Proportions */}
+      <div className="flex items-center gap-2.5 sm:gap-3.5 flex-shrink-0">
         
-        {/* Language Switcher - Exact h-8 (32px) */}
+        {/* Language Switcher */}
         <div
-          className={`h-8 flex items-center rounded-[4px] p-0.5 border box-border transition-colors ${
+          className={`h-9 flex items-center rounded-[5px] p-0.5 border box-border transition-colors ${
             isDark
-              ? 'bg-black/40 border-white/10'
-              : 'bg-slate-100 border-slate-200'
+              ? 'bg-black/50 border-white/15'
+              : 'bg-slate-100 border-slate-300'
           }`}
         >
           <button
             onClick={() => onToggleLang('pt')}
-            className={`w-7 h-full text-[11px] font-medium rounded-[3px] flex items-center justify-center transition-colors ${
+            className={`w-8 h-full text-xs font-semibold rounded-[4px] flex items-center justify-center transition-colors ${
               currentLang === 'pt'
                 ? isDark
-                  ? 'bg-white/15 text-white shadow-sm'
-                  : 'bg-white text-slate-900 shadow-sm font-semibold'
+                  ? 'bg-white/20 text-white shadow-sm'
+                  : 'bg-white text-slate-900 shadow-sm'
                 : isDark
                 ? 'text-white/40 hover:text-white/80'
-                : 'text-slate-400 hover:text-slate-800'
+                : 'text-slate-500 hover:text-slate-900'
             }`}
           >
             PT
           </button>
           <button
             onClick={() => onToggleLang('en')}
-            className={`w-7 h-full text-[11px] font-medium rounded-[3px] flex items-center justify-center transition-colors ${
+            className={`w-8 h-full text-xs font-semibold rounded-[4px] flex items-center justify-center transition-colors ${
               currentLang === 'en'
                 ? isDark
-                  ? 'bg-white/15 text-white shadow-sm'
-                  : 'bg-white text-slate-900 shadow-sm font-semibold'
+                  ? 'bg-white/20 text-white shadow-sm'
+                  : 'bg-white text-slate-900 shadow-sm'
                 : isDark
                 ? 'text-white/40 hover:text-white/80'
-                : 'text-slate-400 hover:text-slate-800'
+                : 'text-slate-500 hover:text-slate-900'
             }`}
           >
             EN
           </button>
         </div>
 
-        {/* Monochrome Moon / Sun Button - Exact h-8 (32px), w-8 (32px) */}
+        {/* Monochrome Moon / Sun Button */}
         <button
           onClick={onToggleTheme}
-          className={`w-8 h-8 rounded-[4px] flex items-center justify-center border box-border flex-shrink-0 transition-colors ${
+          className={`w-9 h-9 rounded-[5px] flex items-center justify-center border box-border flex-shrink-0 transition-colors ${
             isDark
-              ? 'border-white/10 text-white hover:bg-white/10'
-              : 'border-slate-200 bg-white text-black hover:bg-slate-50'
+              ? 'border-white/15 text-white hover:bg-white/10'
+              : 'border-slate-300 bg-white text-black hover:bg-slate-50'
           }`}
           title={isDark ? "Switch to Light Mode" : "Mudar para Modo Escuro"}
           aria-label="Toggle theme"
         >
           {isDark ? (
-            <Sun className="w-3.5 h-3.5 text-white stroke-[1.75]" />
+            <Sun className="w-4 h-4 text-white stroke-[2]" />
           ) : (
-            <Moon className="w-3.5 h-3.5 text-black stroke-[1.75]" />
+            <Moon className="w-4 h-4 text-black stroke-[2]" />
           )}
         </button>
 
-        {/* Reset - Exact h-8 (32px) */}
+        {/* Reset */}
         <button
           onClick={onReset}
-          className={`h-8 px-2 text-xs flex items-center justify-center gap-1.5 transition-colors flex-shrink-0 ${
+          className={`h-9 px-2.5 text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 transition-colors flex-shrink-0 ${
             isDark
-              ? 'text-white/40 hover:text-white'
-              : 'text-slate-400 hover:text-slate-800'
+              ? 'text-white/50 hover:text-white'
+              : 'text-slate-500 hover:text-slate-900'
           }`}
           title={t.resetSession}
         >
-          <RotateCcw className="w-3.5 h-3.5 flex-shrink-0" />
-          <span className="hidden md:inline text-[11px]">{t.resetSession}</span>
+          <RotateCcw className="w-4 h-4 flex-shrink-0" />
+          <span className="hidden md:inline">{t.resetSession}</span>
         </button>
 
-        {/* Save - Exact h-8 (32px) */}
+        {/* Save */}
         <button
           onClick={onSaveSession}
           disabled={isSaving}
-          className={`h-8 px-2 text-xs flex items-center justify-center gap-1.5 transition-colors disabled:opacity-30 flex-shrink-0 ${
+          className={`h-9 px-2.5 text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 transition-colors disabled:opacity-30 flex-shrink-0 ${
             isDark
-              ? 'text-white/40 hover:text-white'
-              : 'text-slate-400 hover:text-slate-800'
+              ? 'text-white/50 hover:text-white'
+              : 'text-slate-500 hover:text-slate-900'
           }`}
           title={t.saveSession}
         >
-          <Save className="w-3.5 h-3.5 flex-shrink-0" />
-          <span className="hidden md:inline text-[11px]">{isSaving ? '...' : t.saveSession}</span>
+          <Save className="w-4 h-4 flex-shrink-0" />
+          <span className="hidden md:inline">{isSaving ? '...' : t.saveSession}</span>
         </button>
 
-        {/* Primary Call AI Trigger - Exact h-8 (32px) */}
+        {/* Primary Call AI Trigger */}
         <button
           onClick={onToggleCall}
-          className={`w-36 sm:w-44 h-8 px-3 rounded-[4px] text-xs font-semibold flex items-center justify-center gap-1.5 sm:gap-2 transition-all flex-shrink-0 select-none ${
+          className={`w-40 sm:w-48 md:w-52 h-9 sm:h-10 px-3.5 rounded-[5px] text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all flex-shrink-0 select-none shadow-sm ${
             isCallActive
               ? 'bg-rose-600 text-white hover:bg-rose-700'
               : 'bg-brand-orange hover:bg-brand-orange-hover text-white'
@@ -146,12 +146,12 @@ export const CockpitHeader: React.FC<CockpitHeaderProps> = ({
         >
           {isCallActive ? (
             <>
-              <PhoneOff className="w-3.5 h-3.5 flex-shrink-0" />
+              <PhoneOff className="w-4 h-4 flex-shrink-0" />
               <span className="truncate">{t.hangUp}</span>
             </>
           ) : (
             <>
-              <PhoneCall className="w-3.5 h-3.5 flex-shrink-0" />
+              <PhoneCall className="w-4 h-4 flex-shrink-0" />
               <span className="truncate">{t.callAi}</span>
             </>
           )}
