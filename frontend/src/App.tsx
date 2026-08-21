@@ -183,6 +183,7 @@ const INITIAL_ACTIONS: SecurityActionItem[] = [
 ];
 
 export function App() {
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [currentLang, setCurrentLang] = useState<Language>('pt');
   const [profile, setProfile] = useState<BankingProfile>(INITIAL_PROFILE);
   const [alerts, setAlerts] = useState<SecurityAlert[]>(INITIAL_ALERTS);
@@ -195,6 +196,10 @@ export function App() {
   const selectedAlertContext = alerts[0] || null;
   const [isSaving, setIsSaving] = useState(false);
   const [isProcessingAgent, setIsProcessingAgent] = useState<string | null>(null);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  };
 
   const triggerNotification = (title: string, subtitle: string) => {
     const newNotif: IOSNotification = {
@@ -215,7 +220,6 @@ export function App() {
     if (actionType === 'block_pix') {
       setIsProcessingAgent('itau_med_dispute');
       
-      // Update subagents state
       setSubAgents(prev => prev.map(a => a.id === 'itau_med_dispute' ? {
         ...a,
         status: 'completed',
@@ -228,10 +232,8 @@ export function App() {
         }
       } : a));
 
-      // Update alerts
       setAlerts(prev => prev.map(a => a.id === targetId ? { ...a, status: 'blocked_and_reversed' } : a));
 
-      // Add to action plan
       const newAction: SecurityActionItem = {
         id: "act_" + Date.now(),
         time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + " BRT",
@@ -243,13 +245,11 @@ export function App() {
       };
       setActionItems(prev => [newAction, ...prev]);
 
-      // Trigger phone notification toast
       triggerNotification(
         "Pix Bloqueado & Estornado",
         "R$ 4.200,00 preservados em conta corrente via MED."
       );
 
-      // Append log
       setTelemetryLogs(prev => [
         {
           id: "log_" + Date.now(),
@@ -351,13 +351,21 @@ export function App() {
     }, 600);
   };
 
+  const isDark = theme === 'dark';
+
   return (
-    <div className="min-h-screen bg-[#070707] text-white flex flex-col font-sans">
+    <div
+      className={`min-h-screen flex flex-col font-sans transition-colors duration-200 ${
+        isDark ? 'bg-[#070707] text-white' : 'bg-[#F4F4F6] text-slate-900'
+      }`}
+    >
       
-      {/* Top Cockpit Header */}
+      {/* Top Cockpit Header with Sun / Moon Toggle */}
       <CockpitHeader
         currentLang={currentLang}
         onToggleLang={setCurrentLang}
+        theme={theme}
+        onToggleTheme={toggleTheme}
         isCallActive={isCallActive}
         onToggleCall={handleToggleCall}
         onReset={handleReset}
@@ -375,6 +383,7 @@ export function App() {
             alerts={alerts}
             notifications={notifications}
             currentLang={currentLang}
+            theme={theme}
             onOpenVoiceAssistant={handleToggleCall}
             onActionClick={handleAction}
           />
@@ -388,6 +397,7 @@ export function App() {
             telemetryLogs={telemetryLogs}
             activeAlerts={alerts}
             currentLang={currentLang}
+            theme={theme}
             onTriggerAgent={handleTriggerManualAgent}
             isProcessingAgent={isProcessingAgent}
           />

@@ -1,10 +1,12 @@
 import React from 'react';
-import { PhoneCall, PhoneOff, RotateCcw, Save } from 'lucide-react';
+import { PhoneCall, PhoneOff, RotateCcw, Save, Sun, Moon } from 'lucide-react';
 import { Language, translations } from '../i18n/translations';
 
 interface CockpitHeaderProps {
   currentLang: Language;
   onToggleLang: (lang: Language) => void;
+  theme: 'dark' | 'light';
+  onToggleTheme: () => void;
   isCallActive: boolean;
   onToggleCall: () => void;
   onReset: () => void;
@@ -15,6 +17,8 @@ interface CockpitHeaderProps {
 export const CockpitHeader: React.FC<CockpitHeaderProps> = ({
   currentLang,
   onToggleLang,
+  theme,
+  onToggleTheme,
   isCallActive,
   onToggleCall,
   onReset,
@@ -22,32 +26,48 @@ export const CockpitHeader: React.FC<CockpitHeaderProps> = ({
   isSaving = false
 }) => {
   const t = translations[currentLang].header;
+  const isDark = theme === 'dark';
 
   return (
-    <header className="w-full h-14 bg-[#070707] border-b border-white/[0.08] px-6 flex items-center justify-between text-white z-40 sticky top-0">
-      
+    <header
+      className={`w-full h-14 px-6 flex items-center justify-between z-40 sticky top-0 transition-colors duration-200 ${
+        isDark
+          ? 'bg-[#070707] border-b border-white/[0.08] text-white'
+          : 'bg-white border-b border-slate-200 text-slate-900 shadow-sm'
+      }`}
+    >
       {/* Brand & Context */}
       <div className="flex items-center gap-3.5">
         <div className="bg-brand-orange text-white font-bold text-xs px-2 py-1 rounded-[3px] tracking-tight select-none">
           itau
         </div>
-        <div className="h-4 w-[1px] bg-white/10 hidden sm:block"></div>
-        <span className="text-xs font-medium text-white/90 tracking-tight">
+        <div className={`h-4 w-[1px] hidden sm:block ${isDark ? 'bg-white/10' : 'bg-slate-200'}`} />
+        <span className={`text-xs font-medium tracking-tight ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
           {t.brandTitle}
         </span>
       </div>
 
       {/* Right Controls */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3.5">
         
         {/* Language Switcher */}
-        <div className="flex items-center border border-white/10 rounded-[3px] p-0.5 bg-black/40">
+        <div
+          className={`flex items-center rounded-[3px] p-0.5 border transition-colors ${
+            isDark
+              ? 'bg-black/40 border-white/10'
+              : 'bg-slate-100 border-slate-200'
+          }`}
+        >
           <button
             onClick={() => onToggleLang('pt')}
             className={`px-2 py-0.5 text-[11px] font-medium rounded-[2px] transition-colors ${
               currentLang === 'pt'
-                ? 'bg-white/15 text-white'
-                : 'text-white/40 hover:text-white/80'
+                ? isDark
+                  ? 'bg-white/15 text-white'
+                  : 'bg-white text-slate-900 shadow-sm font-semibold'
+                : isDark
+                ? 'text-white/40 hover:text-white/80'
+                : 'text-slate-400 hover:text-slate-800'
             }`}
           >
             PT
@@ -56,18 +76,44 @@ export const CockpitHeader: React.FC<CockpitHeaderProps> = ({
             onClick={() => onToggleLang('en')}
             className={`px-2 py-0.5 text-[11px] font-medium rounded-[2px] transition-colors ${
               currentLang === 'en'
-                ? 'bg-white/15 text-white'
-                : 'text-white/40 hover:text-white/80'
+                ? isDark
+                  ? 'bg-white/15 text-white'
+                  : 'bg-white text-slate-900 shadow-sm font-semibold'
+                : isDark
+                ? 'text-white/40 hover:text-white/80'
+                : 'text-slate-400 hover:text-slate-800'
             }`}
           >
             EN
           </button>
         </div>
 
+        {/* Theme Toggle (Moon / Sun) */}
+        <button
+          onClick={onToggleTheme}
+          className={`w-8 h-8 rounded-[4px] flex items-center justify-center border transition-colors ${
+            isDark
+              ? 'border-white/10 text-white/60 hover:text-white hover:bg-white/5'
+              : 'border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+          }`}
+          title={isDark ? "Switch to Light Mode" : "Mudar para Modo Escuro"}
+          aria-label="Toggle theme"
+        >
+          {isDark ? (
+            <Sun className="w-3.5 h-3.5 text-amber-400" />
+          ) : (
+            <Moon className="w-3.5 h-3.5 text-slate-700" />
+          )}
+        </button>
+
         {/* Reset */}
         <button
           onClick={onReset}
-          className="text-white/40 hover:text-white text-xs flex items-center gap-1.5 transition-colors"
+          className={`text-xs flex items-center gap-1.5 transition-colors ${
+            isDark
+              ? 'text-white/40 hover:text-white'
+              : 'text-slate-400 hover:text-slate-800'
+          }`}
           title={t.resetSession}
         >
           <RotateCcw className="w-3.5 h-3.5" />
@@ -78,7 +124,11 @@ export const CockpitHeader: React.FC<CockpitHeaderProps> = ({
         <button
           onClick={onSaveSession}
           disabled={isSaving}
-          className="text-white/40 hover:text-white text-xs flex items-center gap-1.5 transition-colors disabled:opacity-30"
+          className={`text-xs flex items-center gap-1.5 transition-colors disabled:opacity-30 ${
+            isDark
+              ? 'text-white/40 hover:text-white'
+              : 'text-slate-400 hover:text-slate-800'
+          }`}
           title={t.saveSession}
         >
           <Save className="w-3.5 h-3.5" />
