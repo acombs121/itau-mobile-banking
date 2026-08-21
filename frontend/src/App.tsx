@@ -5,7 +5,7 @@ import { AgentOrchestratorPanel } from './components/AgentOrchestratorPanel';
 import { VoiceBankingModal } from './components/VoiceBankingModal';
 import { BankingProfile, SecurityAlert } from './types/banking';
 import { SubAgent, SecurityActionItem, IOSNotification, TelemetryLog } from './types/itau_concierge';
-import { Language } from './i18n/translations';
+import { Language, translations } from './i18n/translations';
 
 const INITIAL_PROFILE: BankingProfile = {
   account_id: "ITAU-7749-00912",
@@ -97,98 +97,13 @@ const INITIAL_ALERTS: SecurityAlert[] = [
   }
 ];
 
-const INITIAL_SUBAGENTS: SubAgent[] = [
-  {
-    id: "itau_fraud_monitor",
-    name: "Itaú Guard Fraud Monitor",
-    type: "fraud",
-    description: "Analisa telemetria de rede e geolocalização para contenção de fraudes Pix.",
-    capabilities: ["Detecção < 200ms", "Contenção Cautelar", "Validação IP"],
-    status: "completed",
-    lastRun: "14:52:10 BRT",
-    resultData: {
-      action: "PRECAUTIONARY_HOLD",
-      amount_brl: 4200.00,
-      recipient: "Eletro Tech SP Ltda",
-      origin_ip: "185.220.101.5 (VPN Node)",
-      trusted_device: "iPhone 16 Pro (Match)"
-    }
-  },
-  {
-    id: "itau_med_dispute",
-    name: "BACEN MED & Reversal Desk",
-    type: "med",
-    description: "Coordena protocolos MED sob a Resolução 147 do Banco Central.",
-    capabilities: ["Protocolo MED 147", "Bloqueio Pix", "Devolução 72h"],
-    status: "idle"
-  },
-  {
-    id: "itau_card_token_servicing",
-    name: "Card & Token Guardian",
-    type: "cards",
-    description: "Gerencia bloqueio de cartões e rotação de tokens digitais Apple/Google Pay.",
-    capabilities: ["Congelamento Instantâneo", "Rotação CVV", "Bloqueio Recorrência"],
-    status: "idle"
-  },
-  {
-    id: "itau_pix_limit_servicing",
-    name: "Pix Night-Time Manager",
-    type: "limits",
-    description: "Aplica limites noturnos preventivos de R$ 1.000,00 e elevações por voz.",
-    capabilities: ["Regra 20h-06h", "Elevação Temporária", "Autenticação Voz"],
-    status: "completed",
-    lastRun: "20:00:00 BRT",
-    resultData: {
-      rule: "BACEN_NIGHT_SAFETY",
-      active_limit: 1000.00,
-      window: "20:00 - 06:00 BRT"
-    }
-  },
-  {
-    id: "itau_geolocation_validator",
-    name: "Device & Geo Validator",
-    type: "geolocation",
-    description: "Valida triangulação celular, Wi-Fi BSSID e biometria do smartphone.",
-    capabilities: ["Triangulação Celular", "Verificação Root", "Biometria FaceID"],
-    status: "completed",
-    lastRun: "14:52:05 BRT",
-    resultData: {
-      device: "iPhone 16 Pro",
-      os: "iOS 18.2",
-      face_id_verified: true,
-      location: "São Paulo, SP"
-    }
-  }
-];
-
-const INITIAL_ACTIONS: SecurityActionItem[] = [
-  {
-    id: "act_01",
-    time: "14:52 BRT",
-    type: "pix_hold",
-    title: "Retenção Cautelar Pix — R$ 4.200,00",
-    description: "Valor retido preventivamente sob diretrizes do Mecanismo Especial de Devolução (MED).",
-    status: "Safeguarded",
-    details: "Protocolo MED #2026-ITAU-9914"
-  },
-  {
-    id: "act_02",
-    time: "14:50 BRT",
-    type: "geo_verify",
-    title: "Dispositivo Confiável Autenticado",
-    description: "iPhone 16 Pro validado com Face ID na agência digital de São Paulo.",
-    status: "Confirmed",
-    details: "Biometria 100% Compatível"
-  }
-];
-
 export function App() {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [currentLang, setCurrentLang] = useState<Language>('pt');
   const [profile, setProfile] = useState<BankingProfile>(INITIAL_PROFILE);
   const [alerts, setAlerts] = useState<SecurityAlert[]>(INITIAL_ALERTS);
-  const [subAgents, setSubAgents] = useState<SubAgent[]>(INITIAL_SUBAGENTS);
-  const [actionItems, setActionItems] = useState<SecurityActionItem[]>(INITIAL_ACTIONS);
+  const [subAgents, setSubAgents] = useState<SubAgent[]>([]);
+  const [actionItems, setActionItems] = useState<SecurityActionItem[]>(translations['pt'].actionPlan.initialItems);
   const [notifications, setNotifications] = useState<IOSNotification[]>([]);
   const [telemetryLogs, setTelemetryLogs] = useState<TelemetryLog[]>([]);
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
@@ -196,6 +111,8 @@ export function App() {
   const selectedAlertContext = alerts[0] || null;
   const [isSaving, setIsSaving] = useState(false);
   const [isProcessingAgent, setIsProcessingAgent] = useState<string | null>(null);
+
+  const t = translations[currentLang];
 
   const toggleTheme = () => {
     setTheme(prev => prev === 'dark' ? 'light' : 'dark');
@@ -208,7 +125,7 @@ export function App() {
       title,
       subtitle,
       icon: "shield",
-      timestamp: "Agora"
+      timestamp: currentLang === 'en' ? "Now" : "Agora"
     };
     setNotifications(prev => [newNotif, ...prev]);
     setTimeout(() => {
@@ -220,34 +137,45 @@ export function App() {
     if (actionType === 'block_pix') {
       setIsProcessingAgent('itau_med_dispute');
       
-      setSubAgents(prev => prev.map(a => a.id === 'itau_med_dispute' ? {
-        ...a,
-        status: 'completed',
-        lastRun: new Date().toLocaleTimeString('pt-BR'),
-        resultData: {
-          action: "MED_DISPUTE_FILED",
-          protocol: "MED-2026-" + Math.floor(100000 + Math.random() * 900000),
-          status: "FUNDS_SAFEGUARDED_IN_ACCOUNT",
-          amount_brl: 4200.00
-        }
-      } : a));
+      setSubAgents(prev => {
+        const others = prev.filter(a => a.id !== 'itau_med_dispute');
+        return [
+          ...others,
+          {
+            id: 'itau_med_dispute',
+            name: "BACEN MED & Reversal Desk",
+            type: "med",
+            description: "",
+            capabilities: [],
+            status: 'completed',
+            lastRun: new Date().toLocaleTimeString(currentLang === 'en' ? 'en-US' : 'pt-BR'),
+            resultData: {
+              action: "MED_DISPUTE_FILED",
+              protocol: "MED-2026-" + Math.floor(100000 + Math.random() * 900000),
+              status: "FUNDS_SAFEGUARDED_IN_ACCOUNT",
+              amount_brl: 4200.00,
+              central_bank_compliance: currentLang === 'en' ? "Resolution 147" : "Resolução 147"
+            }
+          }
+        ];
+      });
 
       setAlerts(prev => prev.map(a => a.id === targetId ? { ...a, status: 'blocked_and_reversed' } : a));
 
       const newAction: SecurityActionItem = {
         id: "act_" + Date.now(),
-        time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + " BRT",
+        time: new Date().toLocaleTimeString(currentLang === 'en' ? 'en-US' : 'pt-BR', { hour: '2-digit', minute: '2-digit' }) + " BRT",
         type: "med_claim",
-        title: "Bloqueio Definitivo & Protocolo MED Gerado",
-        description: "R$ 4.200,00 estornados para o saldo disponível. Chave Pix reportada ao BACEN.",
+        title: currentLang === 'en' ? "Pix Blocked & Central Bank MED Filed" : "Bloqueio Definitivo & Protocolo MED Gerado",
+        description: currentLang === 'en' ? "R$ 4,200.00 refunded to checking balance. Counterparty key reported to BACEN." : "R$ 4.200,00 estornados para o saldo disponível. Chave Pix reportada ao BACEN.",
         status: "Safeguarded",
         details: "Protocolo MED #2026-ITAU-" + Math.floor(1000 + Math.random() * 9000)
       };
       setActionItems(prev => [newAction, ...prev]);
 
       triggerNotification(
-        "Pix Bloqueado & Estornado",
-        "R$ 4.200,00 preservados em conta corrente via MED."
+        t.notifications.pixBlockedTitle,
+        t.notifications.pixBlockedSubtitle
       );
 
       setTelemetryLogs(prev => [
@@ -278,31 +206,45 @@ export function App() {
         cards: prev.cards.map(c => c.id === targetId ? { ...c, status: isFreezing ? 'frozen' : 'active' } : c)
       }));
 
-      setSubAgents(prev => prev.map(a => a.id === 'itau_card_token_servicing' ? {
-        ...a,
-        status: 'completed',
-        lastRun: new Date().toLocaleTimeString('pt-BR'),
-        resultData: {
-          card_id: targetId,
-          action: isFreezing ? "CARD_FROZEN" : "CARD_UNFROZEN",
-          tokens_deactivated: isFreezing ? ["ApplePay_Token_9912", "GooglePay_Token_4410"] : []
-        }
-      } : a));
+      setSubAgents(prev => {
+        const others = prev.filter(a => a.id !== 'itau_card_token_servicing');
+        return [
+          ...others,
+          {
+            id: 'itau_card_token_servicing',
+            name: "Card & Token Guardian",
+            type: "cards",
+            description: "",
+            capabilities: [],
+            status: 'completed',
+            lastRun: new Date().toLocaleTimeString(currentLang === 'en' ? 'en-US' : 'pt-BR'),
+            resultData: {
+              card_id: targetId,
+              action: isFreezing ? "CARD_FROZEN" : "CARD_UNFROZEN",
+              tokens_deactivated: isFreezing ? ["ApplePay_Token_9912", "GooglePay_Token_4410"] : []
+            }
+          }
+        ];
+      });
 
       const newAction: SecurityActionItem = {
         id: "act_" + Date.now(),
-        time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + " BRT",
+        time: new Date().toLocaleTimeString(currentLang === 'en' ? 'en-US' : 'pt-BR', { hour: '2-digit', minute: '2-digit' }) + " BRT",
         type: "card_freeze",
-        title: isFreezing ? "Cartão Mastercard Black Congelado" : "Cartão Mastercard Black Reativado",
-        description: isFreezing ? "Tokens digitais suspensos preventivamente contra compras recorrentes." : "Biometria confirmada pelo titular.",
+        title: isFreezing
+          ? (currentLang === 'en' ? "Mastercard Black Card Frozen" : "Cartão Mastercard Black Congelado")
+          : (currentLang === 'en' ? "Mastercard Black Card Reactivated" : "Cartão Mastercard Black Reativado"),
+        description: isFreezing
+          ? (currentLang === 'en' ? "Digital tokens suspended to stop unauthorized recurring charges." : "Tokens digitais suspensos preventivamente contra compras recorrentes.")
+          : (currentLang === 'en' ? "Biometric authentication confirmed by account holder." : "Biometria confirmada pelo titular."),
         status: isFreezing ? "Safeguarded" : "Confirmed",
-        details: isFreezing ? "Cartão Final •• 8841" : "Reativação Segura"
+        details: isFreezing ? "Card •• 8841" : "Secure Reactivation"
       };
       setActionItems(prev => [newAction, ...prev]);
 
       triggerNotification(
-        isFreezing ? "Cartão Congelado" : "Cartão Desbloqueado",
-        isFreezing ? "Tokens digitais de pagamento foram temporariamente suspensos." : "Cartão liberado para uso."
+        isFreezing ? t.notifications.cardFrozenTitle : t.notifications.cardUnfrozenTitle,
+        isFreezing ? t.notifications.cardFrozenSubtitle : t.notifications.cardUnfrozenSubtitle
       );
 
       setIsProcessingAgent(null);
@@ -312,18 +254,29 @@ export function App() {
   const handleTriggerManualAgent = (agentId: string) => {
     setIsProcessingAgent(agentId);
     setTimeout(() => {
-      setSubAgents(prev => prev.map(a => a.id === agentId ? {
-        ...a,
-        status: 'completed',
-        lastRun: new Date().toLocaleTimeString('pt-BR'),
-        resultData: {
-          trigger: "MANUAL_ORCHESTRATOR_DISPATCH",
-          status: "SUCCESS_VALIDATED",
-          timestamp: new Date().toISOString()
-        }
-      } : a));
+      setSubAgents(prev => {
+        const others = prev.filter(a => a.id !== agentId);
+        const existing = prev.find(a => a.id === agentId);
+        return [
+          ...others,
+          {
+            id: agentId,
+            name: existing?.name || agentId,
+            type: existing?.type || "fraud",
+            description: existing?.description || "",
+            capabilities: existing?.capabilities || [],
+            status: 'completed',
+            lastRun: new Date().toLocaleTimeString(currentLang === 'en' ? 'en-US' : 'pt-BR'),
+            resultData: {
+              trigger: "MANUAL_ORCHESTRATOR_DISPATCH",
+              status: "SUCCESS_VALIDATED",
+              timestamp: new Date().toISOString()
+            }
+          }
+        ];
+      });
 
-      triggerNotification("Sub-Agente Executado", `Telemetria atualizada para ${agentId}`);
+      triggerNotification(t.notifications.agentTriggeredTitle, `${t.notifications.agentTriggeredSubtitle}${agentId}`);
       setIsProcessingAgent(null);
     }, 800);
   };
@@ -336,18 +289,18 @@ export function App() {
   const handleReset = () => {
     setProfile(INITIAL_PROFILE);
     setAlerts(INITIAL_ALERTS);
-    setSubAgents(INITIAL_SUBAGENTS);
-    setActionItems(INITIAL_ACTIONS);
+    setSubAgents([]);
+    setActionItems(translations[currentLang].actionPlan.initialItems);
     setNotifications([]);
     setTelemetryLogs([]);
-    triggerNotification("Demonstração Reiniciada", "Todos os estados voltaram ao padrão.");
+    triggerNotification(t.notifications.demoResetTitle, t.notifications.demoResetSubtitle);
   };
 
   const handleSaveSession = async () => {
     setIsSaving(true);
     setTimeout(() => {
       setIsSaving(false);
-      triggerNotification("Sessão Salva", "Itinerário de salvaguarda salvo no backend.");
+      triggerNotification(t.notifications.sessionSavedTitle, t.notifications.sessionSavedSubtitle);
     }, 600);
   };
 

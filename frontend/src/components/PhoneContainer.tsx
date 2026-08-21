@@ -29,6 +29,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
   const isDark = theme === 'dark';
 
   const criticalAlert = alerts.find(a => a.severity === 'CRITICAL' && a.status !== 'blocked_and_reversed' && a.status !== 'approved_by_user');
+  const localizedTransactions = t.transactions || profile.recent_transactions;
 
   return (
     <div className="w-full max-w-[365px] flex flex-col items-center select-none h-full max-h-[calc(100vh-5.5rem)]">
@@ -217,12 +218,12 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
               </div>
             </div>
 
-            {/* Recent Transactions */}
+            {/* Recent Transactions (Localized) */}
             <div className="space-y-2 pt-1">
               <div className={`text-[10px] font-bold uppercase tracking-wider px-1 ${isDark ? 'text-white/40' : 'text-slate-500'}`}>
                 {t.recentStatements}
               </div>
-              {profile.recent_transactions.map((tx) => (
+              {localizedTransactions.map((tx) => (
                 <div
                   key={tx.id}
                   className={`py-2 px-1 flex items-center justify-between text-xs border-b last:border-0 ${

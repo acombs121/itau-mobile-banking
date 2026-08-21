@@ -1,15 +1,19 @@
+import { SecurityActionItem } from '../types/itau_concierge';
+
 export type Language = 'pt' | 'en';
+
+export interface LocalizedSubAgentItem {
+  id: string;
+  name: string;
+  type: string;
+  description: string;
+  capabilities: string[];
+  defaultResult: Record<string, any>;
+}
 
 export const translations = {
   pt: {
     header: {
-      title: "Central de Segurança & Alertas",
-      navOverview: "Visão Geral",
-      navMobile: "App Mobile",
-      navAlerts: "Alertas Ativos",
-      navGraph: "Grafo de Risco",
-      aiButton: "Itaú Guard AI",
-      agencyAccount: "Ag. 7749 • CC 00912-8",
       brandTitle: "Banco Itaú",
       brandSub: "Painel de Orquestração & Proteção Antifraude em Tempo Real",
       saveSession: "Salvar Sessão",
@@ -33,6 +37,73 @@ export const translations = {
       statusCompleted: "Concluído",
       triggerManual: "Disparar Agente",
       lastTelemetry: "Última Telemetria:",
+      jsonLabel: "Telemetria JSON",
+      selectPrompt: "Selecione um sub-agente para inspecionar a telemetria.",
+      list: [
+        {
+          id: "itau_fraud_monitor",
+          name: "Itaú Guard Fraud Monitor",
+          type: "fraud",
+          description: "Analisa telemetria de rede e geolocalização para contenção imediata de fraudes Pix.",
+          capabilities: ["Detecção < 200ms", "Contenção Cautelar", "Validação IP"],
+          defaultResult: {
+            action: "PRECAUTIONARY_HOLD",
+            amount_brl: 4200.00,
+            recipient: "Eletro Tech SP Ltda",
+            origin_ip: "185.220.101.5 (VPN Node)",
+            trusted_device: "iPhone 16 Pro (Match)"
+          }
+        },
+        {
+          id: "itau_med_dispute",
+          name: "BACEN MED & Reversal Desk",
+          type: "med",
+          description: "Coordena protocolos MED sob a Resolução 147 do Banco Central para devolução cautelar.",
+          capabilities: ["Protocolo MED 147", "Bloqueio Pix", "Devolução 72h"],
+          defaultResult: {
+            service: "BACEN_MED_REVERSAL",
+            status: "STANDBY",
+            mandate: "BACEN Resolução 147"
+          }
+        },
+        {
+          id: "itau_card_token_servicing",
+          name: "Card & Token Guardian",
+          type: "cards",
+          description: "Gerencia bloqueio instantâneo de cartões e rotação de tokens digitais Apple Pay e Google Pay.",
+          capabilities: ["Congelamento Instantâneo", "Rotação CVV", "Bloqueio Recorrência"],
+          defaultResult: {
+            service: "TOKEN_VAULT_PROTECTION",
+            virtual_cards_active: 1,
+            physical_cards_active: 1
+          }
+        },
+        {
+          id: "itau_pix_limit_servicing",
+          name: "Pix Night-Time Manager",
+          type: "limits",
+          description: "Aplica limites noturnos preventivos de R$ 1.000,00 e processa elevações emergenciais via biometria de voz.",
+          capabilities: ["Regra 20h-06h", "Elevação Temporária", "Autenticação Voz"],
+          defaultResult: {
+            rule: "BACEN_NIGHT_SAFETY",
+            active_limit: 1000.00,
+            window: "20:00 - 06:00 BRT"
+          }
+        },
+        {
+          id: "itau_geolocation_validator",
+          name: "Device & Geo Validator",
+          type: "geolocation",
+          description: "Valida triangulação de antenas de celular, Wi-Fi BSSID e biometria nativa do smartphone.",
+          capabilities: ["Triangulação Celular", "Verificação Root", "Biometria FaceID"],
+          defaultResult: {
+            device: "iPhone 16 Pro",
+            os: "iOS 18.2",
+            face_id_verified: true,
+            location: "São Paulo, SP"
+          }
+        }
+      ] as LocalizedSubAgentItem[]
     },
     actionPlan: {
       title: "Plano de Salvaguarda & Ações Confirmadas",
@@ -41,6 +112,26 @@ export const translations = {
       statusConfirmed: "Confirmado",
       statusSafeguarded: "Protegido",
       statusPending: "Pendente",
+      initialItems: [
+        {
+          id: "act_01",
+          time: "14:52 BRT",
+          type: "pix_hold",
+          title: "Retenção Cautelar Pix — R$ 4.200,00",
+          description: "Valor retido preventivamente sob diretrizes do Mecanismo Especial de Devolução (MED).",
+          status: "Safeguarded",
+          details: "Protocolo MED #2026-ITAU-9914"
+        },
+        {
+          id: "act_02",
+          time: "14:50 BRT",
+          type: "geo_verify",
+          title: "Dispositivo Confiável Autenticado",
+          description: "iPhone 16 Pro validado com Face ID na agência digital de São Paulo.",
+          status: "Confirmed",
+          details: "Biometria 100% Compatível"
+        }
+      ] as SecurityActionItem[]
     },
     phone: {
       statusTime: "14:52",
@@ -65,76 +156,46 @@ export const translations = {
       navStatements: "Extrato",
       navPix: "Pix",
       navCards: "Cartões",
-    },
-    ticker: {
-      items: [
-        { label: "B3 IBOVESPA", val: "132.840 pts", change: "+0.84%", positive: true },
-        { label: "DÓLAR COMERCIAL (USD/BRL)", val: "R$ 5,742", change: "-0.32%", positive: false },
-        { label: "EURO (EUR/BRL)", val: "R$ 6,198", change: "+0.15%", positive: true },
-        { label: "TAXA SELIC", val: "13,25% a.a.", change: "Meta Copom", positive: true },
-        { label: "PIX EM TEMPO REAL", val: "184.200 tx/min", change: "Operação Normal", positive: true },
-        { label: "ITAÚ GUARD ANTI-FRAUDE", val: "99.98% Eficácia", change: "Proteção Ativa", positive: true },
+      transactions: [
+        {
+          id: "tx_01",
+          date: "Hoje, 14:32",
+          description: "Pix Enviado — Marina Camargo",
+          category: "pix_out",
+          amount_brl: -150.00,
+          status: "completed"
+        },
+        {
+          id: "tx_02",
+          date: "Hoje, 11:15",
+          description: "Restaurante Fasano Jardins",
+          category: "dining",
+          amount_brl: -640.00,
+          status: "completed"
+        },
+        {
+          id: "tx_03",
+          date: "Ontem",
+          description: "Pix Recebido — Dividendo FII HGLG11",
+          category: "investment",
+          amount_brl: 1820.00,
+          status: "completed"
+        }
       ]
     },
-    hero: {
-      tag: "Segurança Proativa em Tempo Real",
-      title: "Proteção Bancária Inteligente & Central de Alertas",
-      description: "O Banco Itaú monitora transações Pix, cartões virtuais e tentativas de login com inteligência artificial multimodal. Identifique anomalias em milissegundos e proteja seu patrimônio com resolução assistida por voz.",
-      metric1Val: "< 200ms",
-      metric1Label: "Detecção de Anomalia",
-      metric2Val: "100%",
-      metric2Label: "Conformidade MED/BACEN",
-      metric3Val: "Zero",
-      metric3Label: "Falsos Positivos Críticos",
-      primaryCta: "Iniciar Resolução Itaú Guard AI",
-      secondaryCta: "Explorar App Mobile",
-      card1Title: "Bloqueio Preventivo Pix",
-      card1Sub: "Intervenção de Alto Risco",
-      card1Desc: "Transação para 'Eletro Tech SP' interceptada preventivamente devido à divergência de geolocalização e uso de proxy anônimo.",
-      card2Title: "Diretriz Noturna BACEN",
-      card2Sub: "Limite Seguro Ativo (20h - 06h)",
-      card2Desc: "Proteção automática para horários sensíveis com autenticação biométrica por voz para elevação emergencial de limite.",
-      card3Title: "Motor de Decisão em Grafo",
-      card3Sub: "Visualizar Cadeia de Risco",
-    },
-    mobile: {
-      simulatorTitle: "Simulador de Aplicativo Mobile",
-      secureSession: "Sessão Segura",
-      checkingBalance: "Saldo em conta corrente",
-      investments: "Investimentos",
-      alertBannerTitle: "Bloqueio Preventivo Ativo",
-      alertBannerDesc: "Pix de R$ 4.200,00 retido preventivamente.",
-      blockAndRefund: "Bloquear & Estornar",
-      confirmMyself: "Confirmar Eu Mesmo",
-      allSafe: "Conta e cartões 100% protegidos com Itaú Guard.",
-      pix: "Pix",
-      pay: "Pagar",
-      receive: "Receber",
-      cards: "Cartões",
-      availableLimit: "Limite disponível: R$ 72.569,50",
-      freeze: "Congelar",
-      unfreeze: "Desbloquear",
-      frozenStatus: "CONGELADO",
-      activeStatus: "ATIVO",
-      recentStatements: "Últimas Movimentações",
-      navHome: "Início",
-      navStatements: "Extrato",
-      navPix: "Pix",
-      navCards: "Cartões",
-    },
-    alertsCenter: {
-      title: "Central de Incidentes & Alertas de Segurança",
-      subtitle: "Proteção em tempo real com regras BACEN e Inteligência Artificial",
-      monitoringActive: "Monitoramento Ativo",
-      resolvedBadge: "RESOLVIDO",
-      blockedAmount: "Valor Bloqueado:",
-      suspectRecipient: "Destinatário Suspeito:",
-      aiRiskScore: "Score de Risco IA:",
-      directive: "Diretriz:",
-      discussWithAi: "Discutir com Itaú Guard AI",
-      blockPermanently: "Bloquear Definitivamente",
-      authorizeTx: "Autorizar Transação",
-      actionConfirmed: "Ação confirmada e registrada com sucesso",
+    notifications: {
+      pixBlockedTitle: "Pix Bloqueado & Estornado",
+      pixBlockedSubtitle: "R$ 4.200,00 preservados em conta corrente via MED.",
+      cardFrozenTitle: "Cartão Congelado",
+      cardFrozenSubtitle: "Tokens digitais de pagamento foram temporariamente suspensos.",
+      cardUnfrozenTitle: "Cartão Desbloqueado",
+      cardUnfrozenSubtitle: "Cartão liberado para uso seguro.",
+      agentTriggeredTitle: "Sub-Agente Executado",
+      agentTriggeredSubtitle: "Telemetria atualizada para ",
+      demoResetTitle: "Demonstração Reiniciada",
+      demoResetSubtitle: "Todos os estados voltaram ao padrão.",
+      sessionSavedTitle: "Sessão Salva",
+      sessionSavedSubtitle: "Itinerário de salvaguarda salvo no backend.",
     },
     graph: {
       title: "Grafo de Raciocínio & Decisão de Fraude",
@@ -208,13 +269,6 @@ export const translations = {
   },
   en: {
     header: {
-      title: "Security & Banking Alerts Center",
-      navOverview: "Overview",
-      navMobile: "Mobile App",
-      navAlerts: "Active Alerts",
-      navGraph: "Risk Graph",
-      aiButton: "Itaú Guard AI",
-      agencyAccount: "Branch 7749 • Acct 00912-8",
       brandTitle: "Banco Itaú",
       brandSub: "Real-Time Sub-Agent Orchestration & Fraud Protection Cockpit",
       saveSession: "Save Session",
@@ -238,6 +292,73 @@ export const translations = {
       statusCompleted: "Completed",
       triggerManual: "Trigger Agent",
       lastTelemetry: "Last Telemetry:",
+      jsonLabel: "JSON Telemetry",
+      selectPrompt: "Select a sub-agent to inspect telemetry.",
+      list: [
+        {
+          id: "itau_fraud_monitor",
+          name: "Itaú Guard Fraud Monitor",
+          type: "fraud",
+          description: "Analyzes network telemetry, geolocations, and payments for instant Pix fraud mitigation.",
+          capabilities: ["Detection < 200ms", "Precautionary Hold", "IP Validation"],
+          defaultResult: {
+            action: "PRECAUTIONARY_HOLD",
+            amount_brl: 4200.00,
+            recipient: "Eletro Tech SP Ltda",
+            origin_ip: "185.220.101.5 (VPN Node)",
+            trusted_device: "iPhone 16 Pro (Match)"
+          }
+        },
+        {
+          id: "itau_med_dispute",
+          name: "BACEN MED & Reversal Desk",
+          type: "med",
+          description: "Coordinates MED dispute claims under Central Bank Resolution 147 for asset recovery.",
+          capabilities: ["MED Protocol 147", "Pix Key Block", "72h Refund Window"],
+          defaultResult: {
+            service: "BACEN_MED_REVERSAL",
+            status: "STANDBY",
+            mandate: "BACEN Resolution 147"
+          }
+        },
+        {
+          id: "itau_card_token_servicing",
+          name: "Card & Token Guardian",
+          type: "cards",
+          description: "Manages instant card freezes and rotates Apple Pay and Google Pay digital tokens.",
+          capabilities: ["Instant Card Freeze", "CVV Rotation", "Recurring Charge Block"],
+          defaultResult: {
+            service: "TOKEN_VAULT_PROTECTION",
+            virtual_cards_active: 1,
+            physical_cards_active: 1
+          }
+        },
+        {
+          id: "itau_pix_limit_servicing",
+          name: "Pix Night-Time Manager",
+          type: "limits",
+          description: "Enforces preventive R$ 1,000.00 night-time limits and processes voice limit overrides.",
+          capabilities: ["8 PM - 6 AM Rule", "Temporary Limit Increase", "Voice Authentication"],
+          defaultResult: {
+            rule: "BACEN_NIGHT_SAFETY",
+            active_limit: 1000.00,
+            window: "20:00 - 06:00 BRT"
+          }
+        },
+        {
+          id: "itau_geolocation_validator",
+          name: "Device & Geo Validator",
+          type: "geolocation",
+          description: "Validates cellular tower triangulation, Wi-Fi BSSID, and mobile biometric fingerprints.",
+          capabilities: ["Cellular Triangulation", "Root/Jailbreak Check", "Face ID Biometrics"],
+          defaultResult: {
+            device: "iPhone 16 Pro",
+            os: "iOS 18.2",
+            face_id_verified: true,
+            location: "São Paulo, SP"
+          }
+        }
+      ] as LocalizedSubAgentItem[]
     },
     actionPlan: {
       title: "Safeguard Action Plan & Executed Protections",
@@ -246,6 +367,26 @@ export const translations = {
       statusConfirmed: "Confirmed",
       statusSafeguarded: "Safeguarded",
       statusPending: "Pending",
+      initialItems: [
+        {
+          id: "act_01",
+          time: "14:52 BRT",
+          type: "pix_hold",
+          title: "Precautionary Pix Hold — R$ 4,200.00",
+          description: "Funds held under Central Bank Special Return Mechanism (MED) directives.",
+          status: "Safeguarded",
+          details: "MED Protocol #2026-ITAU-9914"
+        },
+        {
+          id: "act_02",
+          time: "14:50 BRT",
+          type: "geo_verify",
+          title: "Trusted Device Authenticated",
+          description: "iPhone 16 Pro validated via Face ID at digital banking session.",
+          status: "Confirmed",
+          details: "100% Biometric Match"
+        }
+      ] as SecurityActionItem[]
     },
     phone: {
       statusTime: "14:52",
@@ -270,76 +411,46 @@ export const translations = {
       navStatements: "Activity",
       navPix: "Pix",
       navCards: "Cards",
-    },
-    ticker: {
-      items: [
-        { label: "B3 IBOVESPA", val: "132,840 pts", change: "+0.84%", positive: true },
-        { label: "USD / BRL", val: "R$ 5.742", change: "-0.32%", positive: false },
-        { label: "EUR / BRL", val: "R$ 6.198", change: "+0.15%", positive: true },
-        { label: "SELIC RATE", val: "13.25% p.a.", change: "Copom Target", positive: true },
-        { label: "REAL-TIME PIX VOLUME", val: "184,200 tx/min", change: "Normal Operation", positive: true },
-        { label: "ITAÚ GUARD ANTI-FRAUD", val: "99.98% Efficiency", change: "Active Protection", positive: true },
+      transactions: [
+        {
+          id: "tx_01",
+          date: "Today, 14:32",
+          description: "Pix Sent — Marina Camargo",
+          category: "pix_out",
+          amount_brl: -150.00,
+          status: "completed"
+        },
+        {
+          id: "tx_02",
+          date: "Today, 11:15",
+          description: "Fasano Jardins Restaurant",
+          category: "dining",
+          amount_brl: -640.00,
+          status: "completed"
+        },
+        {
+          id: "tx_03",
+          date: "Yesterday",
+          description: "Pix Received — REIT Dividend HGLG11",
+          category: "investment",
+          amount_brl: 1820.00,
+          status: "completed"
+        }
       ]
     },
-    hero: {
-      tag: "Real-Time Proactive Security",
-      title: "Intelligent Banking Protection & Alerts Center",
-      description: "Banco Itaú monitors Pix instant payments, virtual cards, and authentication events with multimodal AI. Detect anomalies in milliseconds and safeguard your capital with voice-guided resolution.",
-      metric1Val: "< 200ms",
-      metric1Label: "Anomaly Detection",
-      metric2Val: "100%",
-      metric2Label: "MED / BACEN Compliance",
-      metric3Val: "Zero",
-      metric3Label: "Critical False Positives",
-      primaryCta: "Launch Itaú Guard AI Resolution",
-      secondaryCta: "Explore Mobile App",
-      card1Title: "Precautionary Pix Block",
-      card1Sub: "High-Risk Transaction Intervention",
-      card1Desc: "Transfer to 'Eletro Tech SP' intercepted due to geolocation discrepancy and anonymous proxy routing.",
-      card2Title: "BACEN Night-Time Policy",
-      card2Sub: "Safe Night Limit Active (8 PM - 6 AM)",
-      card2Desc: "Automated night limit protection with biometric voice authentication for emergency limit increases.",
-      card3Title: "Decision Graph Engine",
-      card3Sub: "View Risk Reasoning Chain",
-    },
-    mobile: {
-      simulatorTitle: "Mobile Banking App Simulator",
-      secureSession: "Secure Session",
-      checkingBalance: "Checking Account Balance",
-      investments: "Investments",
-      alertBannerTitle: "Precautionary Block Active",
-      alertBannerDesc: "Pix transfer of R$ 4,200.00 retained.",
-      blockAndRefund: "Block & Reclaim",
-      confirmMyself: "I Made This Transfer",
-      allSafe: "Account and cards are 100% protected with Itaú Guard.",
-      pix: "Pix",
-      pay: "Pay",
-      receive: "Receive",
-      cards: "Cards",
-      availableLimit: "Available Credit Limit: R$ 72,569.50",
-      freeze: "Freeze Card",
-      unfreeze: "Unfreeze",
-      frozenStatus: "FROZEN",
-      activeStatus: "ACTIVE",
-      recentStatements: "Recent Transactions",
-      navHome: "Home",
-      navStatements: "Activity",
-      navPix: "Pix",
-      navCards: "Cards",
-    },
-    alertsCenter: {
-      title: "Incident & Security Alerts Center",
-      subtitle: "Real-time fraud prevention powered by Central Bank directives and Multimodal AI",
-      monitoringActive: "Active Monitoring",
-      resolvedBadge: "RESOLVED",
-      blockedAmount: "Blocked Amount:",
-      suspectRecipient: "Suspect Recipient:",
-      aiRiskScore: "AI Risk Score:",
-      directive: "Regulatory Policy:",
-      discussWithAi: "Discuss with Itaú Guard AI",
-      blockPermanently: "Permanently Block",
-      authorizeTx: "Authorize Transfer",
-      actionConfirmed: "Action verified and logged successfully",
+    notifications: {
+      pixBlockedTitle: "Pix Blocked & Refunded",
+      pixBlockedSubtitle: "R$ 4,200.00 preserved in checking account via MED.",
+      cardFrozenTitle: "Card Frozen",
+      cardFrozenSubtitle: "Digital payment tokens temporarily suspended.",
+      cardUnfrozenTitle: "Card Unfrozen",
+      cardUnfrozenSubtitle: "Card reactivated for secure usage.",
+      agentTriggeredTitle: "Sub-Agent Executed",
+      agentTriggeredSubtitle: "Telemetry updated for ",
+      demoResetTitle: "Demo Reset",
+      demoResetSubtitle: "All states restored to default.",
+      sessionSavedTitle: "Session Saved",
+      sessionSavedSubtitle: "Safeguard itinerary saved to backend.",
     },
     graph: {
       title: "Fraud Decision & Reasoning Graph",

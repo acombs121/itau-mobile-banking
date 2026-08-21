@@ -25,9 +25,22 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
   isProcessingAgent = null
 }) => {
   const [activeTab, setActiveTab] = useState<'agents' | 'actions' | 'graph' | 'logs'>('agents');
-  const [selectedAgentDetail, setSelectedAgentDetail] = useState<SubAgent | null>(subAgents[0] || null);
+  const [selectedAgentId, setSelectedAgentId] = useState<string>('itau_fraud_monitor');
   const t = translations[currentLang];
   const isDark = theme === 'dark';
+
+  // Merge localized metadata with live runtime state
+  const localizedSubAgents = t.subagents.list.map(localizedAgent => {
+    const liveMatch = subAgents.find(a => a.id === localizedAgent.id);
+    return {
+      ...localizedAgent,
+      status: liveMatch?.status || 'idle',
+      lastRun: liveMatch?.lastRun || (localizedAgent.id === 'itau_fraud_monitor' ? '14:52:10 BRT' : undefined),
+      resultData: liveMatch?.resultData || localizedAgent.defaultResult
+    };
+  });
+
+  const selectedAgentDetail = localizedSubAgents.find(a => a.id === selectedAgentId) || localizedSubAgents[0];
 
   return (
     <div
@@ -113,7 +126,7 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
             
             {/* Left Column: Stacked Agent Cards (Single Column) */}
             <div className="lg:col-span-6 flex flex-col gap-2.5 overflow-y-auto pr-1 min-h-0">
-              {subAgents.map((agent) => {
+              {localizedSubAgents.map((agent) => {
                 const isProcessing = isProcessingAgent === agent.id || agent.status === 'processing';
                 const isCompleted = agent.status === 'completed';
                 const isSelected = selectedAgentDetail?.id === agent.id;
@@ -121,7 +134,7 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
                 return (
                   <div
                     key={agent.id}
-                    onClick={() => setSelectedAgentDetail(agent)}
+                    onClick={() => setSelectedAgentId(agent.id)}
                     className={`rounded-[10px] p-3.5 border transition-all cursor-pointer ${
                       isSelected
                         ? isDark
@@ -164,7 +177,7 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
                       <span
                         className={`font-medium ${isSelected ? 'text-brand-orange' : isDark ? 'text-white/50' : 'text-slate-500'}`}
                       >
-                        Telemetria JSON
+                        {t.subagents.jsonLabel}
                       </span>
                       <button
                         onClick={(e) => {
@@ -208,7 +221,7 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
                       agent: selectedAgentDetail.name,
                       id: selectedAgentDetail.id,
                       status: selectedAgentDetail.status,
-                      system_compliance: "BACEN Resolution 147",
+                      system_compliance: currentLang === 'en' ? "Central Bank Resolution 147 (MED)" : "BACEN Resolução 147 (MED)",
                       risk_score: "94/100",
                       capabilities: selectedAgentDetail.capabilities
                     }, null, 2)}
@@ -218,7 +231,7 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
                 <div className={`h-full border rounded-[10px] p-8 flex items-center justify-center text-xs ${
                   isDark ? 'border-white/[0.06] text-white/30' : 'border-slate-200 text-slate-400'
                 }`}>
-                  Selecione um sub-agente para inspecionar a telemetria.
+                  {t.subagents.selectPrompt}
                 </div>
               )}
             </div>
