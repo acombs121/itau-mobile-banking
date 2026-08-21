@@ -105,32 +105,38 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 p-6 overflow-y-auto min-h-0">
+      <div className="flex-1 p-5 overflow-y-auto min-h-0">
         
-        {/* TAB 1: SUB-AGENTS */}
+        {/* TAB 1: SUB-AGENTS (Single-Column Cards Left, JSON Telemetry Right) */}
         {activeTab === 'agents' && (
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 h-full items-stretch min-h-0">
             
-            {/* Minimal Sub-Agent Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+            {/* Left Column: Stacked Agent Cards (Single Column) */}
+            <div className="lg:col-span-6 flex flex-col gap-2.5 overflow-y-auto pr-1 min-h-0">
               {subAgents.map((agent) => {
                 const isProcessing = isProcessingAgent === agent.id || agent.status === 'processing';
                 const isCompleted = agent.status === 'completed';
+                const isSelected = selectedAgentDetail?.id === agent.id;
 
                 return (
                   <div
                     key={agent.id}
-                    className={`rounded-[10px] p-4 border transition-all ${
-                      isDark
+                    onClick={() => setSelectedAgentDetail(agent)}
+                    className={`rounded-[10px] p-3.5 border transition-all cursor-pointer ${
+                      isSelected
+                        ? isDark
+                          ? 'bg-white/[0.05] border-brand-orange ring-1 ring-brand-orange/40'
+                          : 'bg-orange-50/50 border-brand-orange ring-1 ring-brand-orange/30 shadow-sm'
+                        : isDark
                         ? isProcessing
                           ? 'bg-brand-orange/[0.04] border-brand-orange/40'
-                          : 'bg-white/[0.02] border-white/[0.06] hover:border-white/[0.15]'
+                          : 'bg-white/[0.02] border-white/[0.06] hover:border-white/[0.18]'
                         : isProcessing
                         ? 'bg-brand-orange/5 border-brand-orange/30'
                         : 'bg-white border-slate-200 hover:border-slate-300 shadow-sm'
                     }`}
                   >
-                    <div className="flex items-start justify-between mb-1.5">
+                    <div className="flex items-start justify-between mb-1">
                       <div className="flex items-center gap-2 min-w-0">
                         <span
                           className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
@@ -150,19 +156,21 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
                       </span>
                     </div>
 
-                    <p className={`text-xs leading-relaxed mb-3 ${isDark ? 'text-white/70' : 'text-slate-600'}`}>
+                    <p className={`text-xs leading-relaxed mb-2.5 ${isDark ? 'text-white/70' : 'text-slate-600'}`}>
                       {agent.description}
                     </p>
 
-                    <div className={`flex items-center justify-between pt-2 border-t text-xs ${isDark ? 'border-white/[0.04]' : 'border-slate-100'}`}>
-                      <button
-                        onClick={() => setSelectedAgentDetail(agent)}
-                        className={`transition-colors ${isDark ? 'text-white/50 hover:text-white' : 'text-slate-500 hover:text-slate-900'}`}
+                    <div className={`flex items-center justify-between pt-1.5 border-t text-xs ${isDark ? 'border-white/[0.04]' : 'border-slate-100'}`}>
+                      <span
+                        className={`font-medium ${isSelected ? 'text-brand-orange' : isDark ? 'text-white/50' : 'text-slate-500'}`}
                       >
                         Telemetria JSON
-                      </button>
+                      </span>
                       <button
-                        onClick={() => onTriggerAgent(agent.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onTriggerAgent(agent.id);
+                        }}
                         disabled={isProcessing}
                         className={`flex items-center gap-1.5 font-medium transition-colors ${
                           isDark ? 'text-white/90 hover:text-brand-orange' : 'text-slate-800 hover:text-brand-orange'
@@ -177,27 +185,43 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
               })}
             </div>
 
-            {/* Clean JSON Telemetry Inspector */}
-            {selectedAgentDetail && (
-              <div className={`border rounded-[10px] p-4 mt-3 transition-colors ${
-                isDark ? 'border-white/[0.06] bg-black/40' : 'border-slate-200 bg-slate-50'
-              }`}>
-                <div className={`flex items-center justify-between text-xs mb-2 font-mono ${isDark ? 'text-white/50' : 'text-slate-600'}`}>
-                  <span>TELEMETRY: {selectedAgentDetail.id}</span>
-                  <span>{selectedAgentDetail.lastRun || 'READY'}</span>
-                </div>
-                <pre className={`text-xs font-mono overflow-x-auto p-3 rounded max-h-32 border ${
-                  isDark ? 'text-white/80 bg-black/50 border-white/[0.04]' : 'text-slate-800 bg-white border-slate-200'
+            {/* Right Column: Full-Height JSON Telemetry Inspector */}
+            <div className="lg:col-span-6 flex flex-col h-full min-h-[320px]">
+              {selectedAgentDetail ? (
+                <div className={`h-full border rounded-[10px] p-4 flex flex-col min-h-0 transition-colors ${
+                  isDark ? 'border-white/[0.08] bg-black/50' : 'border-slate-200 bg-slate-50'
                 }`}>
-                  {JSON.stringify(selectedAgentDetail.resultData || {
-                    agent: selectedAgentDetail.name,
-                    status: selectedAgentDetail.status,
-                    system_compliance: "BACEN Resolution 147",
-                    risk_score: "94/100"
-                  }, null, 2)}
-                </pre>
-              </div>
-            )}
+                  <div className={`flex items-center justify-between text-xs mb-2.5 font-mono pb-2 border-b flex-shrink-0 ${
+                    isDark ? 'border-white/[0.06] text-white/60' : 'border-slate-200 text-slate-600'
+                  }`}>
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-brand-orange"></span>
+                      <span className="font-bold uppercase tracking-wider">{selectedAgentDetail.id}</span>
+                    </div>
+                    <span>{selectedAgentDetail.lastRun || 'READY'}</span>
+                  </div>
+                  
+                  <pre className={`flex-1 text-xs font-mono overflow-y-auto overflow-x-auto p-3 rounded min-h-0 border leading-relaxed ${
+                    isDark ? 'text-white/85 bg-black/60 border-white/[0.04]' : 'text-slate-800 bg-white border-slate-200'
+                  }`}>
+                    {JSON.stringify(selectedAgentDetail.resultData || {
+                      agent: selectedAgentDetail.name,
+                      id: selectedAgentDetail.id,
+                      status: selectedAgentDetail.status,
+                      system_compliance: "BACEN Resolution 147",
+                      risk_score: "94/100",
+                      capabilities: selectedAgentDetail.capabilities
+                    }, null, 2)}
+                  </pre>
+                </div>
+              ) : (
+                <div className={`h-full border rounded-[10px] p-8 flex items-center justify-center text-xs ${
+                  isDark ? 'border-white/[0.06] text-white/30' : 'border-slate-200 text-slate-400'
+                }`}>
+                  Selecione um sub-agente para inspecionar a telemetria.
+                </div>
+              )}
+            </div>
 
           </div>
         )}
