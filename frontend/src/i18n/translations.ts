@@ -15,18 +15,18 @@ export const translations = {
   pt: {
     header: {
       brandTitle: "Banco Itaú",
-      brandSub: "Painel de Orquestração & Proteção Antifraude em Tempo Real",
+      brandSub: "Painel de Orquestração & Concierge Financeiro em Tempo Real",
       saveSession: "Salvar Sessão",
       resetSession: "Reiniciar Demonstração",
-      callAi: "Chamar Itaú Guard AI",
+      callAi: "Chamar Personnalité Concierge",
       hangUp: "Encerrar Chamada",
       customer: "Roberto Silva",
       account: "Ag. 7749 • CC 00912-8",
     },
     tabs: {
       agents: "Sub-Agentes Ativos",
-      actionPlan: "Plano de Salvaguarda",
-      decisionGraph: "Grafo de Risco",
+      actionPlan: "Plano de Ações & Concierge",
+      decisionGraph: "Grafo de Risco & Decisão",
       transcript: "Transcrição & Logs",
     },
     subagents: {
@@ -42,7 +42,7 @@ export const translations = {
       list: [
         {
           id: "itau_fraud_monitor",
-          name: "Itaú Guard Fraud Monitor",
+          name: "Personnalité Fraud & Risk Monitor",
           type: "fraud",
           description: "Analisa telemetria de rede e geolocalização para contenção imediata de fraudes Pix.",
           capabilities: ["Detecção < 200ms", "Contenção Cautelar", "Validação IP"],
@@ -80,7 +80,7 @@ export const translations = {
         },
         {
           id: "itau_pix_limit_servicing",
-          name: "Pix Night-Time Manager",
+          name: "Pix & Liquidity Manager",
           type: "limits",
           description: "Aplica limites noturnos preventivos de R$ 1.000,00 e processa elevações emergenciais via biometria de voz.",
           capabilities: ["Regra 20h-06h", "Elevação Temporária", "Autenticação Voz"],
@@ -92,10 +92,10 @@ export const translations = {
         },
         {
           id: "itau_geolocation_validator",
-          name: "Device & Geo Validator",
+          name: "Travel & Geo Validator",
           type: "geolocation",
           description: "Valida triangulação de antenas de celular, Wi-Fi BSSID e biometria nativa do smartphone.",
-          capabilities: ["Triangulação Celular", "Verificação Root", "Biometria FaceID"],
+          capabilities: ["Triangulação Celular", "Aviso Viagem", "Biometria FaceID"],
           defaultResult: {
             device: "iPhone 16 Pro",
             os: "iOS 18.2",
@@ -107,8 +107,8 @@ export const translations = {
     },
     actionPlan: {
       title: "Plano de Salvaguarda & Ações Confirmadas",
-      subtitle: "Medidas protetivas ativas registradas na conta corrente e dispositivos do cliente",
-      emptyState: "Nenhuma ação corretiva executada ainda. Interaja no app ou acione o assistente de voz.",
+      subtitle: "Medidas protetivas e otimizações registradas na conta corrente e dispositivos do cliente",
+      emptyState: "Nenhuma ação executada ainda. Interaja no app ou acione o Personnalité Concierge.",
       statusConfirmed: "Confirmado",
       statusSafeguarded: "Protegido",
       statusPending: "Pendente",
@@ -141,7 +141,7 @@ export const translations = {
       alertCardDesc: "Pix de R$ 4.200,00 para 'Eletro Tech SP' retido preventivamente por anomalia de IP e geolocalização.",
       btnBlockRefund: "Bloquear & Estornar",
       btnApprove: "Confirmar Transação",
-      allSafe: "Conta, cartões e Pix protegidos com Itaú Guard AI.",
+      allSafe: "Conta, cartões e Pix protegidos com Personnalité Concierge.",
       quickPix: "Pix",
       quickPay: "Pagar",
       quickReceive: "Receber",
@@ -195,11 +195,11 @@ export const translations = {
       demoResetTitle: "Demonstração Reiniciada",
       demoResetSubtitle: "Todos os estados voltaram ao padrão.",
       sessionSavedTitle: "Sessão Salva",
-      sessionSavedSubtitle: "Itinerário de salvaguarda salvo no backend.",
+      sessionSavedSubtitle: "Itinerário salvo no backend.",
     },
     graph: {
       title: "Grafo de Raciocínio & Decisão de Fraude",
-      subtitle: "Visualização em grafo de propriedades (Property Graph) das entidades, alertas e políticas BACEN",
+      subtitle: "Visualização em grafo de propriedades das entidades, alertas e políticas BACEN",
       badge: "Cypher / Property Graph",
       layer: "Camada",
       detailsLabel: "Diagnóstico & Telemetria:",
@@ -230,7 +230,7 @@ export const translations = {
         },
         {
           id: "ai_guard_engine",
-          name: "Motor de Decisão Itaú Guard AI",
+          name: "Motor de Decisão Personnalité Concierge",
           group: "Processamento IA",
           layer: "Decision",
           color: "#070707",
@@ -252,36 +252,36 @@ export const translations = {
       empty: "Inicie uma conversa por voz ou execute ações no app para gerar logs de telemetria.",
     },
     modal: {
-      title: "Itaú Guard AI — Concierge de Segurança",
-      subtitle: "Atendimento por Voz & Linguagem Natural",
-      incidentContext: "Incidente Selecionado:",
-      initialGreeting: "Olá Roberto. Sou o Itaú Guard AI. Identificamos uma tentativa de transferência Pix suspeita de R$ 4.200,00 para 'Eletro Tech SP' com anomalia de geolocalização e uso de proxy no exterior. O valor foi retido preventivamente. Como posso ajudá-lo?",
-      analyzing: "Itaú Guard AI está analisando os dados...",
-      quickPrompt1: "Não reconheço essa compra. Cancele e bloqueie o cartão.",
-      quickPrompt2: "Fui eu mesmo quem tentou realizar a compra. Pode liberar.",
-      placeholder: "Digite ou fale com o assistente...",
+      title: "Personnalité Concierge",
+      subtitle: "Atendimento por Voz & Concierge Financeiro",
+      incidentContext: "Contexto Ativo:",
+      initialGreeting: "Olá Roberto. Sou o Personnalité Concierge. Como posso ajudar com seus pagamentos, saldo projetado ou planejamento de viagem hoje?",
+      analyzing: "Personnalité Concierge está analisando as informações...",
+      quickPrompt1: "Verifique meu saldo e pagamentos previstos para a viagem.",
+      quickPrompt2: "Ative o aviso de viagem para Europa no meu Mastercard Black.",
+      placeholder: "Digite ou fale com o Personnalité Concierge...",
       send: "Enviar",
     },
     footer: {
       brand: "Banco Itaú Unibanco S.A.",
-      tagline: "Protegido por Itaú Guard AI & Gemini Enterprise Agent Platform (fka Vertex AI Platform)",
+      tagline: "Protegido por Personnalité Concierge & Gemini Enterprise Agent Platform",
     }
   },
   en: {
     header: {
       brandTitle: "Banco Itaú",
-      brandSub: "Real-Time Sub-Agent Orchestration & Fraud Protection Cockpit",
+      brandSub: "Real-Time Sub-Agent Orchestration & Wealth Concierge Cockpit",
       saveSession: "Save Session",
       resetSession: "Reset Demo",
-      callAi: "Call Itaú Guard AI",
+      callAi: "Call Personnalité Concierge",
       hangUp: "End Call",
       customer: "Roberto Silva",
       account: "Branch 7749 • Acct 00912-8",
     },
     tabs: {
       agents: "Active Sub-Agents",
-      actionPlan: "Safeguard Action Plan",
-      decisionGraph: "Risk Graph",
+      actionPlan: "Action Plan & Concierge",
+      decisionGraph: "Risk & Decision Graph",
       transcript: "Transcript & Logs",
     },
     subagents: {
@@ -297,7 +297,7 @@ export const translations = {
       list: [
         {
           id: "itau_fraud_monitor",
-          name: "Itaú Guard Fraud Monitor",
+          name: "Personnalité Fraud & Risk Monitor",
           type: "fraud",
           description: "Analyzes network telemetry, geolocations, and payments for instant Pix fraud mitigation.",
           capabilities: ["Detection < 200ms", "Precautionary Hold", "IP Validation"],
@@ -335,10 +335,10 @@ export const translations = {
         },
         {
           id: "itau_pix_limit_servicing",
-          name: "Pix Night-Time Manager",
+          name: "Pix & Liquidity Manager",
           type: "limits",
-          description: "Enforces preventive R$ 1,000.00 night-time limits and processes voice limit overrides.",
-          capabilities: ["8 PM - 6 AM Rule", "Temporary Limit Increase", "Voice Authentication"],
+          description: "Enforces preventive night-time limits and processes cash flow liquidity sweeps.",
+          capabilities: ["8 PM - 6 AM Rule", "Cash Sweeping", "Voice Authentication"],
           defaultResult: {
             rule: "BACEN_NIGHT_SAFETY",
             active_limit: 1000.00,
@@ -347,10 +347,10 @@ export const translations = {
         },
         {
           id: "itau_geolocation_validator",
-          name: "Device & Geo Validator",
+          name: "Travel & Geo Validator",
           type: "geolocation",
-          description: "Validates cellular tower triangulation, Wi-Fi BSSID, and mobile biometric fingerprints.",
-          capabilities: ["Cellular Triangulation", "Root/Jailbreak Check", "Face ID Biometrics"],
+          description: "Validates cellular roaming triangulation, travel notices, and biometric authentication.",
+          capabilities: ["Cellular Triangulation", "Travel Mode", "Face ID Biometrics"],
           defaultResult: {
             device: "iPhone 16 Pro",
             os: "iOS 18.2",
@@ -361,9 +361,9 @@ export const translations = {
       ] as LocalizedSubAgentItem[]
     },
     actionPlan: {
-      title: "Safeguard Action Plan & Executed Protections",
-      subtitle: "Active protective measures logged across customer checking account and devices",
-      emptyState: "No corrective actions executed yet. Interact with the mobile app or voice concierge.",
+      title: "Action Plan & Concierge Execution",
+      subtitle: "Active protective measures and optimizations logged across checking account and cards",
+      emptyState: "No actions executed yet. Interact with the mobile app or voice concierge.",
       statusConfirmed: "Confirmed",
       statusSafeguarded: "Safeguarded",
       statusPending: "Pending",
@@ -396,7 +396,7 @@ export const translations = {
       alertCardDesc: "Pix transfer of R$ 4,200.00 to 'Eletro Tech SP' held due to IP and geolocation discrepancy.",
       btnBlockRefund: "Block & Refund",
       btnApprove: "Authorize Transfer",
-      allSafe: "Account, cards, and Pix transfers are 100% protected with Itaú Guard AI.",
+      allSafe: "Account, cards, and payments protected with Personnalité Concierge.",
       quickPix: "Pix",
       quickPay: "Pay",
       quickReceive: "Receive",
@@ -450,10 +450,10 @@ export const translations = {
       demoResetTitle: "Demo Reset",
       demoResetSubtitle: "All states restored to default.",
       sessionSavedTitle: "Session Saved",
-      sessionSavedSubtitle: "Safeguard itinerary saved to backend.",
+      sessionSavedSubtitle: "Itinerary saved to backend.",
     },
     graph: {
-      title: "Fraud Decision & Reasoning Graph",
+      title: "Reasoning & Decision Graph",
       subtitle: "Property graph visualization of identity nodes, anomaly telemetry, and Central Bank policies",
       badge: "Cypher / Property Graph",
       layer: "Layer",
@@ -485,7 +485,7 @@ export const translations = {
         },
         {
           id: "ai_guard_engine",
-          name: "Itaú Guard AI Decision Engine",
+          name: "Personnalité Concierge Decision Engine",
           group: "AI Processing",
           layer: "Decision",
           color: "#070707",
@@ -507,19 +507,19 @@ export const translations = {
       empty: "Start a voice conversation or perform actions in the mobile app to stream telemetry.",
     },
     modal: {
-      title: "Itaú Guard AI — Security Concierge",
-      subtitle: "Voice & Natural Language Assistance",
-      incidentContext: "Selected Incident:",
-      initialGreeting: "Hello Roberto. I am Itaú Guard AI. We detected a suspicious Pix transfer attempt of R$ 4,200.00 to 'Eletro Tech SP' with a geolocation anomaly and foreign proxy IP. The funds were held precautionarily. How can I assist you?",
-      analyzing: "Itaú Guard AI is analyzing telemetry data...",
-      quickPrompt1: "I do not recognize this purchase. Please cancel the transfer and freeze my card.",
-      quickPrompt2: "I authorized this purchase myself. You may release it.",
-      placeholder: "Type or speak to the assistant...",
+      title: "Personnalité Concierge",
+      subtitle: "Voice & Wealth Advisory Assistant",
+      incidentContext: "Active Context:",
+      initialGreeting: "Hello Roberto. I am Personnalité Concierge. How can I assist with your payments, cash flow forecast, or travel plans today?",
+      analyzing: "Personnalité Concierge is analyzing financial data...",
+      quickPrompt1: "Check my balance and projected payments for my upcoming trip.",
+      quickPrompt2: "Activate international travel mode for Europe on my Mastercard Black.",
+      placeholder: "Type or speak to Personnalité Concierge...",
       send: "Send",
     },
     footer: {
       brand: "Banco Itaú Unibanco S.A.",
-      tagline: "Protected by Itaú Guard AI & Gemini Enterprise Agent Platform (fka Vertex AI Platform)",
+      tagline: "Protected by Personnalité Concierge & Gemini Enterprise Agent Platform",
     }
   }
 };

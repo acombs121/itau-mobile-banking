@@ -153,7 +153,7 @@ export function App() {
   const triggerNotification = (title: string, subtitle: string) => {
     const newNotif: IOSNotification = {
       id: "notif_" + Date.now(),
-      app: "Itaú Guard",
+      app: "Personnalité Concierge",
       title,
       subtitle,
       icon: "shield",
