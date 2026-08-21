@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Banco Itaú — Cenários de Operações Bancárias Agênticas (AI Demo Candidates)</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              orange: '#FF6423',
+              'orange-hover': '#D2531C',
+              dark: '#070707',
+              charcoal: '#121215',
+              surface: '#18181C',
+              border: 'rgba(255, 255, 255, 0.08)',
+              itauBlue: '#003399',
+            }
+          },
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+            mono: ['"SF Mono"', 'Monaco', 'Consolas', '"Liberation Mono"', '"Courier New"', 'monospace']
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      background-color: #0d0d10;
+      color: #f3f4f6;
+      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 3px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-brand-orange selection:text-white">
+
+  <!-- Top Header Navigation -->
+  <header class="w-full h-16 border-b border-white/[0.08] bg-[#121215]/90 backdrop-blur-md sticky top-0 z-50 px-6 sm:px-12 flex items-center justify-between">
+    <div class="flex items-center gap-3.5">
+      <div class="bg-brand-orange text-white font-extrabold text-sm px-2.5 py-1 rounded-[4px] tracking-tight">
+        itau
+      </div>
+      <div class="h-4 w-[1px] bg-white/15"></div>
+      <span class="text-sm font-semibold tracking-tight text-white/90">
+        Banco Itaú Personnalité — AI Agentic Banking Scenarios Catalog
+      </span>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex items-center gap-3">
+      <button onclick="toggleLang()" id="langBtn" class="px-3 py-1 text-xs font-semibold rounded-[4px] border border-white/10 bg-white/5 hover:bg-white/10 text-white/80 transition-colors">
+        PT / EN
+      </button>
+      <a href="/" class="px-3.5 py-1.5 text-xs font-semibold rounded-[4px] bg-brand-orange hover:bg-brand-orange-hover text-white transition-colors flex items-center gap-1.5 shadow-sm">
+        <span>Abrir Cockpit Demo &rarr;</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Hero Overview -->
+  <section class="max-w-6xl w-full mx-auto px-6 pt-10 pb-8">
+    <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full border border-brand-orange/30 bg-brand-orange/10 text-brand-orange text-xs font-medium mb-4">
+      <span class="w-1.5 h-1.5 rounded-full bg-brand-orange animate-pulse"></span>
+      Executive Showcase • Autonomous Banking Operations
+    </div>
+    <h1 class="text-2xl sm:text-4xl font-bold tracking-tight text-white mb-3">
+      Cenários Estratégicos para Demonstração de IA Agêntica
+    </h1>
+    <p class="text-sm sm:text-base text-white/60 max-w-3xl leading-relaxed">
+      Catálogo de 5 casos de uso de alto impacto no ecossistema bancário brasileiro (BACEN, Open Finance, Pix SPI, MED e CERC), demonstrando o poder de sub-agentes autônomos com Gemini Enterprise Agent Platform.
+    </p>
+
+    <!-- Executive KPI Grid -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8">
+      <div class="bg-[#16161A] border border-white/[0.06] rounded-[8px] p-4">
+        <div class="text-[11px] font-mono text-white/40 uppercase">Preempção LIS / Cheque</div>
+        <div class="text-xl font-bold text-white mt-1">94% Redução</div>
+        <div class="text-[11px] text-emerald-400 mt-0.5">Previsão D+30 de Liquidez</div>
+      </div>
+      <div class="bg-[#16161A] border border-white/[0.06] rounded-[8px] p-4">
+        <div class="text-[11px] font-mono text-white/40 uppercase">Contenção Pix MED</div>
+        <div class="text-xl font-bold text-white mt-1">&lt; 200 ms</div>
+        <div class="text-[11px] text-brand-orange mt-0.5">Resolução BACEN 147</div>
+      </div>
+      <div class="bg-[#16161A] border border-white/[0.06] rounded-[8px] p-4">
+        <div class="text-[11px] font-mono text-white/40 uppercase">Portabilidade de Dívida</div>
+        <div class="text-xl font-bold text-white mt-1">Instantâneo</div>
+        <div class="text-[11px] text-blue-400 mt-0.5">Open Finance Brasil FAPI</div>
+      </div>
+      <div class="bg-[#16161A] border border-white/[0.06] rounded-[8px] p-4">
+        <div class="text-[11px] font-mono text-white/40 uppercase">Antecipação Recebíveis</div>
+        <div class="text-xl font-bold text-white mt-1">Zero Fricção</div>
+        <div class="text-[11px] text-purple-400 mt-0.5">Integração CERC / B3</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 Core Scenarios Detailed Matrix -->
+  <main class="max-w-6xl w-full mx-auto px-6 pb-20 space-y-8 flex-1">
+
+    <!-- SCENARIO 1: Balance Forecast & Preemptive Cash Rebalancing -->
+    <article class="bg-[#151518] border border-white/[0.08] rounded-[12px] p-6 sm:p-8 hover:border-brand-orange/40 transition-all shadow-xl">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-white/[0.06]">
+        <div class="flex items-center gap-3">
+          <span class="w-8 h-8 rounded-[6px] bg-brand-orange/15 text-brand-orange flex items-center justify-center font-bold text-sm">
+            01
+          </span>
+          <div>
+            <span class="text-[10px] font-mono uppercase tracking-wider text-brand-orange font-bold">Proactive Cash Flow & Liquidity Rebalancing</span>
+            <h2 class="text-lg sm:text-xl font-bold text-white">
+              Previsão Inteligente de Saldo & Preempção de Cheque Especial (LIS)
+            </h2>
+          </div>
+        </div>
+        <span class="px-2.5 py-1 text-xs font-mono rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 self-start sm:self-auto">
+          CASH_FLOW_FORECAST_AGENT
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
+        <div class="lg:col-span-7 space-y-4">
+          <div>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-white/40 mb-1">Gatilho & Contexto do Cliente</h3>
+            <p class="text-xs sm:text-sm text-white/80 leading-relaxed">
+              O cliente agenda ou efetua um pagamento Pix de condomínio (R$ 3.850,00). O motor de séries temporais do agente projeta que débitos automáticos previstos para os próximos 4 dias (fatura do cartão e IPVA) deixarão a conta corrente negativa em -R$ 1.420,00, gerando juros de cheque especial (LIS).
+            </p>
+          </div>
+
+          <div>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-white/40 mb-1">Operação Agêntica Autônoma</h3>
+            <ul class="text-xs sm:text-sm text-white/70 space-y-1.5 list-disc list-inside leading-relaxed">
+              <li>O <strong class="text-white">Cash Flow Forecasting Agent</strong> calcula o déficit projetado para D+4.</li>
+              <li>O <strong class="text-white">Treasury & Yield Optimizer</strong> identifica que o cliente possui R$ 85.000,00 em <em>CDB DI Liquidez Diária</em> rendendo 100% do CDI.</li>
+              <li>Calcula o momento ótimo do resgate para não perder rentabilidade diária antes do débito compensar.</li>
+              <li>Envia um push no celular: <em>"Projetamos que seus débitos em 25/08 exigirão R$ 1.500,00. Deseja que façamos o resgate automático do CDB para evitar o LIS?"</em></li>
+            </ul>
+          </div>
+
+          <div class="p-3.5 bg-black/40 border border-white/[0.06] rounded-[8px]">
+            <span class="text-[10px] font-mono text-white/40 uppercase">Regulação & Compliance BACEN:</span>
+            <p class="text-xs text-white/70 mt-0.5">
+              Conformidade com a Resolução CMN 4.765 (transparência de tarifas de cheque especial) e consentimento explícito do correntista antes da movimentação financeira.
+            </p>
+          </div>
+        </div>
+
+        <!-- Visual Flow / Telemetry Payload -->
+        <div class="lg:col-span-5 bg-black/50 border border-white/[0.06] rounded-[8px] p-4 flex flex-col justify-between">
+          <div>
+            <div class="flex justify-between items-center text-[10px] font-mono text-white/40 pb-2 border-b border-white/[0.04] mb-3">
+              <span>TELEMETRY: cash_flow_forecast</span>
+              <span class="text-emerald-400">PROACTIVE_ALERT</span>
+            </div>
+            <pre class="text-[11px] font-mono text-white/80 overflow-x-auto leading-relaxed">
+{
+  "account": "ITAU-7749-00912",
+  "projected_overdraft_date": "2026-08-25",
+  "shortfall_amount_brl": 1420.00,
+  "recommended_action": "REBALANCE_FROM_CDB_DI",
+  "suggested_transfer": 1500.00,
+  "source_asset": "CDB_DI_LIQUIDEZ_DIARIA",
+  "interest_avoided_est_brl": 184.60,
+  "user_prompt": "Projetamos necessidade de R$ 1.500 em 4 dias. Resgatar do CDB?"
+}
+            </pre>
+          </div>
+          <div class="mt-4 pt-3 border-t border-white/[0.04] flex items-center justify-between text-xs">
+            <span class="text-white/50">Valor para o Cliente:</span>
+            <span class="text-brand-orange font-bold font-mono">Zero Juros LIS Pagos</span>
+          </div>
+        </div>
+      </div>
+    </article>
+
+
+    <!-- SCENARIO 2: Real-time Pix Fraud Interception & MED Dispute -->
+    <article class="bg-[#151518] border border-white/[0.08] rounded-[12px] p-6 sm:p-8 hover:border-brand-orange/40 transition-all shadow-xl">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-white/[0.06]">
+        <div class="flex items-center gap-3">
+          <span class="w-8 h-8 rounded-[6px] bg-rose-500/15 text-rose-500 flex items-center justify-center font-bold text-sm">
+            02
+          </span>
+          <div>
+            <span class="text-[10px] font-mono uppercase tracking-wider text-rose-500 font-bold">Real-Time Pix Anomaly & Emergency MED Protocol</span>
+            <h2 class="text-lg sm:text-xl font-bold text-white">
+              Interceptação Cautelar de Pix & Protocolo MED em Menos de 200ms
+            </h2>
+          </div>
+        </div>
+        <span class="px-2.5 py-1 text-xs font-mono rounded bg-rose-500/10 text-rose-400 border border-rose-500/20 self-start sm:self-auto">
+          BACEN_MED_DISPUTE_AGENT
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
+        <div class="lg:col-span-7 space-y-4">
+          <div>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-white/40 mb-1">Gatilho & Contexto do Cliente</h3>
+            <p class="text-xs sm:text-sm text-white/80 leading-relaxed">
+              Uma transferência Pix de R$ 4.200,00 é disparada via dispositivo móvel autenticado em um IP de VPN internacional, com padrão de digitação divergente, para um favorecido novo sem histórico bancário.
+            </p>
+          </div>
+
+          <div>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-white/40 mb-1">Operação Agêntica Autônoma</h3>
+            <ul class="text-xs sm:text-sm text-white/70 space-y-1.5 list-disc list-inside leading-relaxed">
+              <li>O <strong class="text-white">Fraud Monitor Agent</strong> bloqueia cautelarmente a saída de fundos nos trilhos do SPI.</li>
+              <li>O <strong class="text-white">Device & Geo Validator</strong> dispara validação biométrica de voz com o assistente Gemini Live.</li>
+              <li>Em caso de não reconhecimento pelo cliente, aciona imediatamente o <strong class="text-white">BACEN MED Desk</strong>, protocolando o bloqueio sob a Resolução 147 e estornando os R$ 4.200,00 para a conta corrente em 10 segundos.</li>
+              <li>Suspende tokens de pagamento de carteiras digitais temporariamente como medida profilática.</li>
+            </ul>
+          </div>
+
+          <div class="p-3.5 bg-black/40 border border-white/[0.06] rounded-[8px]">
+            <span class="text-[10px] font-mono text-white/40 uppercase">Regulação & Compliance BACEN:</span>
+            <p class="text-xs text-white/70 mt-0.5">
+              Resolução BCB nº 147/2021 (Mecanismo Especial de Devolução - MED) e Circular BCB 3.978 (Prevenção à Lavagem de Dinheiro e Golpes Digitais).
+            </p>
+          </div>
+        </div>
+
+        <!-- Visual Flow / Telemetry Payload -->
+        <div class="lg:col-span-5 bg-black/50 border border-white/[0.06] rounded-[8px] p-4 flex flex-col justify-between">
+          <div>
+            <div class="flex justify-between items-center text-[10px] font-mono text-white/40 pb-2 border-b border-white/[0.04] mb-3">
+              <span>TELEMETRY: med_dispute_agent</span>
+              <span class="text-rose-400">MED_FILED_SUCCESS</span>
+            </div>
+            <pre class="text-[11px] font-mono text-white/80 overflow-x-auto leading-relaxed">
+{
+  "action": "BACEN_MED_147_DISPUTE",
+  "disputed_amount_brl": 4200.00,
+  "protocol": "MED-2026-ITAU-991482",
+  "beneficiary_key": "eletro.tech@cnpj.pix",
+  "counterparty_bank": "ISPB_00416968",
+  "funds_status": "PRECAUTIONARY_REVERSED_TO_CHECKING",
+  "token_safeguard": "APPLE_PAY_SUSPENDED_24H"
+}
+            </pre>
+          </div>
+          <div class="mt-4 pt-3 border-t border-white/[0.04] flex items-center justify-between text-xs">
+            <span class="text-white/50">Tempo de Resposta:</span>
+            <span class="text-emerald-400 font-bold font-mono">180ms Interceptação / 10s Reversão</span>
+          </div>
+        </div>
+      </div>
+    </article>
+
+
+    <!-- SCENARIO 3: Open Finance Debt Portability & Refinancing -->
+    <article class="bg-[#151518] border border-white/[0.08] rounded-[12px] p-6 sm:p-8 hover:border-brand-orange/40 transition-all shadow-xl">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-white/[0.06]">
+        <div class="flex items-center gap-3">
+          <span class="w-8 h-8 rounded-[6px] bg-blue-500/15 text-blue-500 flex items-center justify-center font-bold text-sm">
+            03
+          </span>
+          <div>
+            <span class="text-[10px] font-mono uppercase tracking-wider text-blue-500 font-bold">Open Finance Portability & Rate Optimization</span>
+            <h2 class="text-lg sm:text-xl font-bold text-white">
+              Otimização de Taxas & Portabilidade de Dívidas via Open Finance
+            </h2>
+          </div>
+        </div>
+        <span class="px-2.5 py-1 text-xs font-mono rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 self-start sm:self-auto">
+          OPEN_FINANCE_OPTIMIZER
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
+        <div class="lg:col-span-7 space-y-4">
+          <div>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-white/40 mb-1">Gatilho & Contexto do Cliente</h3>
+            <p class="text-xs sm:text-sm text-white/80 leading-relaxed">
+              Através do consentimento Open Finance Brasil, o agente detecta que o cliente possui um saldo devedor de R$ 18.000,00 no rotativo de outro banco com CET anual de 240% (taxa de 11,2% ao mês).
+            </p>
+          </div>
+
+          <div>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-white/40 mb-1">Operação Agêntica Autônoma</h3>
+            <ul class="text-xs sm:text-sm text-white/70 space-y-1.5 list-disc list-inside leading-relaxed">
+              <li>O <strong class="text-white">Open Finance Intelligence Agent</strong> puxa a árvore de contratos externos no SCR Registrato.</li>
+              <li>O <strong class="text-white">Credit Underwriting Agent</strong> gera uma proposta de consolidação <em>Itaú Sob Medida</em> a 1,69% a.m., economizando R$ 680,00 por parcela.</li>
+              <li>Prepara digitalmente a minuta da CCB (*Cédula de Crédito Bancário*) e o pedido de liquidação interbancária via CIP/STR.</li>
+              <li>Apresenta um card de comparação no app com simulador interativo antes da aprovação por biometria facial.</li>
+            </ul>
+          </div>
+
+          <div class="p-3.5 bg-black/40 border border-white/[0.06] rounded-[8px]">
+            <span class="text-[10px] font-mono text-white/40 uppercase">Regulação & Compliance BACEN:</span>
+            <p class="text-xs text-white/70 mt-0.5">
+              Resolução Conjunta nº 1/2020 (Open Finance Brasil FAPI), Lei 10.931 (Emissão e Registro Eletrônico de CCB) e Art. 20 da LGPD (Explicabilidade Algorítmica da Decisão).
+            </p>
+          </div>
+        </div>
+
+        <!-- Visual Flow / Telemetry Payload -->
+        <div class="lg:col-span-5 bg-black/50 border border-white/[0.06] rounded-[8px] p-4 flex flex-col justify-between">
+          <div>
+            <div class="flex justify-between items-center text-[10px] font-mono text-white/40 pb-2 border-b border-white/[0.04] mb-3">
+              <span>TELEMETRY: open_finance_refi</span>
+              <span class="text-blue-400">SAVINGS_DETECTED</span>
+            </div>
+            <pre class="text-[11px] font-mono text-white/80 overflow-x-auto leading-relaxed">
+{
+  "external_debt_origin": "Banco Concorrente A",
+  "external_balance_brl": 18000.00,
+  "external_apr_percent": 240.5,
+  "itau_personnalite_rate_mo": 1.69,
+  "monthly_cash_savings_brl": 680.40,
+  "total_interest_saved_brl": 14280.00,
+  "ccb_draft_status": "READY_FOR_GOVBR_SIGN",
+  "dti_impact": "Reduced from 42% to 26%"
+}
+            </pre>
+          </div>
+          <div class="mt-4 pt-3 border-t border-white/[0.04] flex items-center justify-between text-xs">
+            <span class="text-white/50">Economia Total do Cliente:</span>
+            <span class="text-blue-400 font-bold font-mono">R$ 14.280,00</span>
+          </div>
+        </div>
+      </div>
+    </article>
+
+
+    <!-- SCENARIO 4: Travel Shielding, Dynamic Limits & FX Conversion -->
+    <article class="bg-[#151518] border border-white/[0.08] rounded-[12px] p-6 sm:p-8 hover:border-brand-orange/40 transition-all shadow-xl">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-white/[0.06]">
+        <div class="flex items-center gap-3">
+          <span class="w-8 h-8 rounded-[6px] bg-amber-500/15 text-amber-500 flex items-center justify-center font-bold text-sm">
+            04
+          </span>
+          <div>
+            <span class="text-[10px] font-mono uppercase tracking-wider text-amber-500 font-bold">Proactive Travel Mode & Multi-Currency Shield</span>
+            <h2 class="text-lg sm:text-xl font-bold text-white">
+              Aviso de Viagem Inteligente & Câmbio Automatizado (Conta Global)
+            </h2>
+          </div>
+        </div>
+        <span class="px-2.5 py-1 text-xs font-mono rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 self-start sm:self-auto">
+          TRAVEL_FX_CONCIERGE
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
+        <div class="lg:col-span-7 space-y-4">
+          <div>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-white/40 mb-1">Gatilho & Contexto do Cliente</h3>
+            <p class="text-xs sm:text-sm text-white/80 leading-relaxed">
+              O cliente compra passagens aéreas para Lisboa no Mastercard Black e a telemetria do smartphone confirma conexão em rede celular europeia 48 horas depois.
+            </p>
+          </div>
+
+          <div>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-white/40 mb-1">Operação Agêntica Autônoma</h3>
+            <ul class="text-xs sm:text-sm text-white/70 space-y-1.5 list-disc list-inside leading-relaxed">
+              <li>O <strong class="text-white">Travel & Geolocation Agent</strong> habilita dinamicamente o aviso de viagem sem exigir formulários manuais do cliente.</li>
+              <li>Suprime alertas falsos-positivos de bloqueio em maquininhas de pagamento no exterior.</li>
+              <li>Verifica a cotação PTAX de fechamento do Euro e sugere a conversão de BRL para a <em>Conta Internacional Itaú</em> com spread reduzido de 0,95% e IOF de 1,1% (contra 4,38% do cartão de crédito convencional).</li>
+              <li>Ativa seguro-viagem gratuito do benefício da bandeira Mastercard Black.</li>
+            </ul>
+          </div>
+
+          <div class="p-3.5 bg-black/40 border border-white/[0.06] rounded-[8px]">
+            <span class="text-[10px] font-mono text-white/40 uppercase">Regulação & Compliance BACEN:</span>
+            <p class="text-xs text-white/70 mt-0.5">
+              Marco Cambial Brasileiro (Lei 14.286/2021) e transparência do Custo Efetivo Total (CET Câmbio) com recolhimento automático de IOF.
+            </p>
+          </div>
+        </div>
+
+        <!-- Visual Flow / Telemetry Payload -->
+        <div class="lg:col-span-5 bg-black/50 border border-white/[0.06] rounded-[8px] p-4 flex flex-col justify-between">
+          <div>
+            <div class="flex justify-between items-center text-[10px] font-mono text-white/40 pb-2 border-b border-white/[0.04] mb-3">
+              <span>TELEMETRY: travel_fx_concierge</span>
+              <span class="text-amber-400">ROAMING_DETECTED</span>
+            </div>
+            <pre class="text-[11px] font-mono text-white/80 overflow-x-auto leading-relaxed">
+{
+  "destination": "Lisbon, Portugal (EUR)",
+  "flight_booking_match": "TAP Air Portugal TP088",
+  "travel_notice_status": "AUTO_ACTIVATED_GEO_MATCH",
+  "iof_tax_saving_pct": 3.28,
+  "suggested_eur_load": 2500.00,
+  "ptax_commercial_rate": 6.12,
+  "concierge_action": "ACTIVATE_MASTERCARD_BLACK_INSURANCE"
+}
+            </pre>
+          </div>
+          <div class="mt-4 pt-3 border-t border-white/[0.04] flex items-center justify-between text-xs">
+            <span class="text-white/50">Economia de IOF:</span>
+            <span class="text-amber-400 font-bold font-mono">3,28% por transação</span>
+          </div>
+        </div>
+      </div>
+    </article>
+
+
+    <!-- SCENARIO 5: Corporate Working Capital & Receivables Advance (PJ) -->
+    <article class="bg-[#151518] border border-white/[0.08] rounded-[12px] p-6 sm:p-8 hover:border-brand-orange/40 transition-all shadow-xl">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-white/[0.06]">
+        <div class="flex items-center gap-3">
+          <span class="w-8 h-8 rounded-[6px] bg-purple-500/15 text-purple-500 flex items-center justify-center font-bold text-sm">
+            05
+          </span>
+          <div>
+            <span class="text-[10px] font-mono uppercase tracking-wider text-purple-500 font-bold">Corporate Cash Flow & Receivables Discounting (PJ)</span>
+            <h2 class="text-lg sm:text-xl font-bold text-white">
+              Antecipação Inteligente de Recebíveis de Cartão & Capital de Giro PJ
+            </h2>
+          </div>
+        </div>
+        <span class="px-2.5 py-1 text-xs font-mono rounded bg-purple-500/10 text-purple-400 border border-purple-500/20 self-start sm:self-auto">
+          PJ_WORKING_CAPITAL_AGENT
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
+        <div class="lg:col-span-7 space-y-4">
+          <div>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-white/40 mb-1">Gatilho & Contexto da Empresa</h3>
+            <p class="text-xs sm:text-sm text-white/80 leading-relaxed">
+              Uma empresa correntista (Itaú Empresas) tem um vencimento de folha de pagamento de R$ 65.000,00 amanhã, com saldo disponível de R$ 22.000,00, mas possui R$ 58.000,00 em recebíveis de cartão de crédito registrados na CERC com vencimento em 15 a 30 dias.
+            </p>
+          </div>
+
+          <div>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-white/40 mb-1">Operação Agêntica Autônoma</h3>
+            <ul class="text-xs sm:text-sm text-white/70 space-y-1.5 list-disc list-inside leading-relaxed">
+              <li>O <strong class="text-white">Working Capital Agent</strong> monitora a CERC / TAG e identifica as <em>Unidades de Recebíveis (URs)</em> livres de ônus.</li>
+              <li>Aplica taxa preferencial de antecipação com trava bancária, calculando o valor líquido exato para cobrir a folha sem endividamento oneroso.</li>
+              <li>Dispara notificação para o Diretor Financeiro no app Itaú Empresas: <em>"Detectamos necessidade de R$ 43.000 para a folha. Deseja antecipar suas vendas de cartão com taxa de 1,15% a.m. e crédito via Pix em 1 minuto?"</em></li>
+              <li>Executa a cessão fiduciária no registrador e liquida os fundos via Pix SPI instantâneo.</li>
+            </ul>
+          </div>
+
+          <div class="p-3.5 bg-black/40 border border-white/[0.06] rounded-[8px]">
+            <span class="text-[10px] font-mono text-white/40 uppercase">Regulação & Compliance BACEN:</span>
+            <p class="text-xs text-white/70 mt-0.5">
+              Circular BCB nº 3.952 (Registro de Recebíveis de Arranjo de Pagamento) e Resolução BCB nº 105 (Garantias sobre Unidades de Recebíveis).
+            </p>
+          </div>
+        </div>
+
+        <!-- Visual Flow / Telemetry Payload -->
+        <div class="lg:col-span-5 bg-black/50 border border-white/[0.06] rounded-[8px] p-4 flex flex-col justify-between">
+          <div>
+            <div class="flex justify-between items-center text-[10px] font-mono text-white/40 pb-2 border-b border-white/[0.04] mb-3">
+              <span>TELEMETRY: pj_receivables_agent</span>
+              <span class="text-purple-400">LIQUIDITY_GAP_SOLVED</span>
+            </div>
+            <pre class="text-[11px] font-mono text-white/80 overflow-x-auto leading-relaxed">
+{
+  "company_cnpj": "48.910.221/0001-09",
+  "payroll_due_tomorrow_brl": 65000.00,
+  "checking_shortfall_brl": 43000.00,
+  "cerc_unencumbered_urs_brl": 58400.00,
+  "discounting_rate_mo": 1.15,
+  "net_disbursement_brl": 43250.00,
+  "settlement_rail": "PIX_SPI_INSTANT",
+  "settlement_time": "58 seconds"
+}
+            </pre>
+          </div>
+          <div class="mt-4 pt-3 border-t border-white/[0.04] flex items-center justify-between text-xs">
+            <span class="text-white/50">Tempo de Liquidação:</span>
+            <span class="text-purple-400 font-bold font-mono">&lt; 1 Minuto via Pix SPI</span>
+          </div>
+        </div>
+      </div>
+    </article>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-white/[0.08] bg-[#0d0d10] py-8 text-center text-xs text-white/40">
+    <div class="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2">
+        <span class="bg-brand-orange text-white text-[10px] font-bold px-1.5 py-0.5 rounded-[2px]">itau</span>
+        <span>Banco Itaú Unibanco S.A. • Gemini Enterprise Agent Platform</span>
+      </div>
+      <div class="font-mono text-[11px]">
+        Research Synthesis from <code>ITAU_WORKFLOW_RESEARCH.md</code>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    let isPt = true;
+    function toggleLang() {
+      // Toggle between English and Portuguese summary indicator
+      isPt = !isPt;
+      document.getElementById('langBtn').innerText = isPt ? 'PT / EN' : 'EN / PT';
+    }
+  </script>
+</body>
+</html>
