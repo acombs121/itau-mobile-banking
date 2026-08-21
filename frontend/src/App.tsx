@@ -1,14 +1,11 @@
-import { useState, useEffect } from 'react';
-import { Header } from './components/Header';
-import { TickerRibbon } from './components/TickerRibbon';
-import { HeroSection } from './components/HeroSection';
-import { MobilePhoneShell } from './components/MobilePhoneShell';
-import { AlertsCenter } from './components/AlertsCenter';
-import { FraudDecisionGraph } from './components/FraudDecisionGraph';
+import { useState } from 'react';
+import { CockpitHeader } from './components/CockpitHeader';
+import { PhoneContainer } from './components/PhoneContainer';
+import { AgentOrchestratorPanel } from './components/AgentOrchestratorPanel';
 import { VoiceBankingModal } from './components/VoiceBankingModal';
 import { BankingProfile, SecurityAlert } from './types/banking';
-import { Language, translations } from './i18n/translations';
-import { Smartphone } from 'lucide-react';
+import { SubAgent, SecurityActionItem, IOSNotification, TelemetryLog } from './types/itau_concierge';
+import { Language } from './i18n/translations';
 
 const INITIAL_PROFILE: BankingProfile = {
   account_id: "ITAU-7749-00912",
@@ -100,186 +97,315 @@ const INITIAL_ALERTS: SecurityAlert[] = [
   }
 ];
 
+const INITIAL_SUBAGENTS: SubAgent[] = [
+  {
+    id: "itau_fraud_monitor",
+    name: "Itaú Guard Fraud & Anomaly Monitor",
+    type: "fraud",
+    description: "Analisa telemetria de rede, geolocalização e histórico de pagamentos para contenção imediata de fraudes Pix.",
+    capabilities: ["Detecção em < 200ms", "Contenção Cautelar", "Validação de IP Anônimo"],
+    status: "completed",
+    lastRun: "14:52:10 BRT",
+    resultData: {
+      action: "PRECAUTIONARY_HOLD",
+      amount_brl: 4200.00,
+      recipient: "Eletro Tech SP Ltda",
+      origin_ip: "185.220.101.5 (VPN Node)",
+      trusted_device: "iPhone 16 Pro (Match)"
+    }
+  },
+  {
+    id: "itau_med_dispute",
+    name: "BACEN MED & Reversal Desk",
+    type: "med",
+    description: "Coordena a abertura de protocolos MED sob a Resolução 147 do Banco Central para devolução cautelar.",
+    capabilities: ["Protocolo MED 147", "Bloqueio em Chave Pix Suspeita", "Devolução em 72h"],
+    status: "idle"
+  },
+  {
+    id: "itau_card_token_servicing",
+    name: "Card & Token Servicing Guardian",
+    type: "cards",
+    description: "Gerencia bloqueio instantâneo de cartões físicos e rotação de tokens digitais Apple Pay e Google Pay.",
+    capabilities: ["Congelamento Instantâneo", "Rotação de CVV Dinâmico", "Bloqueio de Compras Recorrentes"],
+    status: "idle"
+  },
+  {
+    id: "itau_pix_limit_servicing",
+    name: "Pix Night-Time & Limit Manager",
+    type: "limits",
+    description: "Aplica limites noturnos preventivos de R$ 1.000,00 e processa elevações emergenciais via biometria de voz.",
+    capabilities: ["Regra Noturna 20h-06h", "Elevação Temporária", "Autenticação por Voz"],
+    status: "completed",
+    lastRun: "20:00:00 BRT",
+    resultData: {
+      rule: "BACEN_NIGHT_SAFETY",
+      active_limit: 1000.00,
+      window: "20:00 - 06:00 BRT"
+    }
+  },
+  {
+    id: "itau_geolocation_validator",
+    name: "Device Fingerprint & Geo Validator",
+    type: "geolocation",
+    description: "Valida triangulação de antenas de celular, Wi-Fi BSSID e biometria nativa do smartphone.",
+    capabilities: ["Triangulação Celular", "Verificação de Root/Jailbreak", "Biometria FaceID"],
+    status: "completed",
+    lastRun: "14:52:05 BRT",
+    resultData: {
+      device: "iPhone 16 Pro",
+      os: "iOS 18.2",
+      face_id_verified: true,
+      location: "São Paulo, SP"
+    }
+  }
+];
+
+const INITIAL_ACTIONS: SecurityActionItem[] = [
+  {
+    id: "act_01",
+    time: "14:52 BRT",
+    type: "pix_hold",
+    title: "Retenção Cautelar Pix — R$ 4.200,00",
+    description: "Valor retido preventivamente sob diretrizes do Mecanismo Especial de Devolução (MED).",
+    status: "Safeguarded",
+    details: "Protocolo MED #2026-ITAU-9914"
+  },
+  {
+    id: "act_02",
+    time: "14:50 BRT",
+    type: "geo_verify",
+    title: "Dispositivo Confiável Autenticado",
+    description: "iPhone 16 Pro validado com Face ID na agência digital de São Paulo.",
+    status: "Confirmed",
+    details: "Biometria 100% Compatível"
+  }
+];
+
 export function App() {
   const [currentLang, setCurrentLang] = useState<Language>('pt');
   const [profile, setProfile] = useState<BankingProfile>(INITIAL_PROFILE);
   const [alerts, setAlerts] = useState<SecurityAlert[]>(INITIAL_ALERTS);
+  const [subAgents, setSubAgents] = useState<SubAgent[]>(INITIAL_SUBAGENTS);
+  const [actionItems, setActionItems] = useState<SecurityActionItem[]>(INITIAL_ACTIONS);
+  const [notifications, setNotifications] = useState<IOSNotification[]>([]);
+  const [telemetryLogs, setTelemetryLogs] = useState<TelemetryLog[]>([]);
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
-  const [selectedAlertContext, setSelectedAlertContext] = useState<SecurityAlert | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [isCallActive, setIsCallActive] = useState(false);
+  const selectedAlertContext = alerts[0] || null;
+  const [isSaving, setIsSaving] = useState(false);
+  const [isProcessingAgent, setIsProcessingAgent] = useState<string | null>(null);
 
-  const t = translations[currentLang];
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [profRes, alertRes] = await Promise.all([
-          fetch('/api/banking/profile'),
-          fetch('/api/banking/alerts')
-        ]);
-        if (profRes.ok) {
-          const profData = await profRes.json();
-          setProfile(profData);
-        }
-        if (alertRes.ok) {
-          const alertData = await alertRes.json();
-          setAlerts(alertData);
-        }
-      } catch (e) {
-        console.warn('Using initial banking state');
-      }
+  const triggerNotification = (title: string, subtitle: string) => {
+    const newNotif: IOSNotification = {
+      id: "notif_" + Date.now(),
+      app: "Itaú Guard",
+      title,
+      subtitle,
+      icon: "shield",
+      timestamp: "Agora"
     };
-    fetchData();
-  }, []);
+    setNotifications(prev => [newNotif, ...prev]);
+    setTimeout(() => {
+      setNotifications(prev => prev.filter(n => n.id !== newNotif.id));
+    }, 6000);
+  };
 
   const handleAction = async (actionType: string, targetId: string) => {
-    setIsProcessing(true);
-    try {
-      const res = await fetch('/api/banking/action', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action_type: actionType,
-          target_id: targetId
-        })
-      });
-
-      if (res.ok) {
-        if (actionType === 'freeze_card') {
-          setProfile(prev => ({
-            ...prev,
-            cards: prev.cards.map(c => c.id === targetId ? { ...c, status: 'frozen' } : c)
-          }));
-        } else if (actionType === 'unfreeze_card') {
-          setProfile(prev => ({
-            ...prev,
-            cards: prev.cards.map(c => c.id === targetId ? { ...c, status: 'active' } : c)
-          }));
-        } else if (actionType === 'block_pix') {
-          setAlerts(prev => prev.map(a => a.id === targetId ? { ...a, status: 'blocked_and_reversed' } : a));
-        } else if (actionType === 'approve_pix') {
-          setAlerts(prev => prev.map(a => a.id === targetId ? { ...a, status: 'approved_by_user' } : a));
+    if (actionType === 'block_pix') {
+      setIsProcessingAgent('itau_med_dispute');
+      
+      // Update subagents state
+      setSubAgents(prev => prev.map(a => a.id === 'itau_med_dispute' ? {
+        ...a,
+        status: 'completed',
+        lastRun: new Date().toLocaleTimeString('pt-BR'),
+        resultData: {
+          action: "MED_DISPUTE_FILED",
+          protocol: "MED-2026-" + Math.floor(100000 + Math.random() * 900000),
+          status: "FUNDS_SAFEGUARDED_IN_ACCOUNT",
+          amount_brl: 4200.00
         }
-      }
-    } catch (e) {
-      console.error('Error executing banking action:', e);
-    } finally {
-      setIsProcessing(false);
+      } : a));
+
+      // Update alerts
+      setAlerts(prev => prev.map(a => a.id === targetId ? { ...a, status: 'blocked_and_reversed' } : a));
+
+      // Add to action plan
+      const newAction: SecurityActionItem = {
+        id: "act_" + Date.now(),
+        time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + " BRT",
+        type: "med_claim",
+        title: "Bloqueio Definitivo & Protocolo MED Gerado",
+        description: "R$ 4.200,00 estornados para o saldo disponível. Chave Pix reportada ao BACEN.",
+        status: "Safeguarded",
+        details: "Protocolo MED #2026-ITAU-" + Math.floor(1000 + Math.random() * 9000)
+      };
+      setActionItems(prev => [newAction, ...prev]);
+
+      // Trigger phone notification toast
+      triggerNotification(
+        "Pix Bloqueado & Estornado",
+        "R$ 4.200,00 preservados em conta corrente via MED."
+      );
+
+      // Append log
+      setTelemetryLogs(prev => [
+        {
+          id: "log_" + Date.now(),
+          timestamp: new Date().toISOString(),
+          agentId: "itau_med_dispute",
+          agentName: "BACEN MED & Reversal Desk",
+          action: "FILE_MED_DISPUTE_AND_REVERSE",
+          status: "success",
+          payload: {
+            alert_id: targetId,
+            refund_amount: 4200.00,
+            bacen_resolution: "Res. 147"
+          }
+        },
+        ...prev
+      ]);
+
+      setIsProcessingAgent(null);
+
+    } else if (actionType === 'freeze_card' || actionType === 'unfreeze_card') {
+      const isFreezing = actionType === 'freeze_card';
+      setIsProcessingAgent('itau_card_token_servicing');
+
+      setProfile(prev => ({
+        ...prev,
+        cards: prev.cards.map(c => c.id === targetId ? { ...c, status: isFreezing ? 'frozen' : 'active' } : c)
+      }));
+
+      setSubAgents(prev => prev.map(a => a.id === 'itau_card_token_servicing' ? {
+        ...a,
+        status: 'completed',
+        lastRun: new Date().toLocaleTimeString('pt-BR'),
+        resultData: {
+          card_id: targetId,
+          action: isFreezing ? "CARD_FROZEN" : "CARD_UNFROZEN",
+          tokens_deactivated: isFreezing ? ["ApplePay_Token_9912", "GooglePay_Token_4410"] : []
+        }
+      } : a));
+
+      const newAction: SecurityActionItem = {
+        id: "act_" + Date.now(),
+        time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + " BRT",
+        type: "card_freeze",
+        title: isFreezing ? "Cartão Mastercard Black Congelado" : "Cartão Mastercard Black Reativado",
+        description: isFreezing ? "Tokens digitais suspensos preventivamente contra compras recorrentes." : "Biometria confirmada pelo titular.",
+        status: isFreezing ? "Safeguarded" : "Confirmed",
+        details: isFreezing ? "Cartão Final •• 8841" : "Reativação Segura"
+      };
+      setActionItems(prev => [newAction, ...prev]);
+
+      triggerNotification(
+        isFreezing ? "Cartão Congelado" : "Cartão Desbloqueado",
+        isFreezing ? "Tokens digitais de pagamento foram temporariamente suspensos." : "Cartão liberado para uso."
+      );
+
+      setIsProcessingAgent(null);
     }
   };
 
-  const handleOpenVoice = (alertId?: string) => {
-    if (alertId) {
-      const match = alerts.find(a => a.id === alertId);
-      setSelectedAlertContext(match || null);
-    } else {
-      setSelectedAlertContext(alerts[0] || null);
-    }
-    setIsVoiceModalOpen(true);
+  const handleTriggerManualAgent = (agentId: string) => {
+    setIsProcessingAgent(agentId);
+    setTimeout(() => {
+      setSubAgents(prev => prev.map(a => a.id === agentId ? {
+        ...a,
+        status: 'completed',
+        lastRun: new Date().toLocaleTimeString('pt-BR'),
+        resultData: {
+          trigger: "MANUAL_ORCHESTRATOR_DISPATCH",
+          status: "SUCCESS_VALIDATED",
+          timestamp: new Date().toISOString()
+        }
+      } : a));
+
+      triggerNotification("Sub-Agente Executado", `Telemetria atualizada para ${agentId}`);
+      setIsProcessingAgent(null);
+    }, 800);
   };
 
-  const scrollToMobileApp = () => {
-    document.getElementById('mobile-app')?.scrollIntoView({ behavior: 'smooth' });
+  const handleToggleCall = () => {
+    setIsCallActive(!isCallActive);
+    setIsVoiceModalOpen(!isVoiceModalOpen);
   };
 
-  const scrollToGraph = () => {
-    document.getElementById('decision-graph')?.scrollIntoView({ behavior: 'smooth' });
+  const handleReset = () => {
+    setProfile(INITIAL_PROFILE);
+    setAlerts(INITIAL_ALERTS);
+    setSubAgents(INITIAL_SUBAGENTS);
+    setActionItems(INITIAL_ACTIONS);
+    setNotifications([]);
+    setTelemetryLogs([]);
+    triggerNotification("Demonstração Reiniciada", "Todos os estados voltaram ao padrão.");
+  };
+
+  const handleSaveSession = async () => {
+    setIsSaving(true);
+    setTimeout(() => {
+      setIsSaving(false);
+      triggerNotification("Sessão Salva", "Itinerário de salvaguarda salvo no backend.");
+    }, 600);
   };
 
   return (
-    <div className="min-h-screen bg-body-bg flex flex-col font-sans">
+    <div className="min-h-screen bg-[#070707] text-white flex flex-col font-sans">
       
-      {/* Top Header with Language Toggle */}
-      <Header
-        customerName={profile.customer_name}
-        segment={profile.segment}
-        activeAlertsCount={alerts.filter(a => a.status === 'held_pending_confirmation').length}
+      {/* Top Cockpit Header */}
+      <CockpitHeader
         currentLang={currentLang}
         onToggleLang={setCurrentLang}
-        onOpenVoiceAssistant={() => handleOpenVoice()}
+        isCallActive={isCallActive}
+        onToggleCall={handleToggleCall}
+        onReset={handleReset}
+        onSaveSession={handleSaveSession}
+        isSaving={isSaving}
       />
 
-      {/* Live Financial & Security Ticker */}
-      <TickerRibbon currentLang={currentLang} />
-
-      {/* High-Contrast Hero Section (DESIGN.md Spec) */}
-      <HeroSection
-        currentLang={currentLang}
-        onTriggerVoiceModal={() => handleOpenVoice()}
-        onScrollToMobileApp={scrollToMobileApp}
-        onScrollToGraph={scrollToGraph}
-      />
-
-      {/* Main Dual-View Workspace */}
-      <main className="max-w-7xl mx-auto w-full px-6 py-10 flex-1">
+      {/* Main Side-by-Side Dual-Pane Canvas (Matching Amex Layout) */}
+      <main className="flex-1 max-w-[1600px] w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
-          {/* Left Column: Interactive Mobile Phone View (5 Cols) */}
-          <div id="mobile-app" className="lg:col-span-5 flex flex-col items-center sticky top-20">
-            <div className="w-full flex items-center justify-between mb-3 px-2">
-              <div className="flex items-center gap-2">
-                <Smartphone className="w-4 h-4 text-brand-orange" />
-                <span className="text-xs font-bold uppercase tracking-wider text-text-muted">
-                  {t.mobile.simulatorTitle}
-                </span>
-              </div>
-              <span className="text-[11px] font-mono text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-[4px] border border-emerald-200">
-                {t.mobile.secureSession}
-              </span>
-            </div>
+        {/* Left Pane: Interactive Mobile Smartphone Container (5 Cols) */}
+        <div className="lg:col-span-5 flex justify-center sticky top-20">
+          <PhoneContainer
+            profile={profile}
+            alerts={alerts}
+            notifications={notifications}
+            currentLang={currentLang}
+            onOpenVoiceAssistant={handleToggleCall}
+            onActionClick={handleAction}
+          />
+        </div>
 
-            <MobilePhoneShell
-              profile={profile}
-              alerts={alerts}
-              currentLang={currentLang}
-              onOpenVoiceAssistant={() => handleOpenVoice()}
-              onActionClick={handleAction}
-            />
-          </div>
-
-          {/* Right Column: Alerts Center & Decision Graph (7 Cols) */}
-          <div className="lg:col-span-7 flex flex-col gap-6">
-            
-            {/* Proactive Incident & Alerts Feed */}
-            <AlertsCenter
-              alerts={alerts}
-              currentLang={currentLang}
-              onActionClick={handleAction}
-              onOpenVoiceAssistant={handleOpenVoice}
-              isProcessing={isProcessing}
-            />
-
-            {/* Visual Reasoning Decision Graph */}
-            <FraudDecisionGraph currentLang={currentLang} />
-
-          </div>
-
+        {/* Right Pane: Agent & Process Orchestration Panel (7 Cols) */}
+        <div className="lg:col-span-7 flex flex-col w-full">
+          <AgentOrchestratorPanel
+            subAgents={subAgents}
+            actionItems={actionItems}
+            telemetryLogs={telemetryLogs}
+            activeAlerts={alerts}
+            currentLang={currentLang}
+            onTriggerAgent={handleTriggerManualAgent}
+            isProcessingAgent={isProcessingAgent}
+          />
         </div>
 
       </main>
 
-      {/* Voice Assistant Modal with Gemini Multimodal AI */}
+      {/* Multimodal Gemini AI Modal */}
       <VoiceBankingModal
         isOpen={isVoiceModalOpen}
-        onClose={() => setIsVoiceModalOpen(false)}
+        onClose={() => {
+          setIsVoiceModalOpen(false);
+          setIsCallActive(false);
+        }}
         alertContext={selectedAlertContext}
         currentLang={currentLang}
         onActionClick={handleAction}
       />
-
-      {/* Footer */}
-      <footer className="w-full bg-hero-bg text-text-muted border-t border-white/10 py-6 px-6 text-center text-xs">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="bg-brand-orange text-white font-bold text-[10px] px-1.5 py-0.5 rounded-[2px]">itau</span>
-            <span className="text-white font-medium">{t.footer.brand}</span>
-          </div>
-          <p className="text-text-muted text-[11px]">
-            {t.footer.tagline}
-          </p>
-        </div>
-      </footer>
 
     </div>
   );
