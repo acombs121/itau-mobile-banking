@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Mic, MicOff, Send, ShieldCheck, Loader2, AlertTriangle } from 'lucide-react';
+import { X, Mic, MicOff, Send, Loader2 } from 'lucide-react';
 import { SecurityAlert } from '../types/banking';
 import { Language, translations } from '../i18n/translations';
 
@@ -14,7 +14,7 @@ interface VoiceBankingModalProps {
 export const VoiceBankingModal: React.FC<VoiceBankingModalProps> = ({
   isOpen,
   onClose,
-  alertContext,
+  alertContext: _alertContext,
   currentLang,
   onActionClick: _onActionClick
 }) => {
@@ -46,7 +46,6 @@ export const VoiceBankingModal: React.FC<VoiceBankingModalProps> = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           user_query: userMsg,
-          context_alert_id: alertContext?.id
         })
       });
 
@@ -54,7 +53,7 @@ export const VoiceBankingModal: React.FC<VoiceBankingModalProps> = ({
         const data = await response.json();
         setMessages(prev => [...prev, { sender: 'agent', text: data.response }]);
       } else {
-        throw new Error('Erro na resposta do assistente');
+        throw new Error('Erro');
       }
     } catch (e) {
       setMessages(prev => [
@@ -76,46 +75,29 @@ export const VoiceBankingModal: React.FC<VoiceBankingModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-white w-full max-w-lg rounded-[12px] shadow-2xl border border-slate-300 overflow-hidden flex flex-col max-h-[85vh]">
+    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+      <div className="bg-[#0F0F0F] text-white w-full max-w-lg rounded-[14px] shadow-2xl border border-white/[0.12] overflow-hidden flex flex-col max-h-[80vh]">
         
-        {/* Modal Header */}
-        <div className="bg-hero-bg text-white px-5 py-4 flex items-center justify-between border-b border-white/10">
+        {/* Minimal Header */}
+        <div className="px-5 py-3.5 flex items-center justify-between border-b border-white/[0.08]">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-[4px] bg-brand-orange text-white flex items-center justify-center font-bold">
-              <ShieldCheck className="w-5 h-5" />
+            <div className="w-5 h-5 rounded-[3px] bg-brand-orange text-white flex items-center justify-center font-bold text-[10px]">
+              itau
             </div>
-            <div>
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                {t.title}
-                <span className="text-[10px] text-brand-orange bg-brand-orange/10 px-1.5 py-0.5 rounded border border-brand-orange/30 font-mono">
-                  Gemini 3.7
-                </span>
-              </h3>
-              <span className="text-[11px] text-text-muted">{t.subtitle}</span>
-            </div>
+            <span className="text-xs font-semibold text-white/90">
+              Itaú Guard AI
+            </span>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-[4px] bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+            className="text-white/40 hover:text-white transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Active Context Banner */}
-        {alertContext && (
-          <div className="bg-rose-50 border-b border-rose-200 px-5 py-2.5 flex items-center justify-between text-xs">
-            <div className="flex items-center gap-2 text-rose-800 font-medium">
-              <AlertTriangle className="w-4 h-4 text-rose-600 flex-shrink-0" />
-              <span>{t.incidentContext} <strong>{alertContext.title}</strong></span>
-            </div>
-            <span className="font-mono font-bold text-rose-700">R$ 4.200,00</span>
-          </div>
-        )}
-
-        {/* Chat / Transcript Stream */}
-        <div className="flex-1 p-5 overflow-y-auto space-y-3 bg-slate-50 min-h-[260px]">
+        {/* Message Stream */}
+        <div className="flex-1 p-5 overflow-y-auto space-y-3 min-h-[260px]">
           {messages.map((msg, index) => (
             <div
               key={index}
@@ -124,8 +106,8 @@ export const VoiceBankingModal: React.FC<VoiceBankingModalProps> = ({
               <div
                 className={`max-w-[85%] rounded-[8px] p-3 text-xs leading-relaxed ${
                   msg.sender === 'user'
-                    ? 'bg-brand-orange text-white rounded-br-none shadow-sm'
-                    : 'bg-white text-slate-800 border border-slate-200 shadow-sm rounded-bl-none'
+                    ? 'bg-brand-orange text-white'
+                    : 'bg-white/[0.04] text-white/90 border border-white/[0.06]'
                 }`}
               >
                 {msg.text}
@@ -135,42 +117,41 @@ export const VoiceBankingModal: React.FC<VoiceBankingModalProps> = ({
 
           {isLoading && (
             <div className="flex justify-start">
-              <div className="bg-white border border-slate-200 rounded-[8px] p-3 text-xs text-slate-500 flex items-center gap-2">
-                <Loader2 className="w-3.5 h-3.5 animate-spin text-brand-orange" />
+              <div className="bg-white/[0.04] border border-white/[0.06] rounded-[8px] p-2.5 text-xs text-white/40 flex items-center gap-2">
+                <Loader2 className="w-3 h-3 animate-spin text-brand-orange" />
                 <span>{t.analyzing}</span>
               </div>
             </div>
           )}
         </div>
 
-        {/* Quick Suggested Prompts */}
-        <div className="px-5 py-2 bg-white border-t border-slate-200 flex flex-wrap gap-2">
+        {/* Minimal Quick Action Suggestions */}
+        <div className="px-5 py-2 border-t border-white/[0.06] flex flex-wrap gap-2">
           <button
             onClick={() => handleQuickAction(t.quickPrompt1)}
-            className="text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-800 px-2.5 py-1 rounded-[4px] border border-slate-300 transition-colors"
+            className="text-[11px] text-white/60 hover:text-white border border-white/10 hover:border-white/25 px-2.5 py-1 rounded-[4px] transition-colors"
           >
-            "{t.quickPrompt1}"
+            {t.quickPrompt1}
           </button>
           <button
             onClick={() => handleQuickAction(t.quickPrompt2)}
-            className="text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-800 px-2.5 py-1 rounded-[4px] border border-slate-300 transition-colors"
+            className="text-[11px] text-white/60 hover:text-white border border-white/10 hover:border-white/25 px-2.5 py-1 rounded-[4px] transition-colors"
           >
-            "{t.quickPrompt2}"
+            {t.quickPrompt2}
           </button>
         </div>
 
         {/* Input Bar */}
-        <div className="p-4 bg-white border-t border-slate-200 flex items-center gap-2">
+        <div className="p-3.5 border-t border-white/[0.08] flex items-center gap-2 bg-black/40">
           <button
             onClick={() => setIsRecording(!isRecording)}
-            className={`w-10 h-10 rounded-[4px] flex items-center justify-center border transition-all ${
+            className={`w-9 h-9 rounded-[4px] flex items-center justify-center transition-all ${
               isRecording
-                ? 'bg-rose-600 text-white border-rose-700 animate-pulse'
-                : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300'
+                ? 'bg-rose-600 text-white'
+                : 'text-white/40 hover:text-white hover:bg-white/5'
             }`}
-            title="Microfone"
           >
-            {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+            {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
           </button>
 
           <input
@@ -179,15 +160,15 @@ export const VoiceBankingModal: React.FC<VoiceBankingModalProps> = ({
             onChange={(e) => setInputText(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
             placeholder={t.placeholder}
-            className="flex-1 text-xs border border-slate-300 rounded-[4px] px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-orange"
+            className="flex-1 text-xs bg-transparent text-white border-0 focus:outline-none placeholder-white/30"
           />
 
           <button
             onClick={() => handleSendMessage()}
             disabled={!inputText.trim() || isLoading}
-            className="bg-brand-orange hover:bg-brand-orange-hover disabled:opacity-50 text-white px-4 py-2.5 rounded-[4px] text-xs font-bold flex items-center gap-1.5 transition-all"
+            className="bg-brand-orange hover:bg-brand-orange-hover disabled:opacity-30 text-white px-3 py-1.5 rounded-[4px] text-xs font-medium flex items-center gap-1 transition-all"
           >
-            <Send className="w-3.5 h-3.5" />
+            <Send className="w-3 h-3" />
             <span>{t.send}</span>
           </button>
         </div>
