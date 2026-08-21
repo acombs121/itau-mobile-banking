@@ -1,0 +1,72 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-brand-orange: #FF6423;
+  --color-hero-bg: #070707;
+  --color-body-bg: #F3F3F3;
+  --color-text-main: #070707;
+  --color-text-inverse: #FFFFFF;
+  --color-text-muted: #798B97;
+  --color-card-border: rgba(255, 255, 255, 0.2);
+  --font-sans: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  --radius-button: 4px;
+  --radius-card: 8px;
+  --spacing-base: 8px;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-body-bg);
+  color: var(--color-text-main);
+  margin: 0;
+  padding: 0;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F3F3F3;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* Particle Background Canvas / Overlay */
+.particle-wave-bg {
+  background-image: 
+    radial-gradient(circle at 15% 50%, rgba(255, 100, 35, 0.12) 0%, transparent 40%),
+    radial-gradient(circle at 85% 30%, rgba(0, 51, 153, 0.25) 0%, transparent 45%),
+    linear-gradient(to bottom, #070707 0%, #0D0D0D 100%);
+}
+
+/* Ticker Ribbon Keyframe */
+@keyframes ticker {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-ticker {
+  display: flex;
+  width: max-content;
+  animation: ticker 30s linear infinite;
+}
+
+.animate-ticker:hover {
+  animation-play-state: paused;
+}
