@@ -88,21 +88,21 @@ export const CockpitHeader: React.FC<CockpitHeaderProps> = ({
           </button>
         </div>
 
-        {/* Theme Toggle (Moon / Sun) */}
+        {/* Theme Toggle (Monochrome Moon / Sun) */}
         <button
           onClick={onToggleTheme}
           className={`w-8 h-8 rounded-[4px] flex items-center justify-center border transition-colors ${
             isDark
-              ? 'border-white/10 text-white/60 hover:text-white hover:bg-white/5'
-              : 'border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+              ? 'border-white/10 text-white hover:bg-white/10'
+              : 'border-slate-300 text-black hover:bg-slate-100'
           }`}
           title={isDark ? "Switch to Light Mode" : "Mudar para Modo Escuro"}
           aria-label="Toggle theme"
         >
           {isDark ? (
-            <Sun className="w-3.5 h-3.5 text-amber-400" />
+            <Sun className="w-3.5 h-3.5 text-white stroke-[1.75]" />
           ) : (
-            <Moon className="w-3.5 h-3.5 text-slate-700" />
+            <Moon className="w-3.5 h-3.5 text-black stroke-[1.75]" />
           )}
         </button>
 
