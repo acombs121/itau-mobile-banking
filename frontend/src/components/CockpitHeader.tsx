@@ -30,14 +30,14 @@ export const CockpitHeader: React.FC<CockpitHeaderProps> = ({
 
   return (
     <header
-      className={`w-full h-14 px-6 flex items-center justify-between z-40 sticky top-0 transition-colors duration-200 ${
+      className={`w-full h-14 px-4 sm:px-6 flex items-center justify-between z-40 sticky top-0 transition-colors duration-200 flex-shrink-0 ${
         isDark
           ? 'bg-[#070707] border-b border-white/[0.08] text-white'
           : 'bg-white border-b border-slate-200 text-slate-900 shadow-sm'
       }`}
     >
       {/* Brand & Context */}
-      <div className="flex items-center gap-3.5">
+      <div className="flex items-center gap-3 min-w-0">
         <div className="bg-brand-orange text-white font-bold text-xs px-2 py-1 rounded-[3px] tracking-tight select-none flex-shrink-0">
           itau
         </div>
@@ -47,10 +47,10 @@ export const CockpitHeader: React.FC<CockpitHeaderProps> = ({
         </span>
       </div>
 
-      {/* Right Controls - Fixed & Stable Widths to Prevent Layout Shift */}
-      <div className="flex items-center gap-3 flex-shrink-0">
+      {/* Right Controls */}
+      <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
         
-        {/* Language Switcher with Fixed Button Widths */}
+        {/* Language Switcher */}
         <div
           className={`flex items-center rounded-[3px] p-0.5 border transition-colors ${
             isDark
@@ -106,10 +106,10 @@ export const CockpitHeader: React.FC<CockpitHeaderProps> = ({
           )}
         </button>
 
-        {/* Reset (Fixed Width Container) */}
+        {/* Reset */}
         <button
           onClick={onReset}
-          className={`w-28 text-xs flex items-center justify-center gap-1.5 transition-colors flex-shrink-0 ${
+          className={`h-8 px-2 text-xs flex items-center justify-center gap-1.5 transition-colors flex-shrink-0 ${
             isDark
               ? 'text-white/40 hover:text-white'
               : 'text-slate-400 hover:text-slate-800'
@@ -117,14 +117,14 @@ export const CockpitHeader: React.FC<CockpitHeaderProps> = ({
           title={t.resetSession}
         >
           <RotateCcw className="w-3.5 h-3.5 flex-shrink-0" />
-          <span className="text-[11px] truncate">{t.resetSession}</span>
+          <span className="hidden md:inline text-[11px]">{t.resetSession}</span>
         </button>
 
-        {/* Save (Fixed Width Container) */}
+        {/* Save */}
         <button
           onClick={onSaveSession}
           disabled={isSaving}
-          className={`w-28 text-xs flex items-center justify-center gap-1.5 transition-colors disabled:opacity-30 flex-shrink-0 ${
+          className={`h-8 px-2 text-xs flex items-center justify-center gap-1.5 transition-colors disabled:opacity-30 flex-shrink-0 ${
             isDark
               ? 'text-white/40 hover:text-white'
               : 'text-slate-400 hover:text-slate-800'
@@ -132,13 +132,13 @@ export const CockpitHeader: React.FC<CockpitHeaderProps> = ({
           title={t.saveSession}
         >
           <Save className="w-3.5 h-3.5 flex-shrink-0" />
-          <span className="text-[11px] truncate">{isSaving ? '...' : t.saveSession}</span>
+          <span className="hidden md:inline text-[11px]">{isSaving ? '...' : t.saveSession}</span>
         </button>
 
         {/* Primary Call AI Trigger (Constant Fixed Width) */}
         <button
           onClick={onToggleCall}
-          className={`w-[172px] h-8 px-3 rounded-[4px] text-xs font-semibold flex items-center justify-center gap-2 transition-all flex-shrink-0 select-none ${
+          className={`w-36 sm:w-44 h-8 px-3 rounded-[4px] text-xs font-semibold flex items-center justify-center gap-1.5 sm:gap-2 transition-all flex-shrink-0 select-none ${
             isCallActive
               ? 'bg-rose-600 text-white hover:bg-rose-700'
               : 'bg-brand-orange hover:bg-brand-orange-hover text-white'

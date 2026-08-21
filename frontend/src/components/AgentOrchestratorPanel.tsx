@@ -31,7 +31,7 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
 
   return (
     <div
-      className={`w-full rounded-[12px] shadow-2xl flex flex-col overflow-hidden min-h-[690px] border transition-colors duration-200 ${
+      className={`w-full h-full max-h-[calc(100vh-4.5rem)] rounded-[12px] shadow-2xl flex flex-col min-h-0 border transition-colors duration-200 ${
         isDark
           ? 'bg-[#0D0D0D] border-white/[0.08] text-white'
           : 'bg-white border-slate-200 text-slate-900 shadow-sm'
@@ -39,13 +39,13 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
     >
       
       {/* Sleek Minimalist Tabs */}
-      <div className={`border-b px-6 flex items-center justify-between transition-colors ${
+      <div className={`border-b px-5 flex items-center justify-between flex-shrink-0 transition-colors ${
         isDark ? 'border-white/[0.08]' : 'border-slate-200 bg-slate-50/50'
       }`}>
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-5">
           <button
             onClick={() => setActiveTab('agents')}
-            className={`py-3.5 text-xs font-medium border-b-2 transition-all ${
+            className={`py-3 text-xs font-medium border-b-2 transition-all ${
               activeTab === 'agents'
                 ? 'border-brand-orange ' + (isDark ? 'text-white' : 'text-slate-900 font-semibold')
                 : isDark
@@ -58,7 +58,7 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
 
           <button
             onClick={() => setActiveTab('actions')}
-            className={`py-3.5 text-xs font-medium border-b-2 transition-all ${
+            className={`py-3 text-xs font-medium border-b-2 transition-all ${
               activeTab === 'actions'
                 ? 'border-brand-orange ' + (isDark ? 'text-white' : 'text-slate-900 font-semibold')
                 : isDark
@@ -71,7 +71,7 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
 
           <button
             onClick={() => setActiveTab('graph')}
-            className={`py-3.5 text-xs font-medium border-b-2 transition-all ${
+            className={`py-3 text-xs font-medium border-b-2 transition-all ${
               activeTab === 'graph'
                 ? 'border-brand-orange ' + (isDark ? 'text-white' : 'text-slate-900 font-semibold')
                 : isDark
@@ -84,7 +84,7 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
 
           <button
             onClick={() => setActiveTab('logs')}
-            className={`py-3.5 text-xs font-medium border-b-2 transition-all ${
+            className={`py-3 text-xs font-medium border-b-2 transition-all ${
               activeTab === 'logs'
                 ? 'border-brand-orange ' + (isDark ? 'text-white' : 'text-slate-900 font-semibold')
                 : isDark
@@ -96,23 +96,23 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
           </button>
         </div>
 
-        <div className={`hidden sm:flex items-center gap-2 text-[10px] font-mono ${
+        <div className={`hidden sm:flex items-center gap-1.5 text-[10px] font-mono ${
           isDark ? 'text-white/30' : 'text-slate-400'
         }`}>
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-          ORCHESTRATOR ACTIVE
+          ACTIVE
         </div>
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 p-6 overflow-y-auto">
+      <div className="flex-1 p-5 overflow-y-auto min-h-0">
         
         {/* TAB 1: SUB-AGENTS */}
         {activeTab === 'agents' && (
-          <div className="space-y-4">
+          <div className="space-y-3.5">
             
             {/* Minimal Sub-Agent Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
               {subAgents.map((agent) => {
                 const isProcessing = isProcessingAgent === agent.id || agent.status === 'processing';
                 const isCompleted = agent.status === 'completed';
@@ -120,7 +120,7 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
                 return (
                   <div
                     key={agent.id}
-                    className={`rounded-[8px] p-4 border transition-all ${
+                    className={`rounded-[8px] p-3.5 border transition-all ${
                       isDark
                         ? isProcessing
                           ? 'bg-brand-orange/[0.04] border-brand-orange/40'
@@ -130,8 +130,8 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
                         : 'bg-white border-slate-200 hover:border-slate-300 shadow-sm'
                     }`}
                   >
-                    <div className="flex items-start justify-between mb-1.5">
-                      <div className="flex items-center gap-2">
+                    <div className="flex items-start justify-between mb-1">
+                      <div className="flex items-center gap-2 min-w-0">
                         <span
                           className={`w-2 h-2 rounded-full flex-shrink-0 ${
                             isProcessing
@@ -141,20 +141,20 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
                               : isDark ? 'bg-white/20' : 'bg-slate-300'
                           }`}
                         />
-                        <h3 className={`text-xs font-semibold leading-tight ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
+                        <h3 className={`text-xs font-semibold leading-tight truncate ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
                           {agent.name}
                         </h3>
                       </div>
-                      <span className={`text-[10px] font-mono ${isDark ? 'text-white/40' : 'text-slate-400'}`}>
+                      <span className={`text-[10px] font-mono flex-shrink-0 ml-2 ${isDark ? 'text-white/40' : 'text-slate-400'}`}>
                         {isProcessing ? t.subagents.statusProcessing : isCompleted ? t.subagents.statusCompleted : t.subagents.statusIdle}
                       </span>
                     </div>
 
-                    <p className={`text-[11px] leading-relaxed mb-3 ${isDark ? 'text-white/60' : 'text-slate-600'}`}>
+                    <p className={`text-[11px] leading-relaxed mb-2.5 ${isDark ? 'text-white/60' : 'text-slate-600'}`}>
                       {agent.description}
                     </p>
 
-                    <div className={`flex items-center justify-between pt-2 border-t text-[10px] ${isDark ? 'border-white/[0.04]' : 'border-slate-100'}`}>
+                    <div className={`flex items-center justify-between pt-1.5 border-t text-[10px] ${isDark ? 'border-white/[0.04]' : 'border-slate-100'}`}>
                       <button
                         onClick={() => setSelectedAgentDetail(agent)}
                         className={`transition-colors ${isDark ? 'text-white/40 hover:text-white/90' : 'text-slate-400 hover:text-slate-800'}`}
@@ -179,14 +179,14 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
 
             {/* Clean JSON Telemetry Inspector */}
             {selectedAgentDetail && (
-              <div className={`border rounded-[8px] p-3.5 mt-3 transition-colors ${
+              <div className={`border rounded-[8px] p-3 mt-2 transition-colors ${
                 isDark ? 'border-white/[0.06] bg-black/40' : 'border-slate-200 bg-slate-50'
               }`}>
-                <div className={`flex items-center justify-between text-[10px] mb-2 font-mono ${isDark ? 'text-white/40' : 'text-slate-500'}`}>
+                <div className={`flex items-center justify-between text-[10px] mb-1.5 font-mono ${isDark ? 'text-white/40' : 'text-slate-500'}`}>
                   <span>TELEMETRY: {selectedAgentDetail.id}</span>
                   <span>{selectedAgentDetail.lastRun || 'READY'}</span>
                 </div>
-                <pre className={`text-[11px] font-mono overflow-x-auto p-2 rounded max-h-36 border ${
+                <pre className={`text-[10px] font-mono overflow-x-auto p-2 rounded max-h-28 border ${
                   isDark ? 'text-white/70 bg-black/50 border-white/[0.04]' : 'text-slate-800 bg-white border-slate-200'
                 }`}>
                   {JSON.stringify(selectedAgentDetail.resultData || {
@@ -204,7 +204,7 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
 
         {/* TAB 2: SAFEGUARD PLAN */}
         {activeTab === 'actions' && (
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             {actionItems.length === 0 ? (
               <div className={`p-8 text-center text-xs ${isDark ? 'text-white/30' : 'text-slate-400'}`}>
                 {t.actionPlan.emptyState}
@@ -214,7 +214,7 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
                 {actionItems.map((item) => (
                   <div
                     key={item.id}
-                    className={`border rounded-[8px] p-3.5 flex items-start justify-between gap-3 transition-colors ${
+                    className={`border rounded-[8px] p-3 flex items-start justify-between gap-3 transition-colors ${
                       isDark
                         ? 'border-white/[0.06] bg-white/[0.01]'
                         : 'border-slate-200 bg-slate-50/50'
@@ -247,16 +247,16 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
 
         {/* TAB 3: DECISION GRAPH */}
         {activeTab === 'graph' && (
-          <div className="space-y-4">
+          <div className="space-y-3.5">
             <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
               {translations[currentLang].graph.nodes.map((node) => (
                 <div
                   key={node.id}
-                  className={`border rounded-[8px] p-3 transition-colors ${
+                  className={`border rounded-[8px] p-2.5 transition-colors ${
                     isDark ? 'border-white/[0.06] bg-white/[0.01]' : 'border-slate-200 bg-slate-50/50'
                   }`}
                 >
-                  <div className={`text-[9px] font-mono uppercase mb-1 ${isDark ? 'text-white/30' : 'text-slate-400'}`}>
+                  <div className={`text-[9px] font-mono uppercase mb-0.5 ${isDark ? 'text-white/30' : 'text-slate-400'}`}>
                     {node.layer}
                   </div>
                   <h3 className={`text-xs font-semibold mb-1 leading-tight ${isDark ? 'text-white/90' : 'text-slate-900'}`}>{node.name}</h3>
@@ -267,7 +267,7 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
               ))}
             </div>
 
-            <div className={`border rounded-[8px] p-3 transition-colors ${
+            <div className={`border rounded-[8px] p-2.5 transition-colors ${
               isDark ? 'border-white/[0.06] bg-black/40' : 'border-slate-200 bg-slate-50'
             }`}>
               <div className={`text-[9px] font-mono uppercase mb-1 ${isDark ? 'text-white/30' : 'text-slate-500'}`}>
@@ -294,18 +294,18 @@ RETURN tx.amount, tx.recipient, p.precautionary_action;
               telemetryLogs.map((log) => (
                 <div
                   key={log.id}
-                  className={`border rounded-[6px] p-2.5 transition-colors ${
+                  className={`border rounded-[6px] p-2 transition-colors ${
                     isDark ? 'border-white/[0.04] bg-black/30 text-white/70' : 'border-slate-200 bg-slate-50 text-slate-800'
                   }`}
                 >
-                  <div className={`flex justify-between text-[10px] mb-1 ${isDark ? 'text-white/30' : 'text-slate-400'}`}>
+                  <div className={`flex justify-between text-[9px] mb-0.5 ${isDark ? 'text-white/30' : 'text-slate-400'}`}>
                     <span className="text-brand-orange font-medium">{log.agentName}</span>
                     <span>{log.timestamp}</span>
                   </div>
-                  <div className={`text-[11px] mb-1 font-semibold ${isDark ? 'text-white/90' : 'text-slate-900'}`}>
+                  <div className={`text-[10px] mb-1 font-semibold ${isDark ? 'text-white/90' : 'text-slate-900'}`}>
                     Action: {log.action}
                   </div>
-                  <pre className={`text-[10px] overflow-x-auto ${isDark ? 'text-white/50' : 'text-slate-600'}`}>
+                  <pre className={`text-[9px] overflow-x-auto ${isDark ? 'text-white/50' : 'text-slate-600'}`}>
                     {JSON.stringify(log.payload, null, 2)}
                   </pre>
                 </div>

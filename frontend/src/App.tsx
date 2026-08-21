@@ -100,10 +100,10 @@ const INITIAL_ALERTS: SecurityAlert[] = [
 const INITIAL_SUBAGENTS: SubAgent[] = [
   {
     id: "itau_fraud_monitor",
-    name: "Itaú Guard Fraud & Anomaly Monitor",
+    name: "Itaú Guard Fraud Monitor",
     type: "fraud",
-    description: "Analisa telemetria de rede, geolocalização e histórico de pagamentos para contenção imediata de fraudes Pix.",
-    capabilities: ["Detecção em < 200ms", "Contenção Cautelar", "Validação de IP Anônimo"],
+    description: "Analisa telemetria de rede e geolocalização para contenção de fraudes Pix.",
+    capabilities: ["Detecção < 200ms", "Contenção Cautelar", "Validação IP"],
     status: "completed",
     lastRun: "14:52:10 BRT",
     resultData: {
@@ -118,24 +118,24 @@ const INITIAL_SUBAGENTS: SubAgent[] = [
     id: "itau_med_dispute",
     name: "BACEN MED & Reversal Desk",
     type: "med",
-    description: "Coordena a abertura de protocolos MED sob a Resolução 147 do Banco Central para devolução cautelar.",
-    capabilities: ["Protocolo MED 147", "Bloqueio em Chave Pix Suspeita", "Devolução em 72h"],
+    description: "Coordena protocolos MED sob a Resolução 147 do Banco Central.",
+    capabilities: ["Protocolo MED 147", "Bloqueio Pix", "Devolução 72h"],
     status: "idle"
   },
   {
     id: "itau_card_token_servicing",
-    name: "Card & Token Servicing Guardian",
+    name: "Card & Token Guardian",
     type: "cards",
-    description: "Gerencia bloqueio instantâneo de cartões físicos e rotação de tokens digitais Apple Pay e Google Pay.",
-    capabilities: ["Congelamento Instantâneo", "Rotação de CVV Dinâmico", "Bloqueio de Compras Recorrentes"],
+    description: "Gerencia bloqueio de cartões e rotação de tokens digitais Apple/Google Pay.",
+    capabilities: ["Congelamento Instantâneo", "Rotação CVV", "Bloqueio Recorrência"],
     status: "idle"
   },
   {
     id: "itau_pix_limit_servicing",
-    name: "Pix Night-Time & Limit Manager",
+    name: "Pix Night-Time Manager",
     type: "limits",
-    description: "Aplica limites noturnos preventivos de R$ 1.000,00 e processa elevações emergenciais via biometria de voz.",
-    capabilities: ["Regra Noturna 20h-06h", "Elevação Temporária", "Autenticação por Voz"],
+    description: "Aplica limites noturnos preventivos de R$ 1.000,00 e elevações por voz.",
+    capabilities: ["Regra 20h-06h", "Elevação Temporária", "Autenticação Voz"],
     status: "completed",
     lastRun: "20:00:00 BRT",
     resultData: {
@@ -146,10 +146,10 @@ const INITIAL_SUBAGENTS: SubAgent[] = [
   },
   {
     id: "itau_geolocation_validator",
-    name: "Device Fingerprint & Geo Validator",
+    name: "Device & Geo Validator",
     type: "geolocation",
-    description: "Valida triangulação de antenas de celular, Wi-Fi BSSID e biometria nativa do smartphone.",
-    capabilities: ["Triangulação Celular", "Verificação de Root/Jailbreak", "Biometria FaceID"],
+    description: "Valida triangulação celular, Wi-Fi BSSID e biometria do smartphone.",
+    capabilities: ["Triangulação Celular", "Verificação Root", "Biometria FaceID"],
     status: "completed",
     lastRun: "14:52:05 BRT",
     resultData: {
@@ -355,7 +355,7 @@ export function App() {
 
   return (
     <div
-      className={`min-h-screen flex flex-col font-sans transition-colors duration-200 ${
+      className={`h-screen max-h-screen w-full flex flex-col overflow-hidden transition-colors duration-200 ${
         isDark ? 'bg-[#070707] text-white' : 'bg-[#F4F4F6] text-slate-900'
       }`}
     >
@@ -373,11 +373,11 @@ export function App() {
         isSaving={isSaving}
       />
 
-      {/* Main Side-by-Side Dual-Pane Canvas (Matching Amex Layout) */}
-      <main className="flex-1 max-w-[1600px] w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      {/* Main Side-by-Side Dual-Pane Canvas (Strict 100vh Fit) */}
+      <main className="flex-1 w-full max-w-[1500px] mx-auto p-3 sm:p-4 grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch min-h-0 overflow-hidden">
         
         {/* Left Pane: Interactive Mobile Smartphone Container (5 Cols) */}
-        <div className="lg:col-span-5 flex justify-center sticky top-20">
+        <div className="lg:col-span-5 flex justify-center items-center h-full min-h-0 overflow-hidden">
           <PhoneContainer
             profile={profile}
             alerts={alerts}
@@ -390,7 +390,7 @@ export function App() {
         </div>
 
         {/* Right Pane: Agent & Process Orchestration Panel (7 Cols) */}
-        <div className="lg:col-span-7 flex flex-col w-full">
+        <div className="lg:col-span-7 flex flex-col h-full min-h-0 overflow-hidden">
           <AgentOrchestratorPanel
             subAgents={subAgents}
             actionItems={actionItems}
