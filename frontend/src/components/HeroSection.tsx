@@ -1,17 +1,22 @@
 import React from 'react';
-import { ShieldCheck, Zap, AlertTriangle, ArrowRight, Smartphone, Activity } from 'lucide-react';
+import { ShieldCheck, Smartphone, Activity, AlertTriangle, Zap, ArrowRight } from 'lucide-react';
+import { Language, translations } from '../i18n/translations';
 
 interface HeroSectionProps {
+  currentLang: Language;
   onTriggerVoiceModal: () => void;
   onScrollToMobileApp: () => void;
   onScrollToGraph: () => void;
 }
 
 export const HeroSection: React.FC<HeroSectionProps> = ({
+  currentLang,
   onTriggerVoiceModal,
   onScrollToMobileApp,
   onScrollToGraph
 }) => {
+  const t = translations[currentLang].hero;
+
   return (
     <section id="overview" className="w-full bg-hero-bg text-text-inverse particle-wave-bg py-12 md:py-16 px-6 border-b border-white/10">
       <div className="max-w-7xl mx-auto">
@@ -25,32 +30,32 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             {/* Tag Badge */}
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[4px] bg-white/5 border border-white/20 text-brand-orange text-xs font-semibold uppercase tracking-wider mb-4">
               <span className="w-2 h-2 rounded-full bg-brand-orange animate-pulse"></span>
-              Segurança Proativa em Tempo Real
+              {t.tag}
             </div>
 
             {/* Display Headline */}
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-white leading-tight mb-4">
-              Proteção Bancária Inteligente & Central de Alertas
+              {t.title}
             </h1>
 
             {/* Body Copy */}
             <p className="text-sm md:text-base text-text-muted max-w-xl mb-8 leading-relaxed">
-              O Banco Itaú monitora transações Pix, cartões virtuais e tentativas de login com inteligência artificial multimodal. Identifique anomalias em milissegundos e proteja seu patrimônio com resolução assistida por voz.
+              {t.description}
             </p>
 
             {/* Metric Announcements Row */}
             <div className="grid grid-cols-3 gap-4 w-full max-w-lg mb-8 pb-6 border-b border-white/10">
               <div>
-                <div className="text-2xl md:text-3xl font-bold text-white font-mono">&lt; 200ms</div>
-                <div className="text-xs text-text-muted font-medium mt-1">Detecção de Anomalia</div>
+                <div className="text-2xl md:text-3xl font-bold text-white font-mono">{t.metric1Val}</div>
+                <div className="text-xs text-text-muted font-medium mt-1">{t.metric1Label}</div>
               </div>
               <div>
-                <div className="text-2xl md:text-3xl font-bold text-brand-orange font-mono">100%</div>
-                <div className="text-xs text-text-muted font-medium mt-1">Conformidade MED/BACEN</div>
+                <div className="text-2xl md:text-3xl font-bold text-brand-orange font-mono">{t.metric2Val}</div>
+                <div className="text-xs text-text-muted font-medium mt-1">{t.metric2Label}</div>
               </div>
               <div>
-                <div className="text-2xl md:text-3xl font-bold text-emerald-400 font-mono">Zero</div>
-                <div className="text-xs text-text-muted font-medium mt-1">Falsos Positivos Críticos</div>
+                <div className="text-2xl md:text-3xl font-bold text-emerald-400 font-mono">{t.metric3Val}</div>
+                <div className="text-xs text-text-muted font-medium mt-1">{t.metric3Label}</div>
               </div>
             </div>
 
@@ -61,7 +66,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 className="bg-brand-orange hover:bg-brand-orange-hover text-white px-6 py-3 rounded-[4px] font-bold text-sm flex items-center gap-2 transition-all duration-150 active:scale-98 shadow-lg shadow-brand-orange/20"
               >
                 <ShieldCheck className="w-4 h-4" />
-                Iniciar Resolução Itaú Guard AI
+                {t.primaryCta}
               </button>
 
               <button
@@ -69,7 +74,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 className="bg-transparent hover:bg-white/5 text-white border border-white/20 px-6 py-3 rounded-[4px] font-semibold text-sm flex items-center gap-2 transition-all duration-150"
               >
                 <Smartphone className="w-4 h-4 text-brand-orange" />
-                Explorar App Mobile
+                {t.secondaryCta}
               </button>
             </div>
           </div>
@@ -85,8 +90,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     <AlertTriangle className="w-4 h-4 text-rose-500" />
                   </div>
                   <div>
-                    <h2 className="text-sm font-bold text-white">Bloqueio Preventivo Pix</h2>
-                    <span className="text-[11px] text-text-muted">Intervenção de Alto Risco</span>
+                    <h2 className="text-sm font-bold text-white">{t.card1Title}</h2>
+                    <span className="text-[11px] text-text-muted">{t.card1Sub}</span>
                   </div>
                 </div>
                 <span className="text-[11px] font-mono text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-[4px] border border-rose-500/20">
@@ -94,7 +99,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 </span>
               </div>
               <p className="text-xs text-text-muted leading-relaxed">
-                Transação para 'Eletro Tech SP' interceptada preventivamente devido à divergência de geolocalização e uso de proxy anônimo.
+                {t.card1Desc}
               </p>
             </div>
 
@@ -106,8 +111,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     <Zap className="w-4 h-4 text-amber-500" />
                   </div>
                   <div>
-                    <h2 className="text-sm font-bold text-white">Diretriz Noturna BACEN</h2>
-                    <span className="text-[11px] text-text-muted">Limite Seguro Ativo (20h - 06h)</span>
+                    <h2 className="text-sm font-bold text-white">{t.card2Title}</h2>
+                    <span className="text-[11px] text-text-muted">{t.card2Sub}</span>
                   </div>
                 </div>
                 <span className="text-[11px] font-mono text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-[4px] border border-amber-500/20">
@@ -115,7 +120,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 </span>
               </div>
               <p className="text-xs text-text-muted leading-relaxed">
-                Proteção automática para horários sensíveis com autenticação biométrica por voz para elevação emergencial de limite.
+                {t.card2Desc}
               </p>
             </div>
 
@@ -130,8 +135,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     <Activity className="w-4 h-4 text-brand-orange" />
                   </div>
                   <div>
-                    <h2 className="text-sm font-bold text-white">Motor de Decisão em Grafo</h2>
-                    <span className="text-[11px] text-text-muted">Visualizar Cadeia de Risco</span>
+                    <h2 className="text-sm font-bold text-white">{t.card3Title}</h2>
+                    <span className="text-[11px] text-text-muted">{t.card3Sub}</span>
                   </div>
                 </div>
                 <ArrowRight className="w-4 h-4 text-brand-orange" />

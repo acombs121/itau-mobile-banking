@@ -1,57 +1,18 @@
 import React, { useState } from 'react';
 import { Activity } from 'lucide-react';
 import { DecisionGraphData } from '../types/banking';
+import { Language, translations } from '../i18n/translations';
 
 interface FraudDecisionGraphProps {
   data?: DecisionGraphData;
+  currentLang: Language;
 }
 
-export const FraudDecisionGraph: React.FC<FraudDecisionGraphProps> = ({ data: _data }) => {
+export const FraudDecisionGraph: React.FC<FraudDecisionGraphProps> = ({ data: _data, currentLang }) => {
   const [selectedNode, setSelectedNode] = useState<string>('ai_guard_engine');
+  const t = translations[currentLang].graph;
 
-  const defaultNodes = [
-    {
-      id: "customer",
-      name: "Roberto Silva (Personnalité)",
-      group: "Perfil do Titular",
-      layer: "Input",
-      color: "#FF6423",
-      details: "Score de Crédito: 980 • Dispositivo Confiável: iPhone 16 Pro • Biometria Facial Registrada"
-    },
-    {
-      id: "anomaly_event",
-      name: "Tentativa Pix R$ 4.200,00",
-      group: "Evento Suspeito",
-      layer: "Input",
-      color: "#E11D48",
-      details: "Destinatário 'Eletro Tech SP' sem histórico prévio • IP de origem localizado em VPN internacional"
-    },
-    {
-      id: "bacen_med_policy",
-      name: "Regulação BACEN MED (Res. 147)",
-      group: "Diretriz Regulatória",
-      layer: "Policy",
-      color: "#003399",
-      details: "Mecanismo Especial de Devolução obrigatório para contenção cautelar imediata de ativos"
-    },
-    {
-      id: "ai_guard_engine",
-      name: "Motor de Decisão Itaú Guard AI",
-      group: "Processamento IA",
-      layer: "Decision",
-      color: "#070707",
-      details: "Pontuação de Risco: 94/100 • Bloqueio Preventivo em 180ms • Notificação por Voz Disparada"
-    },
-    {
-      id: "action_output",
-      name: "Ativos Retidos & Token Virtual Seguro",
-      group: "Ação de Salvaguarda",
-      layer: "Output",
-      color: "#059669",
-      details: "Saldo preservado na conta corrente • Notificação entregue no app mobile do cliente"
-    }
-  ];
-
+  const defaultNodes = t.nodes;
   const activeNode = defaultNodes.find(n => n.id === selectedNode) || defaultNodes[3];
 
   return (
@@ -64,12 +25,12 @@ export const FraudDecisionGraph: React.FC<FraudDecisionGraphProps> = ({ data: _d
             <Activity className="w-5 h-5 text-brand-orange" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-text-main">Grafo de Raciocínio & Decisão de Fraude</h2>
-            <p className="text-xs text-text-muted">Visualização determinística da cadeia de verificação e políticas ativas</p>
+            <h2 className="text-xl font-bold text-text-main">{t.title}</h2>
+            <p className="text-xs text-text-muted">{t.subtitle}</p>
           </div>
         </div>
         <span className="text-xs font-mono bg-slate-100 text-slate-700 px-2.5 py-1 rounded-[4px] border border-slate-300">
-          Cypher / Property Graph
+          {t.badge}
         </span>
       </div>
 
@@ -105,13 +66,13 @@ export const FraudDecisionGraph: React.FC<FraudDecisionGraphProps> = ({ data: _d
             <span className="w-3 h-3 rounded-full" style={{ backgroundColor: activeNode.color }}></span>
             <h3 className="text-sm font-bold text-white">{activeNode.name}</h3>
             <span className="text-xs text-brand-orange font-mono bg-brand-orange/10 px-2 py-0.5 rounded-[4px] border border-brand-orange/30">
-              Camada: {activeNode.layer}
+              {t.layer}: {activeNode.layer}
             </span>
           </div>
           <span className="text-xs text-slate-400 font-mono">ID: {activeNode.id}</span>
         </div>
         <p className="text-xs text-slate-300 leading-relaxed font-sans">
-          <strong>Diagnóstico & Telemetria:</strong> {activeNode.details}
+          <strong>{t.detailsLabel}</strong> {activeNode.details}
         </p>
       </div>
 

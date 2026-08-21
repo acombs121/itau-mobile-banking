@@ -1,14 +1,12 @@
 import React from 'react';
+import { Language, translations } from '../i18n/translations';
 
-export const TickerRibbon: React.FC = () => {
-  const tickerItems = [
-    { label: "B3 IBOVESPA", val: "132.840 pts", change: "+0.84%", positive: true },
-    { label: "DÓLAR COMERCIAL (USD/BRL)", val: "R$ 5,742", change: "-0.32%", positive: false },
-    { label: "EURO (EUR/BRL)", val: "R$ 6,198", change: "+0.15%", positive: true },
-    { label: "TAXA SELIC", val: "13,25% a.a.", change: "Meta Copom", positive: true },
-    { label: "PIX EM TEMPO REAL", val: "184.200 tx/min", change: "Operação Normal", positive: true },
-    { label: "ITAÚ GUARD ANTI-FRAUDE", val: "99.98% Eficácia", change: "Proteção Ativa", positive: true },
-  ];
+interface TickerRibbonProps {
+  currentLang?: Language;
+}
+
+export const TickerRibbon: React.FC<TickerRibbonProps> = ({ currentLang = 'pt' }) => {
+  const tickerItems = translations[currentLang].ticker.items;
 
   return (
     <div className="w-full bg-[#070707] border-y border-white/10 text-xs py-2 overflow-hidden select-none">

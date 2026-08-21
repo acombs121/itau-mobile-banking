@@ -1,9 +1,11 @@
 import React from 'react';
 import { ShieldCheck, ShieldAlert, CheckCircle2 } from 'lucide-react';
 import { SecurityAlert } from '../types/banking';
+import { Language, translations } from '../i18n/translations';
 
 interface AlertsCenterProps {
   alerts: SecurityAlert[];
+  currentLang: Language;
   onActionClick: (action: string, targetId: string) => void;
   onOpenVoiceAssistant: (alertId?: string) => void;
   isProcessing?: boolean;
@@ -11,10 +13,13 @@ interface AlertsCenterProps {
 
 export const AlertsCenter: React.FC<AlertsCenterProps> = ({
   alerts,
+  currentLang,
   onActionClick,
   onOpenVoiceAssistant,
   isProcessing = false
 }) => {
+  const t = translations[currentLang].alertsCenter;
+
   return (
     <div id="alerts-feed" className="bg-white rounded-[8px] border border-[#AEAEAE]/40 shadow-sm p-6">
       
@@ -25,14 +30,14 @@ export const AlertsCenter: React.FC<AlertsCenterProps> = ({
             <ShieldAlert className="w-5 h-5 text-brand-orange" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-text-main">Central de Incidentes & Alertas de Segurança</h2>
-            <p className="text-xs text-text-muted">Proteção em tempo real com regras BACEN e Inteligência Artificial</p>
+            <h2 className="text-xl font-bold text-text-main">{t.title}</h2>
+            <p className="text-xs text-text-muted">{t.subtitle}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs font-semibold px-2.5 py-1 rounded-[4px] bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-600"></span>
-            Monitoramento Ativo
+            {t.monitoringActive}
           </span>
         </div>
       </div>
@@ -66,7 +71,7 @@ export const AlertsCenter: React.FC<AlertsCenterProps> = ({
                         : 'bg-amber-500 text-white'
                     }`}
                   >
-                    {isResolved ? 'RESOLVIDO' : alert.severity}
+                    {isResolved ? t.resolvedBadge : alert.severity}
                   </span>
                   <h3 className="text-base font-bold text-text-main">{alert.title}</h3>
                 </div>
@@ -81,17 +86,17 @@ export const AlertsCenter: React.FC<AlertsCenterProps> = ({
               {/* Details Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-white/80 border border-slate-200/80 rounded-[6px] p-3 mb-4 text-xs">
                 <div>
-                  <span className="text-[11px] text-text-muted block font-medium">Valor Bloqueado:</span>
+                  <span className="text-[11px] text-text-muted block font-medium">{t.blockedAmount}</span>
                   <span className="font-bold font-mono text-slate-900">
                     {alert.amount_brl ? `R$ ${alert.amount_brl.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : 'N/A'}
                   </span>
                 </div>
                 <div>
-                  <span className="text-[11px] text-text-muted block font-medium">Destinatário Suspeito:</span>
+                  <span className="text-[11px] text-text-muted block font-medium">{t.suspectRecipient}</span>
                   <span className="font-bold text-slate-900 truncate block">{alert.recipient || 'Regra de Horário Noturno'}</span>
                 </div>
                 <div>
-                  <span className="text-[11px] text-text-muted block font-medium">Score de Risco IA:</span>
+                  <span className="text-[11px] text-text-muted block font-medium">{t.aiRiskScore}</span>
                   <span className={`font-bold font-mono ${alert.risk_score > 70 ? 'text-rose-600' : 'text-amber-600'}`}>
                     {alert.risk_score} / 100
                   </span>
@@ -101,7 +106,7 @@ export const AlertsCenter: React.FC<AlertsCenterProps> = ({
               {/* Actions Footer */}
               <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-200">
                 <div className="text-[11px] text-slate-600 font-medium">
-                  <strong>Diretriz:</strong> {alert.policy_matched}
+                  <strong>{t.directive}</strong> {alert.policy_matched}
                 </div>
 
                 {!isResolved ? (
@@ -111,7 +116,7 @@ export const AlertsCenter: React.FC<AlertsCenterProps> = ({
                       className="bg-hero-bg hover:bg-black text-white text-xs font-bold px-3 py-1.5 rounded-[4px] flex items-center gap-1.5 transition-all"
                     >
                       <ShieldCheck className="w-3.5 h-3.5 text-brand-orange" />
-                      Discutir com Itaú Guard AI
+                      {t.discussWithAi}
                     </button>
 
                     {isCritical && (
@@ -120,7 +125,7 @@ export const AlertsCenter: React.FC<AlertsCenterProps> = ({
                         disabled={isProcessing}
                         className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-3 py-1.5 rounded-[4px] transition-all"
                       >
-                        Bloquear Definitivamente
+                        {t.blockPermanently}
                       </button>
                     )}
 
@@ -129,13 +134,13 @@ export const AlertsCenter: React.FC<AlertsCenterProps> = ({
                       disabled={isProcessing}
                       className="bg-white border border-slate-300 hover:bg-slate-100 text-slate-800 text-xs font-semibold px-3 py-1.5 rounded-[4px] transition-all"
                     >
-                      Autorizar Transação
+                      {t.authorizeTx}
                     </button>
                   </div>
                 ) : (
                   <span className="text-xs font-bold text-emerald-700 flex items-center gap-1">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                    Ação confirmada e registrada com sucesso
+                    {t.actionConfirmed}
                   </span>
                 )}
               </div>

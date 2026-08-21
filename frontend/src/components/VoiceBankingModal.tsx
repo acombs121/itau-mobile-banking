@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { X, Mic, MicOff, Send, ShieldCheck, Loader2, AlertTriangle } from 'lucide-react';
 import { SecurityAlert } from '../types/banking';
+import { Language, translations } from '../i18n/translations';
 
 interface VoiceBankingModalProps {
   isOpen: boolean;
   onClose: () => void;
   alertContext?: SecurityAlert | null;
+  currentLang: Language;
   onActionClick?: (action: string, targetId: string) => void;
 }
 
@@ -13,15 +15,17 @@ export const VoiceBankingModal: React.FC<VoiceBankingModalProps> = ({
   isOpen,
   onClose,
   alertContext,
+  currentLang,
   onActionClick: _onActionClick
 }) => {
+  const t = translations[currentLang].modal;
   const [isRecording, setIsRecording] = useState(false);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState<Array<{ sender: 'user' | 'agent'; text: string }>>([
     {
       sender: 'agent',
-      text: 'Olá Roberto. Sou o Itaú Guard AI. Identificamos uma tentativa de transferência Pix suspeita de R$ 4.200,00 para "Eletro Tech SP" com anomalia de geolocalização e uso de proxy no exterior. O valor foi retido preventivamente. Como posso ajudá-lo?'
+      text: t.initialGreeting
     }
   ]);
 
@@ -57,7 +61,9 @@ export const VoiceBankingModal: React.FC<VoiceBankingModalProps> = ({
         ...prev,
         {
           sender: 'agent',
-          text: 'Compreendido. Com base no seu comando, confirmo que o valor de R$ 4.200,00 permanece retido na sua conta e a chave Pix suspeita foi reportada preventivamente ao Mecanismo Especial de Devolução (MED) do Banco Central.'
+          text: currentLang === 'en'
+            ? 'Understood. Based on your instruction, the R$ 4,200.00 funds remain safely retained in your account, and the suspicious Pix key has been flagged under Central Bank Special Return Mechanism (MED) directives.'
+            : 'Compreendido. Com base no seu comando, confirmo que o valor de R$ 4.200,00 permanece retido na sua conta e a chave Pix suspeita foi reportada preventivamente ao Mecanismo Especial de Devolução (MED) do Banco Central.'
         }
       ]);
     } finally {
@@ -81,12 +87,12 @@ export const VoiceBankingModal: React.FC<VoiceBankingModalProps> = ({
             </div>
             <div>
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                Itaú Guard AI — Concierge de Segurança
-                <span className="text-[10px] text-brand-orange bg-brand-orange/10 px-1.5 py-0.5 rounded border border-brand-orange/30">
+                {t.title}
+                <span className="text-[10px] text-brand-orange bg-brand-orange/10 px-1.5 py-0.5 rounded border border-brand-orange/30 font-mono">
                   Gemini 3.7
                 </span>
               </h3>
-              <span className="text-[11px] text-text-muted">Atendimento por Voz & Linguagem Natural</span>
+              <span className="text-[11px] text-text-muted">{t.subtitle}</span>
             </div>
           </div>
           <button
@@ -102,7 +108,7 @@ export const VoiceBankingModal: React.FC<VoiceBankingModalProps> = ({
           <div className="bg-rose-50 border-b border-rose-200 px-5 py-2.5 flex items-center justify-between text-xs">
             <div className="flex items-center gap-2 text-rose-800 font-medium">
               <AlertTriangle className="w-4 h-4 text-rose-600 flex-shrink-0" />
-              <span>Incidente Selecionado: <strong>{alertContext.title}</strong></span>
+              <span>{t.incidentContext} <strong>{alertContext.title}</strong></span>
             </div>
             <span className="font-mono font-bold text-rose-700">R$ 4.200,00</span>
           </div>
@@ -131,7 +137,7 @@ export const VoiceBankingModal: React.FC<VoiceBankingModalProps> = ({
             <div className="flex justify-start">
               <div className="bg-white border border-slate-200 rounded-[8px] p-3 text-xs text-slate-500 flex items-center gap-2">
                 <Loader2 className="w-3.5 h-3.5 animate-spin text-brand-orange" />
-                <span>Itaú Guard AI está analisando os dados...</span>
+                <span>{t.analyzing}</span>
               </div>
             </div>
           )}
@@ -140,16 +146,16 @@ export const VoiceBankingModal: React.FC<VoiceBankingModalProps> = ({
         {/* Quick Suggested Prompts */}
         <div className="px-5 py-2 bg-white border-t border-slate-200 flex flex-wrap gap-2">
           <button
-            onClick={() => handleQuickAction("Não reconheço essa compra. Por favor, cancele a transferência e bloqueie meu cartão.")}
+            onClick={() => handleQuickAction(t.quickPrompt1)}
             className="text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-800 px-2.5 py-1 rounded-[4px] border border-slate-300 transition-colors"
           >
-            "Não reconheço essa compra. Cancele e bloqueie o cartão."
+            "{t.quickPrompt1}"
           </button>
           <button
-            onClick={() => handleQuickAction("Fui eu mesmo quem tentou realizar a compra. Pode liberar.")}
+            onClick={() => handleQuickAction(t.quickPrompt2)}
             className="text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-800 px-2.5 py-1 rounded-[4px] border border-slate-300 transition-colors"
           >
-            "Fui eu mesmo. Pode liberar."
+            "{t.quickPrompt2}"
           </button>
         </div>
 
@@ -172,7 +178,7 @@ export const VoiceBankingModal: React.FC<VoiceBankingModalProps> = ({
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-            placeholder="Digite ou fale com o assistente..."
+            placeholder={t.placeholder}
             className="flex-1 text-xs border border-slate-300 rounded-[4px] px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-orange"
           />
 
@@ -182,7 +188,7 @@ export const VoiceBankingModal: React.FC<VoiceBankingModalProps> = ({
             className="bg-brand-orange hover:bg-brand-orange-hover disabled:opacity-50 text-white px-4 py-2.5 rounded-[4px] text-xs font-bold flex items-center gap-1.5 transition-all"
           >
             <Send className="w-3.5 h-3.5" />
-            <span>Enviar</span>
+            <span>{t.send}</span>
           </button>
         </div>
 

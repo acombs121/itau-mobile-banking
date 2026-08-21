@@ -7,6 +7,7 @@ import { AlertsCenter } from './components/AlertsCenter';
 import { FraudDecisionGraph } from './components/FraudDecisionGraph';
 import { VoiceBankingModal } from './components/VoiceBankingModal';
 import { BankingProfile, SecurityAlert } from './types/banking';
+import { Language, translations } from './i18n/translations';
 import { Smartphone } from 'lucide-react';
 
 const INITIAL_PROFILE: BankingProfile = {
@@ -100,11 +101,14 @@ const INITIAL_ALERTS: SecurityAlert[] = [
 ];
 
 export function App() {
+  const [currentLang, setCurrentLang] = useState<Language>('pt');
   const [profile, setProfile] = useState<BankingProfile>(INITIAL_PROFILE);
   const [alerts, setAlerts] = useState<SecurityAlert[]>(INITIAL_ALERTS);
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
   const [selectedAlertContext, setSelectedAlertContext] = useState<SecurityAlert | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  const t = translations[currentLang];
 
   useEffect(() => {
     const fetchData = async () => {
@@ -185,19 +189,22 @@ export function App() {
   return (
     <div className="min-h-screen bg-body-bg flex flex-col font-sans">
       
-      {/* Top Header */}
+      {/* Top Header with Language Toggle */}
       <Header
         customerName={profile.customer_name}
         segment={profile.segment}
         activeAlertsCount={alerts.filter(a => a.status === 'held_pending_confirmation').length}
+        currentLang={currentLang}
+        onToggleLang={setCurrentLang}
         onOpenVoiceAssistant={() => handleOpenVoice()}
       />
 
       {/* Live Financial & Security Ticker */}
-      <TickerRibbon />
+      <TickerRibbon currentLang={currentLang} />
 
       {/* High-Contrast Hero Section (DESIGN.md Spec) */}
       <HeroSection
+        currentLang={currentLang}
         onTriggerVoiceModal={() => handleOpenVoice()}
         onScrollToMobileApp={scrollToMobileApp}
         onScrollToGraph={scrollToGraph}
@@ -214,17 +221,18 @@ export function App() {
               <div className="flex items-center gap-2">
                 <Smartphone className="w-4 h-4 text-brand-orange" />
                 <span className="text-xs font-bold uppercase tracking-wider text-text-muted">
-                  Simulador de Aplicativo Mobile
+                  {t.mobile.simulatorTitle}
                 </span>
               </div>
               <span className="text-[11px] font-mono text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-[4px] border border-emerald-200">
-                Sessão Segura
+                {t.mobile.secureSession}
               </span>
             </div>
 
             <MobilePhoneShell
               profile={profile}
               alerts={alerts}
+              currentLang={currentLang}
               onOpenVoiceAssistant={() => handleOpenVoice()}
               onActionClick={handleAction}
             />
@@ -236,13 +244,14 @@ export function App() {
             {/* Proactive Incident & Alerts Feed */}
             <AlertsCenter
               alerts={alerts}
+              currentLang={currentLang}
               onActionClick={handleAction}
               onOpenVoiceAssistant={handleOpenVoice}
               isProcessing={isProcessing}
             />
 
             {/* Visual Reasoning Decision Graph */}
-            <FraudDecisionGraph />
+            <FraudDecisionGraph currentLang={currentLang} />
 
           </div>
 
@@ -255,6 +264,7 @@ export function App() {
         isOpen={isVoiceModalOpen}
         onClose={() => setIsVoiceModalOpen(false)}
         alertContext={selectedAlertContext}
+        currentLang={currentLang}
         onActionClick={handleAction}
       />
 
@@ -263,10 +273,10 @@ export function App() {
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <span className="bg-brand-orange text-white font-bold text-[10px] px-1.5 py-0.5 rounded-[2px]">itau</span>
-            <span className="text-white font-medium">Banco Itaú Unibanco S.A.</span>
+            <span className="text-white font-medium">{t.footer.brand}</span>
           </div>
           <p className="text-text-muted text-[11px]">
-            Protegido por Itaú Guard AI & Gemini Enterprise Agent Platform (fka Vertex AI Platform)
+            {t.footer.tagline}
           </p>
         </div>
       </footer>
