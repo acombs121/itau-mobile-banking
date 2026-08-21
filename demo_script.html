@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Banco Itaú — Executive AI Demo Script: Autonomous Travel & Wealth Operations</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              orange: '#FF6423',
+              'orange-hover': '#D2531C',
+              dark: '#070707',
+              charcoal: '#121215',
+              surface: '#18181C',
+              border: 'rgba(255, 255, 255, 0.08)',
+              itauBlue: '#003399',
+            }
+          },
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+            mono: ['"SF Mono"', 'Monaco', 'Consolas', '"Liberation Mono"', '"Courier New"', 'monospace']
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      background-color: #0d0d10;
+      color: #f3f4f6;
+      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 3px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-brand-orange selection:text-white">
+
+  <!-- Top Header Bar -->
+  <header class="w-full h-16 border-b border-white/[0.08] bg-[#121215]/90 backdrop-blur-md sticky top-0 z-50 px-6 sm:px-12 flex items-center justify-between">
+    <div class="flex items-center gap-3.5">
+      <div class="bg-brand-orange text-white font-extrabold text-sm px-2.5 py-1 rounded-[4px] tracking-tight">
+        itau
+      </div>
+      <div class="h-4 w-[1px] bg-white/15"></div>
+      <span class="text-sm font-semibold tracking-tight text-white/90">
+        Banco Itaú Personnalité — Executive AI Demo Script
+      </span>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex items-center gap-3">
+      <a href="/scenarios.html" class="px-3 py-1.5 text-xs font-semibold rounded-[4px] border border-white/10 bg-white/5 hover:bg-white/10 text-white/80 transition-colors">
+        View Scenarios Matrix
+      </a>
+      <a href="/" class="px-3.5 py-1.5 text-xs font-semibold rounded-[4px] bg-brand-orange hover:bg-brand-orange-hover text-white transition-colors flex items-center gap-1.5 shadow-sm">
+        <span>Launch Cockpit App &rarr;</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Hero Header -->
+  <section class="max-w-5xl w-full mx-auto px-6 pt-10 pb-8">
+    <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full border border-brand-orange/30 bg-brand-orange/10 text-brand-orange text-xs font-medium mb-4">
+      <span class="w-1.5 h-1.5 rounded-full bg-brand-orange animate-pulse"></span>
+      Live Multimodal Demo Script • Gemini Live Web Audio & Sub-Agent Cockpit
+    </div>
+    <h1 class="text-2xl sm:text-4xl font-bold tracking-tight text-white mb-3">
+      Autonomous Banking Demo Narrative: The Travel & Liquidity Journey
+    </h1>
+    <p class="text-sm sm:text-base text-white/60 max-w-3xl leading-relaxed">
+      A step-by-step presentation script designed for C-level executive audiences. Demonstrates a seamless voice-first interaction with <strong class="text-white">Itaú Guard AI</strong> covering <strong class="text-white">predictive cash flow forecasting</strong>, <strong class="text-white">intelligent travel shielding</strong>, and <strong class="text-white">autonomous Open Finance debt refinancing</strong>.
+    </p>
+
+    <!-- Narrative Quick-Facts -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
+      <div class="bg-[#16161A] border border-white/[0.06] rounded-[8px] p-4">
+        <span class="text-[10px] font-mono uppercase text-white/40">Primary Persona</span>
+        <div class="text-sm font-bold text-white mt-1">Roberto Silva (Personnalité)</div>
+        <div class="text-xs text-white/50 mt-0.5">High Net Worth • Checking + CDB DI</div>
+      </div>
+      <div class="bg-[#16161A] border border-white/[0.06] rounded-[8px] p-4">
+        <span class="text-[10px] font-mono uppercase text-white/40">AI Interaction Mode</span>
+        <div class="text-sm font-bold text-white mt-1">Gemini Live Bidirectional Audio</div>
+        <div class="text-xs text-brand-orange mt-0.5">Real-Time Sub-Agent Telemetry</div>
+      </div>
+      <div class="bg-[#16161A] border border-white/[0.06] rounded-[8px] p-4">
+        <span class="text-[10px] font-mono uppercase text-white/40">Total Executed Savings</span>
+        <div class="text-sm font-bold text-emerald-400 mt-1">R$ 14,280.00 Saved</div>
+        <div class="text-xs text-white/50 mt-0.5">Zero Overdraft + Open Finance Portability</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Demo Script Timeline -->
+  <main class="max-w-5xl w-full mx-auto px-6 pb-20 space-y-10 flex-1">
+
+    <!-- SETUP & HOOK -->
+    <div class="bg-[#121215] border border-white/[0.08] rounded-[12px] p-6">
+      <div class="flex items-center gap-3 mb-3">
+        <span class="px-2 py-0.5 text-[10px] font-mono font-bold rounded bg-white/10 text-white">STAGE 0</span>
+        <h2 class="text-base font-bold text-white">Presenter Setup & Audience Hook (30 Seconds)</h2>
+      </div>
+      <p class="text-xs sm:text-sm text-white/70 leading-relaxed mb-4">
+        <strong class="text-brand-orange">Presenter Speaking Cue:</strong> 
+        <em>"Today's banking apps are passive ledgers—they tell you what happened yesterday. What if your bank had autonomous sub-agents constantly watching out for your cash flow, your security, and your interest rates in real-time? Let's look at Roberto Silva, an Itaú Personnalité client who is preparing to purchase international flights to Europe on his smartphone."</em>
+      </p>
+      <div class="p-3 bg-black/40 border border-white/[0.04] rounded-[6px] text-xs font-mono text-white/60">
+        👉 Presenter action: Open the Itaú Cockpit app on the screen and tap the orange <strong class="text-brand-orange">"Call Itaú Guard AI"</strong> button.
+      </div>
+    </div>
+
+    <!-- ACT 1: PREDICTIVE BALANCE FORECASTING & OVERDRAFT PREEMPTION -->
+    <section class="bg-[#16161A] border border-white/[0.08] rounded-[14px] p-6 sm:p-8 relative overflow-hidden shadow-2xl">
+      <div class="flex items-center justify-between pb-4 border-b border-white/[0.06] mb-6">
+        <div class="flex items-center gap-3">
+          <span class="w-8 h-8 rounded-full bg-brand-orange/20 text-brand-orange font-bold text-xs flex items-center justify-center">
+            01
+          </span>
+          <div>
+            <span class="text-[10px] font-mono uppercase tracking-wider text-brand-orange font-bold">Act 1 • Predictive Balance Forecasting</span>
+            <h2 class="text-lg font-bold text-white">Overdraft (LIS) Preemption & Automated Cash Sweeping</h2>
+          </div>
+        </div>
+        <span class="px-2.5 py-1 text-[11px] font-mono rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          CASH_FLOW_FORECAST_AGENT
+        </span>
+      </div>
+
+      <!-- Dialogue Block -->
+      <div class="space-y-4 text-xs sm:text-sm">
+        
+        <!-- User Bubble -->
+        <div class="flex items-start gap-3">
+          <div class="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center font-bold text-xs flex-shrink-0 text-white">
+            RS
+          </div>
+          <div class="flex-1 bg-white/[0.04] border border-white/[0.08] rounded-2xl rounded-tl-none p-4 text-white/90">
+            <div class="text-[10px] font-mono text-white/40 mb-1 font-semibold">ROBERTO (VOICE INPUT):</div>
+            <p class="leading-relaxed">
+              "Hey Itaú Guard, I'm about to buy two international business class tickets to Lisbon for <strong>R$ 24,000</strong>. Can you check my checking balance and make sure my scheduled payments next week will clear without any issues?"
+            </p>
+          </div>
+        </div>
+
+        <!-- Orchestrator Behind the Scenes Box -->
+        <div class="my-2 p-3 bg-black/50 border-l-2 border-brand-orange rounded-r-[6px] font-mono text-[11px] text-white/70">
+          <div class="text-brand-orange font-bold mb-1">⚡ SUB-AGENT EXECUTION (180ms):</div>
+          <div>1. <code class="text-white">CashFlowForecastAgent</code> analyzes D+7 bills: checking balance (R$ 48,950) - Tickets (R$ 24,000) - Condominium Pix (R$ 3,850) - Mastercard Black Bill (R$ 34,150) = <strong class="text-rose-400">-R$ 13,050.00 Overdraft Shortfall on Thursday</strong>.</div>
+          <div>2. <code class="text-white">TreasuryYieldAgent</code> locates R$ 85,000 in <code class="text-emerald-400">CDB DI Liquidez Diária</code> earning 100% CDI. Calculates optimal transfer date for Thursday morning to maximize daily compounding.</div>
+        </div>
+
+        <!-- AI Concierge Response Bubble -->
+        <div class="flex items-start gap-3">
+          <div class="w-7 h-7 rounded-full bg-brand-orange flex items-center justify-center font-bold text-[10px] flex-shrink-0 text-white shadow-sm">
+            AI
+          </div>
+          <div class="flex-1 bg-brand-orange/[0.08] border border-brand-orange/30 rounded-2xl rounded-tl-none p-4 text-white">
+            <div class="text-[10px] font-mono text-brand-orange mb-1 font-bold">ITAÚ GUARD AI (SPOKEN AUDIO):</div>
+            <p class="leading-relaxed">
+              "Hello Roberto. You currently have R$ 48,950 available in checking. However, if you purchase the tickets today, your scheduled credit card bill and condominium Pix next Thursday will result in a <strong>shortfall of R$ 13,050</strong>, entering high-interest overdraft.
+              <br/><br/>
+              I see you have R$ 85,000 in your <em>Daily Liquidity CDB</em>. Would you like me to schedule an automatic transfer of <strong>R$ 15,000</strong> on Thursday morning? This ensures your funds remain earning full CDI until the exact moment they are needed."
+            </p>
+          </div>
+        </div>
+
+        <!-- User Confirmation -->
+        <div class="flex items-start gap-3">
+          <div class="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center font-bold text-xs flex-shrink-0 text-white">
+            RS
+          </div>
+          <div class="flex-1 bg-white/[0.04] border border-white/[0.08] rounded-2xl rounded-tl-none p-3.5 text-white/90">
+            <div class="text-[10px] font-mono text-white/40 mb-1 font-semibold">ROBERTO (CONFIRMATION):</div>
+            <p class="leading-relaxed">
+              "Yes, please schedule that rebalance for Thursday morning."
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Live UI Feedback in Demo Cockpit -->
+      <div class="mt-5 p-3.5 bg-black/40 border border-white/[0.06] rounded-[8px] flex items-center justify-between text-xs">
+        <span class="text-white/60">Cockpit Visual State:</span>
+        <span class="text-emerald-400 font-mono font-medium">Action Logged: "CDB Sweep Scheduled for Thursday (R$ 15,000.00)"</span>
+      </div>
+    </section>
+
+
+    <!-- ACT 2: PROACTIVE TRAVEL NOTICE & INTELLIGENT CARD SHIELDING -->
+    <section class="bg-[#16161A] border border-white/[0.08] rounded-[14px] p-6 sm:p-8 relative overflow-hidden shadow-2xl">
+      <div class="flex items-center justify-between pb-4 border-b border-white/[0.06] mb-6">
+        <div class="flex items-center gap-3">
+          <span class="w-8 h-8 rounded-full bg-brand-orange/20 text-brand-orange font-bold text-xs flex items-center justify-center">
+            02
+          </span>
+          <div>
+            <span class="text-[10px] font-mono uppercase tracking-wider text-brand-orange font-bold">Act 2 • Intelligent Travel Shielding</span>
+            <h2 class="text-lg font-bold text-white">Seamless International Travel Mode & Limit Protection</h2>
+          </div>
+        </div>
+        <span class="px-2.5 py-1 text-[11px] font-mono rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
+          TRAVEL_SHIELD_AGENT
+        </span>
+      </div>
+
+      <!-- Dialogue Block -->
+      <div class="space-y-4 text-xs sm:text-sm">
+        
+        <!-- User Bubble -->
+        <div class="flex items-start gap-3">
+          <div class="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center font-bold text-xs flex-shrink-0 text-white">
+            RS
+          </div>
+          <div class="flex-1 bg-white/[0.04] border border-white/[0.08] rounded-2xl rounded-tl-none p-4 text-white/90">
+            <div class="text-[10px] font-mono text-white/40 mb-1 font-semibold">ROBERTO (VOICE INPUT):</div>
+            <p class="leading-relaxed">
+              "Thanks! Also, we will be traveling in Portugal and Spain for the next two weeks. Can you make sure my Mastercard Black doesn't get declined or flagged when we use it abroad?"
+            </p>
+          </div>
+        </div>
+
+        <!-- Orchestrator Behind the Scenes Box -->
+        <div class="my-2 p-3 bg-black/50 border-l-2 border-amber-500 rounded-r-[6px] font-mono text-[11px] text-white/70">
+          <div class="text-amber-400 font-bold mb-1">⚡ SUB-AGENT EXECUTION (120ms):</div>
+          <div>1. <code class="text-white">TravelShieldAgent</code> registers active travel notice for Portugal and Spain across Visa/Mastercard network authorizers.</div>
+          <div>2. Elevates daily international POS limit to <code class="text-emerald-400">R$ 50,000.00</code>.</div>
+          <div>3. Pre-suppresses false-positive fraud declines at foreign airport and hotel terminals.</div>
+          <div>4. Confirms active policy enrollment for complimentary <strong class="text-white">Mastercard Black Comprehensive Travel Health Insurance</strong>.</div>
+        </div>
+
+        <!-- AI Concierge Response Bubble -->
+        <div class="flex items-start gap-3">
+          <div class="w-7 h-7 rounded-full bg-brand-orange flex items-center justify-center font-bold text-[10px] flex-shrink-0 text-white shadow-sm">
+            AI
+          </div>
+          <div class="flex-1 bg-brand-orange/[0.08] border border-brand-orange/30 rounded-2xl rounded-tl-none p-4 text-white">
+            <div class="text-[10px] font-mono text-brand-orange mb-1 font-bold">ITAÚ GUARD AI (SPOKEN AUDIO):</div>
+            <p class="leading-relaxed">
+              "All set, Roberto! I have activated <strong>Travel Shielding for Portugal and Spain</strong> on your Mastercard Black ending in 8841.
+              <br/><br/>
+              I also increased your international daily spend limit to R$ 50,000 and verified that your complimentary Mastercard Black travel medical insurance is fully active for you and your companion. You're ready to travel with zero merchant friction."
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Live UI Feedback in Demo Cockpit -->
+      <div class="mt-5 p-3.5 bg-black/40 border border-white/[0.06] rounded-[8px] flex items-center justify-between text-xs">
+        <span class="text-white/60">Cockpit Visual State:</span>
+        <span class="text-amber-400 font-mono font-medium">Notification: "Travel Notice Activated: Portugal & Spain (Limits Elevated)"</span>
+      </div>
+    </section>
+
+
+    <!-- ACT 3: AUTONOMOUS OPEN FINANCE DEBT OPTIMIZATION -->
+    <section class="bg-[#16161A] border border-white/[0.08] rounded-[14px] p-6 sm:p-8 relative overflow-hidden shadow-2xl">
+      <div class="flex items-center justify-between pb-4 border-b border-white/[0.06] mb-6">
+        <div class="flex items-center gap-3">
+          <span class="w-8 h-8 rounded-full bg-brand-orange/20 text-brand-orange font-bold text-xs flex items-center justify-center">
+            03
+          </span>
+          <div>
+            <span class="text-[10px] font-mono uppercase tracking-wider text-brand-orange font-bold">Act 3 • Proactive Open Finance Optimization</span>
+            <h2 class="text-lg font-bold text-white">Autonomous High-Interest Debt Refinancing</h2>
+          </div>
+        </div>
+        <span class="px-2.5 py-1 text-[11px] font-mono rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
+          OPEN_FINANCE_OPTIMIZER
+        </span>
+      </div>
+
+      <!-- Dialogue Block -->
+      <div class="space-y-4 text-xs sm:text-sm">
+        
+        <!-- AI Proactive Interjection Bubble -->
+        <div class="flex items-start gap-3">
+          <div class="w-7 h-7 rounded-full bg-brand-orange flex items-center justify-center font-bold text-[10px] flex-shrink-0 text-white shadow-sm">
+            AI
+          </div>
+          <div class="flex-1 bg-brand-orange/[0.08] border border-brand-orange/30 rounded-2xl rounded-tl-none p-4 text-white">
+            <div class="text-[10px] font-mono text-brand-orange mb-1 font-bold">ITAÚ GUARD AI (PROACTIVE CONVERSATIONAL INTERJECTION):</div>
+            <p class="leading-relaxed">
+              "Roberto, while reviewing your connected Open Finance portfolio for your trip, I noticed an important financial optimization.
+              <br/><br/>
+              You have an outstanding revolving credit balance of <strong>R$ 18,000</strong> at Competitor Bank charging <strong>11.2% per month</strong>. Because of your Personnalité relationship tier, you have a pre-approved <em>Itaú Sob Medida</em> consolidation rate of just <strong>1.69% per month</strong>.
+              <br/><br/>
+              Refinancing this will save you <strong>R$ 680.40 every month</strong>—a total of <strong>R$ 14,280 in avoided interest</strong>. Would you like me to issue the digital contract and pay off that external balance directly via interbank settlement?"
+            </p>
+          </div>
+        </div>
+
+        <!-- User Bubble -->
+        <div class="flex items-start gap-3">
+          <div class="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center font-bold text-xs flex-shrink-0 text-white">
+            RS
+          </div>
+          <div class="flex-1 bg-white/[0.04] border border-white/[0.08] rounded-2xl rounded-tl-none p-4 text-white/90">
+            <div class="text-[10px] font-mono text-white/40 mb-1 font-semibold">ROBERTO (VOICE INPUT):</div>
+            <p class="leading-relaxed">
+              "That is a huge savings. Yes, please execute the refinance and close that debt."
+            </p>
+          </div>
+        </div>
+
+        <!-- Orchestrator Behind the Scenes Box -->
+        <div class="my-2 p-3 bg-black/50 border-l-2 border-blue-500 rounded-r-[6px] font-mono text-[11px] text-white/70">
+          <div class="text-blue-400 font-bold mb-1">⚡ SUB-AGENT EXECUTION (250ms):</div>
+          <div>1. <code class="text-white">OpenFinanceOptimizer</code> generates digital CCB (<em>Cédula de Crédito Bancário</em>) under Law 10.931/2004.</div>
+          <div>2. Dispatches interbank payoff order over CIP/STR settlement rails to pay off external competitor loan.</div>
+          <div>3. Logs explainable underwriting decision under <strong class="text-white">LGPD Art. 20</strong> in the bank's regulatory audit log.</div>
+        </div>
+
+        <!-- AI Concierge Final Confirmation -->
+        <div class="flex items-start gap-3">
+          <div class="w-7 h-7 rounded-full bg-brand-orange flex items-center justify-center font-bold text-[10px] flex-shrink-0 text-white shadow-sm">
+            AI
+          </div>
+          <div class="flex-1 bg-brand-orange/[0.08] border border-brand-orange/30 rounded-2xl rounded-tl-none p-4 text-white">
+            <div class="text-[10px] font-mono text-brand-orange mb-1 font-bold">ITAÚ GUARD AI (CLOSING SPOKEN AUDIO):</div>
+            <p class="leading-relaxed">
+              "The digital CCB has been signed and registered. R$ 18,000 has been transferred to settle your external balance in full. Your new monthly installment is locked at R$ 560, saving you R$ 14,280 overall. Have a wonderful and safe trip to Europe!"
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Live UI Feedback in Demo Cockpit -->
+      <div class="mt-5 p-3.5 bg-black/40 border border-white/[0.06] rounded-[8px] flex items-center justify-between text-xs">
+        <span class="text-white/50">Cockpit Visual State:</span>
+        <span class="text-blue-400 font-mono font-medium">Safeguard Plan: "CCB Portability Executed — R$ 14,280 Saved"</span>
+      </div>
+    </section>
+
+    <!-- EXECUTIVE WRAP-UP & TAKEAWAYS -->
+    <section class="bg-[#121215] border border-white/[0.08] rounded-[12px] p-6 sm:p-8">
+      <h2 class="text-base sm:text-lg font-bold text-white mb-2">Executive Summary & Demonstration Takeaways</h2>
+      <p class="text-xs sm:text-sm text-white/60 mb-6 leading-relaxed">
+        Why this demonstration resonates powerfully with bank executives, Chief Risk Officers (CRO), and digital transformation leaders:
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs leading-relaxed">
+        <div class="p-4 bg-white/[0.02] border border-white/[0.06] rounded-[8px]">
+          <div class="text-brand-orange font-bold text-sm mb-1.5">1. Proactive Value vs Reactive Chat</div>
+          <p class="text-white/70">
+            The AI doesn't wait to be asked. It calculates future cash shortfalls and monitors external Open Finance telemetry to protect the customer before fees or friction happen.
+          </p>
+        </div>
+        <div class="p-4 bg-white/[0.02] border border-white/[0.06] rounded-[8px]">
+          <div class="text-emerald-400 font-bold text-sm mb-1.5">2. Deterministic Financial Safety</div>
+          <p class="text-white/70">
+            LLMs generate the natural conversational voice, but all financial actions (CDB sweeps, travel limit elevations, CCB loan contracts) are executed deterministically through governed sub-agents.
+          </p>
+        </div>
+        <div class="p-4 bg-white/[0.02] border border-white/[0.06] rounded-[8px]">
+          <div class="text-blue-400 font-bold text-sm mb-1.5">3. Multi-Million Dollar Balance Retention</div>
+          <p class="text-white/70">
+            By capturing high-interest external loans and consolidating them into Itaú Personnalité, the bank gains loan book volume while delivering substantial verified savings to the client.
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-white/[0.08] bg-[#0d0d10] py-8 text-center text-xs text-white/40">
+    <div class="max-w-5xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2">
+        <span class="bg-brand-orange text-white text-[10px] font-bold px-1.5 py-0.5 rounded-[2px]">itau</span>
+        <span>Banco Itaú Unibanco S.A. • Gemini Enterprise Agent Platform</span>
+      </div>
+      <div class="font-mono text-[11px]">
+        Executive Demo Playbook
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
