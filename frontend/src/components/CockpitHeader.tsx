@@ -47,12 +47,12 @@ export const CockpitHeader: React.FC<CockpitHeaderProps> = ({
         </span>
       </div>
 
-      {/* Right Controls */}
+      {/* Right Controls - Unified Exact Height (h-8 / 32px) */}
       <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
         
-        {/* Language Switcher */}
+        {/* Language Switcher - Exact h-8 (32px) */}
         <div
-          className={`flex items-center rounded-[3px] p-0.5 border transition-colors ${
+          className={`h-8 flex items-center rounded-[4px] p-0.5 border box-border transition-colors ${
             isDark
               ? 'bg-black/40 border-white/10'
               : 'bg-slate-100 border-slate-200'
@@ -60,10 +60,10 @@ export const CockpitHeader: React.FC<CockpitHeaderProps> = ({
         >
           <button
             onClick={() => onToggleLang('pt')}
-            className={`w-7 py-0.5 text-[11px] font-medium rounded-[2px] text-center transition-colors ${
+            className={`w-7 h-full text-[11px] font-medium rounded-[3px] flex items-center justify-center transition-colors ${
               currentLang === 'pt'
                 ? isDark
-                  ? 'bg-white/15 text-white'
+                  ? 'bg-white/15 text-white shadow-sm'
                   : 'bg-white text-slate-900 shadow-sm font-semibold'
                 : isDark
                 ? 'text-white/40 hover:text-white/80'
@@ -74,10 +74,10 @@ export const CockpitHeader: React.FC<CockpitHeaderProps> = ({
           </button>
           <button
             onClick={() => onToggleLang('en')}
-            className={`w-7 py-0.5 text-[11px] font-medium rounded-[2px] text-center transition-colors ${
+            className={`w-7 h-full text-[11px] font-medium rounded-[3px] flex items-center justify-center transition-colors ${
               currentLang === 'en'
                 ? isDark
-                  ? 'bg-white/15 text-white'
+                  ? 'bg-white/15 text-white shadow-sm'
                   : 'bg-white text-slate-900 shadow-sm font-semibold'
                 : isDark
                 ? 'text-white/40 hover:text-white/80'
@@ -88,13 +88,13 @@ export const CockpitHeader: React.FC<CockpitHeaderProps> = ({
           </button>
         </div>
 
-        {/* Monochrome Moon / Sun Button */}
+        {/* Monochrome Moon / Sun Button - Exact h-8 (32px), w-8 (32px) */}
         <button
           onClick={onToggleTheme}
-          className={`w-8 h-8 rounded-[4px] flex items-center justify-center border flex-shrink-0 transition-colors ${
+          className={`w-8 h-8 rounded-[4px] flex items-center justify-center border box-border flex-shrink-0 transition-colors ${
             isDark
               ? 'border-white/10 text-white hover:bg-white/10'
-              : 'border-slate-300 text-black hover:bg-slate-100'
+              : 'border-slate-200 bg-white text-black hover:bg-slate-50'
           }`}
           title={isDark ? "Switch to Light Mode" : "Mudar para Modo Escuro"}
           aria-label="Toggle theme"
@@ -106,7 +106,7 @@ export const CockpitHeader: React.FC<CockpitHeaderProps> = ({
           )}
         </button>
 
-        {/* Reset */}
+        {/* Reset - Exact h-8 (32px) */}
         <button
           onClick={onReset}
           className={`h-8 px-2 text-xs flex items-center justify-center gap-1.5 transition-colors flex-shrink-0 ${
@@ -120,7 +120,7 @@ export const CockpitHeader: React.FC<CockpitHeaderProps> = ({
           <span className="hidden md:inline text-[11px]">{t.resetSession}</span>
         </button>
 
-        {/* Save */}
+        {/* Save - Exact h-8 (32px) */}
         <button
           onClick={onSaveSession}
           disabled={isSaving}
@@ -135,7 +135,7 @@ export const CockpitHeader: React.FC<CockpitHeaderProps> = ({
           <span className="hidden md:inline text-[11px]">{isSaving ? '...' : t.saveSession}</span>
         </button>
 
-        {/* Primary Call AI Trigger (Constant Fixed Width) */}
+        {/* Primary Call AI Trigger - Exact h-8 (32px) */}
         <button
           onClick={onToggleCall}
           className={`w-36 sm:w-44 h-8 px-3 rounded-[4px] text-xs font-semibold flex items-center justify-center gap-1.5 sm:gap-2 transition-all flex-shrink-0 select-none ${
