@@ -85,7 +85,8 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
     } else {
       disconnect();
     }
-  }, [isVoiceCallActive, connect, disconnect, currentLang, t.modal.initialGreeting, setTranscript]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isVoiceCallActive]);
 
   // Duration timer
   useEffect(() => {
