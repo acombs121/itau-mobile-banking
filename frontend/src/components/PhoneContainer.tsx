@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Eye, EyeOff, QrCode, ArrowUpRight, ArrowDownLeft, CreditCard, Mic, MicOff, PhoneOff, AlertCircle, Plane, Sparkles, TrendingUp, Send, Volume2, ShieldCheck } from 'lucide-react';
+import { Eye, EyeOff, QrCode, ArrowUpRight, ArrowDownLeft, CreditCard, Mic, MicOff, PhoneOff, AlertCircle, Plane, Sparkles, TrendingUp, Send, Volume2, ShieldCheck, Radio } from 'lucide-react';
 import { BankingProfile } from '../types/banking';
 import { IOSNotification, ScenarioId } from '../types/itau_concierge';
 import { Language, translations } from '../i18n/translations';
+import { useGeminiLive } from '../hooks/useGeminiLive';
 
 interface PhoneContainerProps {
   profile: BankingProfile;
@@ -35,44 +36,58 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
 }) => {
   const [showBalance, setShowBalance] = useState(true);
   const [activeNavTab, setActiveNavTab] = useState<'home' | 'extrato' | 'pix' | 'cartoes'>('home');
+  const [inputText, setInputText] = useState('');
+  const [callDuration, setCallDuration] = useState(0);
+
   const t = translations[currentLang];
   const isDark = theme === 'dark';
-
   const activeScenarioDef = t.scenarios.find(s => s.id === activeScenario) || t.scenarios[0];
   const localizedTransactions = t.phone.transactions || profile.recent_transactions;
 
-  // In-Phone Live Voice State
-  const [messages, setMessages] = useState<Array<{ role: 'assistant' | 'user'; text: string }>>([]);
-  const [inputText, setInputText] = useState('');
-  const [isListening, setIsListening] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [callDuration, setCallDuration] = useState(0);
-
-  const recognitionRef = useRef<any>(null);
   const chatBottomRef = useRef<HTMLDivElement>(null);
 
-  // Initialize or reset voice conversation when call activates
+  // Connect directly to Gemini Multimodal Live WebSocket
+  const {
+    isConnected,
+    isListening,
+    isSpeaking,
+    isProcessing,
+    transcript,
+    setTranscript,
+    audioLevels,
+    connect,
+    disconnect,
+    startMicrophone,
+    stopMicrophone,
+    sendTextQuery,
+  } = useGeminiLive({
+    lang: currentLang,
+    onToolCall: (toolName) => {
+      console.log("Executing sub-agent tool call:", toolName);
+      onActionClick(toolName);
+    },
+    onActionTriggered: (action) => {
+      onActionClick(action);
+    }
+  });
+
+  // Handle call toggle
   useEffect(() => {
     if (isVoiceCallActive) {
-      setMessages([
+      setCallDuration(0);
+      connect();
+      setTranscript([
         {
           role: 'assistant',
           text: t.modal.initialGreeting
         }
       ]);
-      setCallDuration(0);
-      speakText(t.modal.initialGreeting);
     } else {
-      stopListening();
-      if (window.speechSynthesis) {
-        window.speechSynthesis.cancel();
-      }
-      setIsSpeaking(false);
+      disconnect();
     }
-  }, [isVoiceCallActive, currentLang]);
+  }, [isVoiceCallActive, connect, disconnect, currentLang, t.modal.initialGreeting, setTranscript]);
 
-  // Call duration timer
+  // Duration timer
   useEffect(() => {
     let timer: any;
     if (isVoiceCallActive) {
@@ -88,134 +103,14 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
     if (chatBottomRef.current) {
       chatBottomRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages, isProcessing]);
+  }, [transcript, isProcessing]);
 
-  // Speech Synthesis helper
-  const speakText = (text: string) => {
-    if (!('speechSynthesis' in window)) return;
-    window.speechSynthesis.cancel();
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = currentLang === 'en' ? 'en-US' : 'pt-BR';
-    utterance.rate = 1.05;
-    utterance.pitch = 1.0;
-
-    utterance.onstart = () => setIsSpeaking(true);
-    utterance.onend = () => setIsSpeaking(false);
-    utterance.onerror = () => setIsSpeaking(false);
-
-    window.speechSynthesis.speak(utterance);
-  };
-
-  // Browser SpeechRecognition for Live Microphone
-  const startListening = () => {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert(currentLang === 'en' ? "Voice recognition not supported in this browser." : "Reconhecimento de voz não suportado neste navegador.");
-      return;
-    }
-
-    if (recognitionRef.current) {
-      recognitionRef.current.abort();
-    }
-
-    const recognition = new SpeechRecognition();
-    recognition.lang = currentLang === 'en' ? 'en-US' : 'pt-BR';
-    recognition.continuous = false;
-    recognition.interimResults = false;
-
-    recognition.onstart = () => {
-      setIsListening(true);
-      if (window.speechSynthesis) window.speechSynthesis.cancel();
-      setIsSpeaking(false);
-    };
-
-    recognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript;
-      setIsListening(false);
-      handleSendMessage(transcript);
-    };
-
-    recognition.onerror = (e: any) => {
-      console.warn("Speech recognition error:", e);
-      setIsListening(false);
-    };
-
-    recognition.onend = () => {
-      setIsListening(false);
-    };
-
-    recognitionRef.current = recognition;
-    try {
-      recognition.start();
-    } catch (err) {
-      console.error(err);
-      setIsListening(false);
-    }
-  };
-
-  const stopListening = () => {
-    if (recognitionRef.current) {
-      recognitionRef.current.abort();
-    }
-    setIsListening(false);
-  };
-
-  // Send message to backend Gemini /api/chat
-  const handleSendMessage = async (textToSend?: string) => {
-    const query = textToSend || inputText;
-    if (!query.trim()) return;
-
-    const userMsg = query.trim();
-    setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
+  const handleSend = () => {
+    if (!inputText.trim()) return;
+    sendTextQuery(inputText.trim());
     setInputText('');
-    setIsProcessing(true);
-
-    // Contextual banking action trigger based on speech
-    const queryLower = userMsg.toLowerCase();
-    if (queryLower.includes('passag') || queryLower.includes('ticket') || queryLower.includes('lisboa') || queryLower.includes('saldo') || queryLower.includes('balance') || queryLower.includes('resgate') || queryLower.includes('sweep') || queryLower.includes('cdb')) {
-      if (queryLower.includes('sim') || queryLower.includes('agenda') || queryLower.includes('yes') || queryLower.includes('schedule') || queryLower.includes('execute')) {
-        onActionClick('sweep_cdb');
-      }
-    } else if (queryLower.includes('viagem') || queryLower.includes('travel') || queryLower.includes('portugal') || queryLower.includes('espanha') || queryLower.includes('spain')) {
-      onActionClick('activate_travel_mode');
-    } else if (queryLower.includes('refinanc') || queryLower.includes('open finance') || queryLower.includes('dívida') || queryLower.includes('debt') || queryLower.includes('econom')) {
-      onActionClick('refinance_open_finance');
-    }
-
-    try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: userMsg,
-          lang: currentLang
-        })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setMessages(prev => [...prev, { role: 'assistant', text: data.reply }]);
-        speakText(data.reply);
-      } else {
-        const fallbackReply = currentLang === 'en'
-          ? "I have analyzed your request with Itaú Concierge. Your accounts, scheduled liquidity, and card limits are fully safeguarded."
-          : "Analisei sua solicitação com o Itaú Concierge. Suas contas, cronograma de liquidez e limites estão devidamente protegidos.";
-        setMessages(prev => [...prev, { role: 'assistant', text: fallbackReply }]);
-        speakText(fallbackReply);
-      }
-    } catch {
-      const fallbackReply = currentLang === 'en'
-        ? "Itaú Concierge has scheduled your D+4 liquidity rebalance and activated international travel mode."
-        : "O Itaú Concierge agendou o rebalanceamento de liquidez D+4 e ativou o modo viagem internacional.";
-      setMessages(prev => [...prev, { role: 'assistant', text: fallbackReply }]);
-      speakText(fallbackReply);
-    } finally {
-      setIsProcessing(false);
-    }
   };
 
-  // Format seconds into MM:SS
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60).toString().padStart(2, '0');
     const s = (secs % 60).toString().padStart(2, '0');
@@ -288,7 +183,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
           </div>
 
           {/* ========================================================================= */}
-          {/* VIEW A: IN-PHONE LIVE GEMINI VOICE CONCIERGE (Rendered directly in phone) */}
+          {/* VIEW A: IN-PHONE LIVE GEMINI WEBSOCKET CONCIERGE                          */}
           {/* ========================================================================= */}
           {isVoiceCallActive ? (
             <div className="flex-1 flex flex-col min-h-0 bg-[#0B0B0E] animate-fadeIn relative">
@@ -305,8 +200,8 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                       <ShieldCheck className="w-3 h-3 text-emerald-400" />
                     </div>
                     <div className="text-[10px] font-mono text-brand-orange flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-brand-orange animate-pulse"></span>
-                      <span>GEMINI LIVE • {formatTime(callDuration)}</span>
+                      <Radio className="w-2.5 h-2.5 text-emerald-400 animate-pulse" />
+                      <span>GEMINI LIVE 2.5 WS • {formatTime(callDuration)}</span>
                     </div>
                   </div>
                 </div>
@@ -323,20 +218,20 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
               {/* Glowing Waveform Live Audio Visualizer */}
               <div className="py-4 px-6 flex flex-col items-center justify-center border-b border-white/[0.06] bg-gradient-to-b from-[#14141A] to-transparent flex-shrink-0">
                 
-                {/* Visualizer Bars */}
+                {/* Visualizer Bars Reacting to PCM Audio */}
                 <div className="flex items-center justify-center gap-1.5 h-10 w-full mb-2">
-                  {[40, 75, 100, 60, 90, 50, 85, 45, 95, 65, 35].map((h, i) => (
+                  {audioLevels.map((level, i) => (
                     <div
                       key={i}
                       style={{
-                        height: isSpeaking || isListening ? `${Math.max(12, h * (isSpeaking ? 0.9 : 0.6))}%` : '6px',
-                        transition: 'height 0.15s ease-in-out'
+                        height: `${Math.max(12, level)}%`,
+                        transition: 'height 0.1s ease-in-out'
                       }}
                       className={`w-1.5 rounded-full ${
                         isSpeaking
-                          ? 'bg-brand-orange shadow-[0_0_8px_#FF6423]'
+                          ? 'bg-brand-orange shadow-[0_0_10px_#FF6423]'
                           : isListening
-                          ? 'bg-emerald-400 shadow-[0_0_8px_#34D399] animate-pulse'
+                          ? 'bg-emerald-400 shadow-[0_0_10px_#34D399] animate-pulse'
                           : 'bg-white/20'
                       }`}
                     />
@@ -348,23 +243,25 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                   {isSpeaking && (
                     <span className="text-brand-orange flex items-center gap-1">
                       <Volume2 className="w-3 h-3 animate-pulse" />
-                      <span>{currentLang === 'en' ? 'Concierge Speaking...' : 'Concierge Falando...'}</span>
+                      <span>{currentLang === 'en' ? 'Streaming 24kHz Native Audio...' : 'Transmitindo Áudio 24kHz...'}</span>
                     </span>
                   )}
                   {isListening && (
                     <span className="text-emerald-400 flex items-center gap-1">
                       <Mic className="w-3 h-3 animate-bounce" />
-                      <span>{currentLang === 'en' ? 'Listening to You...' : 'Ouvindo você...'}</span>
+                      <span>{currentLang === 'en' ? 'Streaming 16kHz Mic PCM...' : 'Enviando PCM 16kHz do Microfone...'}</span>
                     </span>
                   )}
                   {!isSpeaking && !isListening && isProcessing && (
                     <span className="text-amber-400">
-                      {currentLang === 'en' ? 'Analyzing financial state...' : 'Analisando finanças...'}
+                      {currentLang === 'en' ? 'Reasoning on Gemini Live...' : 'Raciocinando no Gemini Live...'}
                     </span>
                   )}
                   {!isSpeaking && !isListening && !isProcessing && (
                     <span className="text-white/40">
-                      {currentLang === 'en' ? 'Tap mic or prompt to talk' : 'Toque no microfone para falar'}
+                      {isConnected 
+                        ? (currentLang === 'en' ? 'Live WebSocket Active • Tap Mic to Talk' : 'WebSocket Conectado • Toque no Mic')
+                        : (currentLang === 'en' ? 'Connecting to Vertex AI...' : 'Conectando ao Vertex AI...')}
                     </span>
                   )}
                 </div>
@@ -372,7 +269,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
 
               {/* In-Phone Conversational Subtitles Feed */}
               <div className="flex-1 p-3.5 overflow-y-auto space-y-2.5 min-h-0 text-xs custom-scrollbar">
-                {messages.map((m, idx) => (
+                {transcript.map((m, idx) => (
                   <div
                     key={idx}
                     className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'}`}
@@ -392,7 +289,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                 {isProcessing && (
                   <div className="flex items-center gap-1.5 text-xs text-brand-orange font-mono p-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-brand-orange animate-ping" />
-                    <span>{currentLang === 'en' ? 'Processing with Gemini 3.7...' : 'Processando no Gemini 3.7...'}</span>
+                    <span>{currentLang === 'en' ? 'Gemini Live Turn Active...' : 'Turno Gemini Live Ativo...'}</span>
                   </div>
                 )}
                 <div ref={chatBottomRef} />
@@ -401,17 +298,17 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
               {/* In-Phone Fast Testing Voice Suggestions */}
               <div className="px-3 py-1.5 bg-black/40 border-t border-white/[0.06] flex flex-wrap gap-1.5 flex-shrink-0">
                 <button
-                  onClick={() => handleSendMessage(
+                  onClick={() => sendTextQuery(
                     currentLang === 'en'
                       ? "I am about to buy 2 flight tickets to Lisbon for R$ 24,000. Will my payments clear next week?"
                       : "Vou comprar 2 passagens para Lisboa por R$ 24.000. Meus débitos da próxima semana vão compensar?"
                   )}
                   className="text-[10px] px-2 py-1 rounded bg-white/5 hover:bg-white/10 text-white/75 border border-white/10 text-left truncate max-w-full transition-colors"
                 >
-                  ✈️ {currentLang === 'en' ? 'Flight tickets (R$ 24k) & Balance forecast' : 'Passagens (R$ 24k) & Previsão de Saldo'}
+                  ✈️ {currentLang === 'en' ? 'Tickets (R$ 24k) & Balance forecast' : 'Passagens (R$ 24k) & Previsão Saldo'}
                 </button>
                 <button
-                  onClick={() => handleSendMessage(
+                  onClick={() => sendTextQuery(
                     currentLang === 'en'
                       ? "Activate travel mode for Portugal and Spain on my Mastercard Black."
                       : "Ative o aviso de viagem para Portugal e Espanha no meu Mastercard Black."
@@ -421,9 +318,9 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                   🛡️ {currentLang === 'en' ? 'Travel mode (Portugal & Spain)' : 'Modo Viagem (Portugal e Espanha)'}
                 </button>
                 <button
-                  onClick={() => handleSendMessage(
+                  onClick={() => sendTextQuery(
                     currentLang === 'en'
-                      ? "How can I refinance my external loan through Open Finance?"
+                      ? "How can I refinance my external debt through Open Finance?"
                       : "Como posso refinanciar minha dívida externa pelo Open Finance?"
                   )}
                   className="text-[10px] px-2 py-1 rounded bg-white/5 hover:bg-white/10 text-white/75 border border-white/10 text-left truncate max-w-full transition-colors"
@@ -432,16 +329,16 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                 </button>
               </div>
 
-              {/* In-Phone Audio / Input Controls */}
+              {/* In-Phone Realtime Audio / Input Controls */}
               <div className="p-3 bg-[#121216] border-t border-white/[0.08] flex items-center gap-2 flex-shrink-0">
                 <button
-                  onClick={isListening ? stopListening : startListening}
+                  onClick={isListening ? stopMicrophone : startMicrophone}
                   className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 transition-all ${
                     isListening
-                      ? 'bg-emerald-500 text-white animate-pulse ring-4 ring-emerald-500/30'
+                      ? 'bg-emerald-500 text-white animate-pulse ring-4 ring-emerald-500/30 shadow-[0_0_12px_#10B981]'
                       : 'bg-brand-orange hover:bg-brand-orange-hover text-white shadow-md'
                   }`}
-                  title={isListening ? "Stop listening" : "Click to speak"}
+                  title={isListening ? "Stop streaming mic" : "Stream 16kHz PCM via WebSocket"}
                 >
                   {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
                 </button>
@@ -450,13 +347,13 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                   type="text"
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                  placeholder={currentLang === 'en' ? "Speak or type..." : "Fale ou digite..."}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                  placeholder={currentLang === 'en' ? "Speak (PCM) or type..." : "Fale (PCM) ou digite..."}
                   className="flex-1 bg-black/50 border border-white/10 rounded-[6px] px-2.5 py-1.5 text-xs text-white placeholder:text-white/30 focus:outline-none focus:border-brand-orange min-w-0"
                 />
 
                 <button
-                  onClick={() => handleSendMessage()}
+                  onClick={handleSend}
                   disabled={!inputText.trim()}
                   className="w-8 h-8 rounded-[6px] bg-white/10 hover:bg-brand-orange disabled:opacity-20 text-white flex items-center justify-center transition-colors flex-shrink-0"
                 >

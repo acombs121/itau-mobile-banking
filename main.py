@@ -5,9 +5,12 @@ Built with Gemini Enterprise Agent Platform (fka Vertex AI Platform)
 =====================================================================
 """
 import os
+import json
+import base64
+import asyncio
 import logging
 from typing import Optional, Dict, Any, List
-from fastapi import FastAPI, Request, HTTPException, Depends, status
+from fastapi import FastAPI, Request, HTTPException, Depends, status, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -235,6 +238,178 @@ class ChatRequest(BaseModel):
     message: str
     context: Optional[Dict[str, Any]] = None
     lang: Optional[str] = "pt"
+
+@app.websocket("/ws/live")
+async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
+    """
+    Bidirectional WebSocket connection to Gemini Multimodal Live API
+    (gemini-live-2.5-flash-native-audio on Vertex AI).
+    Accepts 16kHz PCM audio or text from browser, streams back 24kHz PCM audio,
+    text transcripts, and tool execution events.
+    """
+    await websocket.accept()
+    logger.info(f"Client connected to Gemini Live WebSocket (lang: {lang})")
+
+    # Define tools for Live session
+    live_tools = [
+        types.Tool(
+            function_declarations=[
+                types.FunctionDeclaration(
+                    name="sweep_cdb",
+                    description="Schedules an automatic liquidity rebalance from CDB DI into checking account on a specific date to prevent overdraft (LIS) interest.",
+                    parameters=types.Schema(
+                        type=types.Type.OBJECT,
+                        properties={
+                            "amount_brl": types.Schema(type=types.Type.NUMBER, description="Amount in BRL to transfer from CDB DI, e.g. 15000.00"),
+                            "transfer_date": types.Schema(type=types.Type.STRING, description="Date or time of scheduled transfer, e.g. 2026-08-25 06:00 BRT")
+                        },
+                        required=["amount_brl"]
+                    )
+                ),
+                types.FunctionDeclaration(
+                    name="activate_travel_mode",
+                    description="Activates international travel notice for specific countries, raises international POS spend limit, and verifies Mastercard Black travel insurance.",
+                    parameters=types.Schema(
+                        type=types.Type.OBJECT,
+                        properties={
+                            "destinations": types.Schema(type=types.Type.ARRAY, items=types.Schema(type=types.Type.STRING), description="List of destination countries/cities"),
+                            "raise_limit_to": types.Schema(type=types.Type.NUMBER, description="Elevated daily POS spend limit, e.g. 50000.00")
+                        },
+                        required=["destinations"]
+                    )
+                ),
+                types.FunctionDeclaration(
+                    name="refinance_open_finance",
+                    description="Issues an electronic CCB under Lei 10.931 and executes interbank debt consolidation/portability to settle high-interest competitor credit.",
+                    parameters=types.Schema(
+                        type=types.Type.OBJECT,
+                        properties={
+                            "debt_balance": types.Schema(type=types.Type.NUMBER, description="External debt balance to pay off, e.g. 18000.00"),
+                            "bank_name": types.Schema(type=types.Type.STRING, description="Competitor bank name")
+                        },
+                        required=["debt_balance"]
+                    )
+                )
+            ]
+        )
+    ]
+
+    system_prompt = f"""
+    You are Itaú Concierge, the elite AI Banking Concierge & Multi-Agent Orchestrator for Roberto Silva (Itaú Personnalité).
+    Language: {'English' if lang == 'en' else 'Portuguese (pt-BR)'}.
+
+    Customer Financial Context:
+    - Checking Balance: R$ 48.950,20
+    - Daily Liquidity CDB DI (100% CDI): R$ 85.000,00
+    - Mastercard Black (last 4: 8841): Available Limit R$ 72.569,50
+    - Scheduled Debits next Thursday: R$ 38.000,00 (Condo Pix R$ 3.850 + Mastercard Black Bill R$ 34.150).
+    - Open Finance External Debt: R$ 18.000,00 at 11.2%/mo. Pre-approved Itaú Sob Medida: 1.69%/mo (Total saved: R$ 14.280,00).
+
+    Spoken Persona Directives:
+    1. Speak concisely, clearly, with high-touch executive banking poise. Avoid formatting symbols like markdown asterisks in spoken numbers.
+    2. SCENARIO 1 (Flight Tickets / Balance Forecast): If the customer asks about purchasing tickets (e.g. R$ 24.000 to Lisbon) or upcoming debits, calculate that checking will be short by R$ 13.050 next Thursday. Proactively offer to schedule an automatic sweep of R$ 15.000 from CDB DI on Thursday morning (06:00 BRT). If accepted, call the tool `sweep_cdb`.
+    3. SCENARIO 2 (Travel Notice / Europe / Spain / Portugal / Cards): If the customer mentions traveling to Portugal/Spain/Europe or asking about card safety, call `activate_travel_mode` and confirm that travel notice is active, daily limit is raised to R$ 50.000, and Mastercard Black travel health insurance is verified.
+    4. SCENARIO 3 (Open Finance Debt Refinance): If the customer asks about debt optimization or savings, explain the R$ 18.000 competitor balance at 11.2%/mo, offer to issue the electronic CCB at 1.69%/mo saving R$ 14.280, and call `refinance_open_finance`.
+    """
+
+    live_config = types.LiveConnectConfig(
+        response_modalities=['AUDIO'],
+        speech_config=types.SpeechConfig(
+            voice_config=types.VoiceConfig(
+                prebuilt_voice_config=types.PrebuiltVoiceConfig(voice_name='Aoede')
+            )
+        ),
+        system_instruction=types.Content(parts=[types.Part.from_text(text=system_prompt)]),
+        tools=live_tools
+    )
+
+    try:
+        if gemini_client:
+            async with gemini_client.aio.live.connect(model="gemini-live-2.5-flash-native-audio", config=live_config) as session:
+                
+                async def client_to_gemini():
+                    try:
+                        while True:
+                            raw_msg = await websocket.receive_text()
+                            msg = json.loads(raw_msg)
+                            
+                            # 16kHz PCM Realtime Audio from microphone
+                            if "realtime_audio_pcm_16k" in msg:
+                                base64_pcm = msg["realtime_audio_pcm_16k"]
+                                raw_bytes = base64.b64decode(base64_pcm)
+                                await session.send_realtime_input(
+                                    media_chunks=[types.Blob(data=raw_bytes, mime_type="audio/pcm;rate=16000")]
+                                )
+                            
+                            # Text input from browser
+                            elif "text_input" in msg:
+                                await session.send(input=msg["text_input"], end_of_turn=True)
+                    except WebSocketDisconnect:
+                        pass
+                    except Exception as e:
+                        logger.error(f"Error in client_to_gemini task: {e}")
+
+                async def gemini_to_client():
+                    try:
+                        async for response in session.receive():
+                            if response.server_content:
+                                model_turn = response.server_content.model_turn
+                                if model_turn:
+                                    for part in model_turn.parts:
+                                        # Audio 24kHz PCM chunk
+                                        if part.inline_data:
+                                            b64_audio = base64.b64encode(part.inline_data.data).decode("utf-8")
+                                            await websocket.send_json({
+                                                "audio_pcm_24k": b64_audio
+                                            })
+                                        # Text transcript piece
+                                        if part.text:
+                                            await websocket.send_json({
+                                                "text": part.text
+                                            })
+                                
+                                if response.server_content.turn_complete:
+                                    await websocket.send_json({"turn_complete": True})
+
+                            # Handle Tool Call from Gemini Live
+                            if response.tool_call:
+                                for fc in response.tool_call.function_calls:
+                                    tool_name = fc.name
+                                    tool_args = fc.args or {}
+                                    logger.info(f"Gemini Live Tool Call: {tool_name} with args: {tool_args}")
+                                    await websocket.send_json({
+                                        "tool_call": {
+                                            "name": tool_name,
+                                            "args": tool_args
+                                        }
+                                    })
+                                    # Send tool response confirmation back to Gemini Live
+                                    await session.send_tool_response(
+                                        function_responses=[
+                                            types.FunctionResponse(
+                                                name=tool_name,
+                                                id=fc.id,
+                                                response={"status": "success", "result": f"Executed {tool_name} successfully"}
+                                            )
+                                        ]
+                                    )
+
+                    except WebSocketDisconnect:
+                        pass
+                    except Exception as e:
+                        logger.error(f"Error in gemini_to_client task: {e}")
+
+                await asyncio.gather(client_to_gemini(), gemini_to_client())
+
+        else:
+            while True:
+                await websocket.receive_text()
+                await websocket.send_json({"text": "Local mock active.", "turn_complete": True})
+
+    except WebSocketDisconnect:
+        logger.info("Gemini Live WebSocket disconnected by client.")
+    except Exception as e:
+        logger.error(f"WebSocket live error: {e}")
 
 @app.post("/api/chat")
 async def chat_endpoint(payload: ChatRequest, user: Dict[str, Any] = Depends(get_authenticated_user)):
