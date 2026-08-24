@@ -28,6 +28,7 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered }: UseGemini
   const playbackContextRef = useRef<AudioContext | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const processorNodeRef = useRef<ScriptProcessorNode | null>(null);
+  const recognitionRef = useRef<any>(null);
   
   // Audio playback queue for 24kHz raw PCM from Gemini Live
   const nextPlayTimeRef = useRef<number>(0);
@@ -195,11 +196,47 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered }: UseGemini
     setIsListening(false);
   }, []);
 
-  // Start 16kHz microphone stream to Gemini Live
+  // Send text query over WebSocket
+  const sendTextQuery = useCallback((text: string) => {
+    if (!text.trim()) return;
+    setTranscript(prev => [...prev, { role: 'user', text: text.trim() }]);
+    setIsProcessing(true);
+
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({
+        text_input: text.trim()
+      }));
+    }
+  }, []);
+
+  // Start 16kHz microphone stream to Gemini Live + Parallel Speech Recognition
   const startMicrophone = async () => {
     try {
       if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
         connect();
+      }
+
+      // Initialize speech recognition in parallel
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        const rec = new SpeechRecognition();
+        rec.lang = lang === 'en' ? 'en-US' : 'pt-BR';
+        rec.continuous = false;
+        rec.interimResults = false;
+
+        rec.onresult = (e: any) => {
+          const spokenText = e.results[0][0].transcript;
+          if (spokenText) {
+            console.log("Spoken transcript recognized:", spokenText);
+            sendTextQuery(spokenText);
+          }
+        };
+        recognitionRef.current = rec;
+        try {
+          rec.start();
+        } catch (err) {
+          console.warn("SpeechRec start note:", err);
+        }
       }
 
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -274,6 +311,12 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered }: UseGemini
 
   // Stop microphone stream
   const stopMicrophone = () => {
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.abort();
+      } catch {}
+      recognitionRef.current = null;
+    }
     if (processorNodeRef.current) {
       processorNodeRef.current.disconnect();
       processorNodeRef.current = null;
@@ -286,21 +329,13 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered }: UseGemini
       mediaStreamRef.current.getTracks().forEach(t => t.stop());
       mediaStreamRef.current = null;
     }
-    setIsListening(false);
-  };
-
-  // Send text query over WebSocket
-  const sendTextQuery = useCallback((text: string) => {
-    if (!text.trim()) return;
-    setTranscript(prev => [...prev, { role: 'user', text: text.trim() }]);
-    setIsProcessing(true);
-
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify({
-        text_input: text.trim()
+        audio_stream_end: true
       }));
     }
-  }, []);
+    setIsListening(false);
+  };
 
   return {
     isConnected,

@@ -338,8 +338,12 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
                                 base64_pcm = msg["realtime_audio_pcm_16k"]
                                 raw_bytes = base64.b64decode(base64_pcm)
                                 await session.send_realtime_input(
-                                    media_chunks=[types.Blob(data=raw_bytes, mime_type="audio/pcm;rate=16000")]
+                                    audio=types.Blob(data=raw_bytes, mime_type="audio/pcm;rate=16000")
                                 )
+
+                            # Audio stream end signal
+                            elif "audio_stream_end" in msg:
+                                await session.send_realtime_input(audio_stream_end=True)
                             
                             # Text input from browser
                             elif "text_input" in msg:
