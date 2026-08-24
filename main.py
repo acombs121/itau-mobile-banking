@@ -331,73 +331,84 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
                 async def client_to_gemini():
                     try:
                         while True:
-                            raw_msg = await websocket.receive_text()
-                            msg = json.loads(raw_msg)
-                            
-                            # 16kHz PCM Realtime Audio from microphone
-                            if "realtime_audio_pcm_16k" in msg:
-                                base64_pcm = msg["realtime_audio_pcm_16k"]
-                                raw_bytes = base64.b64decode(base64_pcm)
-                                await session.send_realtime_input(
-                                    audio=types.Blob(data=raw_bytes, mime_type="audio/pcm;rate=16000")
-                                )
+                            try:
+                                raw_msg = await websocket.receive_text()
+                                msg = json.loads(raw_msg)
+                                
+                                # Text input from browser
+                                if "text_input" in msg:
+                                    logger.info(f"Gemini Live Turn Input: {msg['text_input']}")
+                                    await session.send(input=msg["text_input"], end_of_turn=True)
+                                
+                                # 16kHz PCM Realtime Audio from microphone
+                                elif "realtime_audio_pcm_16k" in msg:
+                                    base64_pcm = msg["realtime_audio_pcm_16k"]
+                                    raw_bytes = base64.b64decode(base64_pcm)
+                                    await session.send_realtime_input(
+                                        audio=types.Blob(data=raw_bytes, mime_type="audio/pcm;rate=16000")
+                                    )
 
-                            # Audio stream end signal
-                            elif "audio_stream_end" in msg:
-                                await session.send_realtime_input(audio_stream_end=True)
-                            
-                            # Text input from browser
-                            elif "text_input" in msg:
-                                await session.send(input=msg["text_input"], end_of_turn=True)
-                    except WebSocketDisconnect:
-                        pass
+                                # Audio stream end signal
+                                elif "audio_stream_end" in msg:
+                                    await session.send_realtime_input(audio_stream_end=True)
+
+                            except WebSocketDisconnect:
+                                break
+                            except Exception as inner_e:
+                                logger.warning(f"Warning in client_to_gemini message turn: {inner_e}")
                     except Exception as e:
                         logger.error(f"Error in client_to_gemini task: {e}")
 
                 async def gemini_to_client():
                     try:
-                        async for response in session.receive():
-                            if response.server_content:
-                                model_turn = response.server_content.model_turn
-                                if model_turn:
-                                    for part in model_turn.parts:
-                                        # Audio 24kHz PCM chunk
-                                        if part.inline_data:
-                                            b64_audio = base64.b64encode(part.inline_data.data).decode("utf-8")
-                                            await websocket.send_json({
-                                                "audio_pcm_24k": b64_audio
-                                            })
-                                        # Text transcript piece
-                                        if part.text:
-                                            await websocket.send_json({
-                                                "text": part.text
-                                            })
-                                
-                                if response.server_content.turn_complete:
-                                    await websocket.send_json({"turn_complete": True})
+                        while True:
+                            async for response in session.receive():
+                                try:
+                                    if response.server_content:
+                                        model_turn = response.server_content.model_turn
+                                        if model_turn:
+                                            for part in model_turn.parts:
+                                                # Audio 24kHz PCM chunk
+                                                if part.inline_data:
+                                                    b64_audio = base64.b64encode(part.inline_data.data).decode("utf-8")
+                                                    await websocket.send_json({
+                                                        "audio_pcm_24k": b64_audio
+                                                    })
+                                                # Text transcript piece
+                                                if part.text:
+                                                    await websocket.send_json({
+                                                        "text": part.text
+                                                    })
+                                        
+                                        if response.server_content.turn_complete:
+                                            await websocket.send_json({"turn_complete": True})
 
-                            # Handle Tool Call from Gemini Live
-                            if response.tool_call:
-                                for fc in response.tool_call.function_calls:
-                                    tool_name = fc.name
-                                    tool_args = fc.args or {}
-                                    logger.info(f"Gemini Live Tool Call: {tool_name} with args: {tool_args}")
-                                    await websocket.send_json({
-                                        "tool_call": {
-                                            "name": tool_name,
-                                            "args": tool_args
-                                        }
-                                    })
-                                    # Send tool response confirmation back to Gemini Live
-                                    await session.send_tool_response(
-                                        function_responses=[
-                                            types.FunctionResponse(
-                                                name=tool_name,
-                                                id=fc.id,
-                                                response={"status": "success", "result": f"Executed {tool_name} successfully"}
+                                    # Handle Tool Call from Gemini Live
+                                    if response.tool_call:
+                                        for fc in response.tool_call.function_calls:
+                                            tool_name = fc.name
+                                            tool_args = fc.args or {}
+                                            logger.info(f"Gemini Live Tool Call: {tool_name} with args: {tool_args}")
+                                            await websocket.send_json({
+                                                "tool_call": {
+                                                    "name": tool_name,
+                                                    "args": tool_args
+                                                }
+                                            })
+                                            # Send tool response confirmation back to Gemini Live
+                                            await session.send_tool_response(
+                                                function_responses=[
+                                                    types.FunctionResponse(
+                                                        name=tool_name,
+                                                        id=fc.id,
+                                                        response={"status": "success", "result": f"Executed {tool_name} successfully"}
+                                                    )
+                                                ]
                                             )
-                                        ]
-                                    )
+                                except WebSocketDisconnect:
+                                    return
+                                except Exception as chunk_e:
+                                    logger.warning(f"Warning processing response chunk: {chunk_e}")
 
                     except WebSocketDisconnect:
                         pass
