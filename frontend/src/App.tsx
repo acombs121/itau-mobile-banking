@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { CockpitHeader } from './components/CockpitHeader';
 import { PhoneContainer } from './components/PhoneContainer';
 import { AgentOrchestratorPanel } from './components/AgentOrchestratorPanel';
-import { VoiceBankingModal } from './components/VoiceBankingModal';
-import { BankingProfile, SecurityAlert } from './types/banking';
+import { BankingProfile } from './types/banking';
 import { SubAgent, SecurityActionItem, IOSNotification, TelemetryLog, ScenarioId } from './types/itau_concierge';
 import { Language, translations } from './i18n/translations';
 
@@ -82,7 +81,6 @@ export const App: React.FC = () => {
   const [activeScenario, setActiveScenario] = useState<ScenarioId>('cash_flow');
 
   const [profile, setProfile] = useState<BankingProfile>(DEFAULT_PROFILE);
-  const alerts: SecurityAlert[] = [];
   const subAgents: SubAgent[] = [];
   const [actionItems, setActionItems] = useState<SecurityActionItem[]>([]);
   const [notifications, setNotifications] = useState<IOSNotification[]>([]);
@@ -94,8 +92,7 @@ export const App: React.FC = () => {
   const [isOpenFinanceRefiDone, setIsOpenFinanceRefiDone] = useState(false);
   const [isPixBlocked, setIsPixBlocked] = useState(false);
 
-  // Voice Modal
-  const [isVoiceOpen, setIsVoiceOpen] = useState(false);
+  // In-Phone Live Voice State (No modal popup!)
   const [isCallActive, setIsCallActive] = useState(false);
   const [isProcessingAgent, setIsProcessingAgent] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -147,7 +144,6 @@ export const App: React.FC = () => {
     setActiveScenario(scenarioId);
     const scenarioDef = translations[currentLang].scenarios.find(s => s.id === scenarioId);
     if (scenarioDef) {
-      // Add Telemetry Log for Scenario Switch
       const newLog: TelemetryLog = {
         id: "log_" + Date.now(),
         timestamp: new Date().toLocaleTimeString(),
@@ -161,7 +157,7 @@ export const App: React.FC = () => {
     }
   };
 
-  // Central Action Handler (Triggered from phone buttons, modals, or manual agent runs)
+  // Central Action Handler
   const handleBankingAction = (actionType: string, targetId?: string) => {
     const tNotif = translations[currentLang].notifications;
     const nowTime = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + ' BRT';
@@ -321,6 +317,7 @@ export const App: React.FC = () => {
     setIsTravelModeActive(false);
     setIsOpenFinanceRefiDone(false);
     setIsPixBlocked(false);
+    setIsCallActive(false);
     setActionItems(translations[currentLang].actionPlan.initialItems);
     setTelemetryLogs([]);
     triggerNotification(
@@ -355,10 +352,7 @@ export const App: React.FC = () => {
         theme={theme}
         onToggleTheme={handleToggleTheme}
         isCallActive={isCallActive}
-        onToggleCall={() => {
-          setIsCallActive(!isCallActive);
-          setIsVoiceOpen(!isVoiceOpen);
-        }}
+        onToggleCall={() => setIsCallActive(!isCallActive)}
         onReset={handleResetDemo}
         onSaveSession={handleSaveSession}
         isSaving={isSaving}
@@ -370,7 +364,7 @@ export const App: React.FC = () => {
       <main className="flex-1 p-3 sm:p-5 md:p-6 overflow-hidden min-h-0">
         <div className="max-w-[1780px] h-full mx-auto grid grid-cols-1 md:grid-cols-12 gap-5 items-stretch min-h-0">
           
-          {/* Left Column: Authentic Smartphone Simulator */}
+          {/* Left Column: Smartphone Simulator with Direct In-Phone Voice Concierge */}
           <div className="md:col-span-4 lg:col-span-4 xl:col-span-3 flex justify-center items-center h-full min-h-0">
             <PhoneContainer
               profile={profile}
@@ -378,10 +372,8 @@ export const App: React.FC = () => {
               currentLang={currentLang}
               theme={theme}
               activeScenario={activeScenario}
-              onOpenVoiceAssistant={() => {
-                setIsCallActive(true);
-                setIsVoiceOpen(true);
-              }}
+              isVoiceCallActive={isCallActive}
+              onToggleVoiceCall={() => setIsCallActive(!isCallActive)}
               onActionClick={handleBankingAction}
               isTravelModeActive={isTravelModeActive}
               isCdbSweepScheduled={isCdbSweepScheduled}
@@ -406,18 +398,6 @@ export const App: React.FC = () => {
 
         </div>
       </main>
-
-      {/* Multimodal Gemini Live AI Voice Concierge Modal */}
-      <VoiceBankingModal
-        isOpen={isVoiceOpen}
-        onClose={() => {
-          setIsVoiceOpen(false);
-          setIsCallActive(false);
-        }}
-        alertContext={alerts[0] || null}
-        currentLang={currentLang}
-        onActionClick={handleBankingAction}
-      />
 
     </div>
   );
