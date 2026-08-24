@@ -47,6 +47,9 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered }: UseGemini
   const recognitionRef = useRef<any>(null);
   const nextPlayTimeRef = useRef<number>(0);
   const isManuallyStoppedRef = useRef<boolean>(false);
+  const isSpeakingRef = useRef<boolean>(false);
+  const activeSourcesRef = useRef<AudioBufferSourceNode[]>([]);
+  const isProcessingRef = useRef<boolean>(false);
 
   // Initialize or get playback AudioContext
   const getPlaybackContext = useCallback(() => {
@@ -58,6 +61,20 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered }: UseGemini
       playbackContextRef.current.resume();
     }
     return playbackContextRef.current;
+  }, []);
+
+  // Stop any active playing audio sources (barge-in / clear queue)
+  const stopAllAudioPlayback = useCallback(() => {
+    activeSourcesRef.current.forEach(source => {
+      try {
+        source.stop();
+        source.disconnect();
+      } catch {}
+    });
+    activeSourcesRef.current = [];
+    nextPlayTimeRef.current = 0;
+    isSpeakingRef.current = false;
+    setIsSpeaking(false);
   }, []);
 
   // Convert Base64 PCM (16-bit LE, 24kHz) to Float32Array
@@ -81,6 +98,7 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered }: UseGemini
     const ctx = getPlaybackContext();
     if (!ctx) return;
 
+    isSpeakingRef.current = true;
     setIsSpeaking(true);
 
     const buffer = ctx.createBuffer(1, pcmChunk.length, 24000);
@@ -89,6 +107,8 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered }: UseGemini
     const source = ctx.createBufferSource();
     source.buffer = buffer;
     source.connect(ctx.destination);
+
+    activeSourcesRef.current.push(source);
 
     const currentTime = ctx.currentTime;
     const startTime = Math.max(currentTime, nextPlayTimeRef.current);
@@ -114,9 +134,19 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered }: UseGemini
     ]);
 
     source.onended = () => {
-      if (ctx.currentTime >= nextPlayTimeRef.current - 0.05) {
-        setIsSpeaking(false);
-        setAudioLevels([15, 25, 40, 20, 35, 15, 30, 20, 25]);
+      // Remove from active list
+      activeSourcesRef.current = activeSourcesRef.current.filter(s => s !== source);
+
+      // Check if all queued audio is finished
+      if (ctx.currentTime >= nextPlayTimeRef.current - 0.08) {
+        // Cooldown buffer before re-enabling mic listening
+        setTimeout(() => {
+          if (activeSourcesRef.current.length === 0) {
+            isSpeakingRef.current = false;
+            setIsSpeaking(false);
+            setAudioLevels([15, 25, 40, 20, 35, 15, 30, 20, 25]);
+          }
+        }, 350);
       }
     };
   }, [getPlaybackContext]);
@@ -138,6 +168,7 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered }: UseGemini
     ws.onopen = () => {
       console.log("Connected to Gemini Live WebSocket!");
       setIsConnected(true);
+      isProcessingRef.current = false;
       setIsProcessing(false);
     };
 
@@ -175,6 +206,7 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered }: UseGemini
         }
 
         if (data.turn_complete) {
+          isProcessingRef.current = false;
           setIsProcessing(false);
         }
       } catch (err) {
@@ -191,6 +223,8 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered }: UseGemini
       setIsConnected(false);
       setIsListening(false);
       setIsSpeaking(false);
+      isSpeakingRef.current = false;
+      isProcessingRef.current = false;
     };
 
     wsRef.current = ws;
@@ -199,7 +233,12 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered }: UseGemini
   // Send text query
   const sendTextQuery = useCallback((text: string) => {
     if (!text.trim()) return;
+
+    // Barge-in: stop any playing assistant speech when new user query arrives
+    stopAllAudioPlayback();
+
     setTranscript(prev => [...prev, { role: 'user', text: text.trim() }]);
+    isProcessingRef.current = true;
     setIsProcessing(true);
 
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
@@ -207,11 +246,13 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered }: UseGemini
         text_input: text.trim()
       }));
     }
-  }, []);
+  }, [stopAllAudioPlayback]);
 
   // Disconnect WebSocket & teardown all mic streams
   const disconnect = useCallback(() => {
     isManuallyStoppedRef.current = true;
+    stopAllAudioPlayback();
+
     if (recognitionRef.current) {
       try { recognitionRef.current.abort(); } catch {}
       recognitionRef.current = null;
@@ -235,9 +276,11 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered }: UseGemini
     setIsConnected(false);
     setIsSpeaking(false);
     setIsListening(false);
-  }, []);
+    isSpeakingRef.current = false;
+    isProcessingRef.current = false;
+  }, [stopAllAudioPlayback]);
 
-  // Start continuous microphone
+  // Start continuous microphone with acoustic echo suppression
   const startMicrophone = useCallback(async () => {
     isManuallyStoppedRef.current = false;
     try {
@@ -245,20 +288,27 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered }: UseGemini
         connect();
       }
 
-      // Initialize speech recognition with continuous auto-restart loop
+      // Initialize speech recognition with echo suppression filter
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       if (SpeechRecognition) {
         const initRec = () => {
           if (isManuallyStoppedRef.current) return;
           const rec = new SpeechRecognition();
           rec.lang = langRef.current === 'en' ? 'en-US' : 'pt-BR';
-          rec.continuous = false; // single phrase turns for maximum reliability
+          rec.continuous = false;
           rec.interimResults = false;
 
           rec.onresult = (e: any) => {
+            // ACOUSTIC ECHO SUPPRESSION:
+            // If the model is currently speaking or in cooldown, ignore microphone input so it doesn't self-hear!
+            if (isSpeakingRef.current) {
+              console.log("Suppressed echo input while model was speaking.");
+              return;
+            }
+
             const spokenText = e.results[0][0].transcript;
             if (spokenText && spokenText.trim()) {
-              console.log("Spoken transcript recognized:", spokenText);
+              console.log("Spoken transcript recognized from cardholder:", spokenText);
               sendTextQuery(spokenText.trim());
             }
           };
@@ -266,9 +316,13 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered }: UseGemini
           rec.onend = () => {
             // Auto-restart listening if mic is still active and not manually stopped
             if (!isManuallyStoppedRef.current) {
-              try {
-                rec.start();
-              } catch {}
+              setTimeout(() => {
+                if (!isManuallyStoppedRef.current) {
+                  try {
+                    rec.start();
+                  } catch {}
+                }
+              }, 150);
             }
           };
 
@@ -289,6 +343,7 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered }: UseGemini
           channelCount: 1,
           echoCancellation: true,
           noiseSuppression: true,
+          autoGainControl: true,
         }
       });
       mediaStreamRef.current = stream;
@@ -313,7 +368,9 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered }: UseGemini
           sum += dataArray[i];
         }
         const avg = Math.min(100, (sum / bufferLength) * 1.5);
-        if (avg > 5) {
+        
+        // Only update mic waveform when user is speaking and model is NOT speaking
+        if (!isSpeakingRef.current && avg > 5) {
           setAudioLevels([
             Math.max(10, avg * 0.5),
             Math.max(20, avg * 0.8),
