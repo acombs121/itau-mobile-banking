@@ -201,7 +201,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                     </div>
                     <div className="text-[10px] font-mono text-brand-orange flex items-center gap-1">
                       <Radio className="w-2.5 h-2.5 text-emerald-400 animate-pulse" />
-                      <span>GEMINI LIVE 2.5 WS • {formatTime(callDuration)}</span>
+                      <span>GEMINI 3.5 FLASH LIVE • {formatTime(callDuration)}</span>
                     </div>
                   </div>
                 </div>
