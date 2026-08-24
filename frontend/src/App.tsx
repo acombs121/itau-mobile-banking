@@ -359,11 +359,11 @@ export const App: React.FC = () => {
       />
 
       {/* Main Dual-Column Cockpit Canvas */}
-      <main className="flex-1 p-3 sm:p-5 md:p-6 overflow-hidden min-h-0">
-        <div className="max-w-[1780px] h-full mx-auto grid grid-cols-1 md:grid-cols-12 gap-5 items-stretch min-h-0">
+      <main className="flex-1 p-3 sm:p-5 lg:p-6 overflow-hidden min-h-0 flex items-center justify-center">
+        <div className="max-w-[1440px] w-full h-full mx-auto flex flex-col md:flex-row gap-6 lg:gap-10 xl:gap-14 items-center justify-center min-h-0">
           
           {/* Left Column: Smartphone Simulator with Direct In-Phone Voice Concierge */}
-          <div className="md:col-span-4 lg:col-span-4 xl:col-span-3 flex justify-center items-center h-full min-h-0">
+          <div className="w-full md:w-[385px] xl:w-[400px] flex-shrink-0 flex justify-center items-center h-full min-h-0">
             <PhoneContainer
               profile={profile}
               notifications={notifications}
@@ -381,7 +381,7 @@ export const App: React.FC = () => {
           </div>
 
           {/* Right Column: Multi-Agent Telemetry & Orchestrator Panel */}
-          <div className="md:col-span-8 lg:col-span-8 xl:col-span-9 h-full min-h-0">
+          <div className="flex-1 w-full min-w-0 h-full max-h-[760px] min-h-0">
             <AgentOrchestratorPanel
               subAgents={subAgents}
               actionItems={actionItems}
