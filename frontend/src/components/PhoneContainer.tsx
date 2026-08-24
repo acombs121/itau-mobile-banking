@@ -1,35 +1,50 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, QrCode, ArrowUpRight, ArrowDownLeft, CreditCard, Mic, AlertCircle } from 'lucide-react';
-import { BankingProfile, SecurityAlert } from '../types/banking';
-import { IOSNotification } from '../types/itau_concierge';
+import { Eye, EyeOff, QrCode, ArrowUpRight, ArrowDownLeft, CreditCard, Mic, AlertCircle, Plane, Sparkles, TrendingUp } from 'lucide-react';
+import { BankingProfile } from '../types/banking';
+import { IOSNotification, ScenarioId } from '../types/itau_concierge';
 import { Language, translations } from '../i18n/translations';
 
 interface PhoneContainerProps {
   profile: BankingProfile;
-  alerts: SecurityAlert[];
   notifications: IOSNotification[];
   currentLang: Language;
   theme: 'dark' | 'light';
+  activeScenario: ScenarioId;
   onOpenVoiceAssistant: () => void;
-  onActionClick: (action: string, targetId: string) => void;
+  onActionClick: (action: string, targetId?: string) => void;
+  isTravelModeActive?: boolean;
+  isCdbSweepScheduled?: boolean;
+  isOpenFinanceRefiDone?: boolean;
+  isPixBlocked?: boolean;
 }
 
 export const PhoneContainer: React.FC<PhoneContainerProps> = ({
   profile,
-  alerts,
   notifications,
   currentLang,
   theme,
+  activeScenario,
   onOpenVoiceAssistant,
-  onActionClick
+  onActionClick,
+  isTravelModeActive = false,
+  isCdbSweepScheduled = false,
+  isOpenFinanceRefiDone = false,
+  isPixBlocked = false
 }) => {
   const [showBalance, setShowBalance] = useState(true);
   const [activeNavTab, setActiveNavTab] = useState<'home' | 'extrato' | 'pix' | 'cartoes'>('home');
-  const t = translations[currentLang].phone;
+  const t = translations[currentLang];
   const isDark = theme === 'dark';
 
-  const criticalAlert = alerts.find(a => a.severity === 'CRITICAL' && a.status !== 'blocked_and_reversed' && a.status !== 'approved_by_user');
-  const localizedTransactions = t.transactions || profile.recent_transactions;
+  const activeScenarioDef = t.scenarios.find(s => s.id === activeScenario) || t.scenarios[0];
+  const localizedTransactions = t.phone.transactions || profile.recent_transactions;
+
+  // Determine if the current scenario alert has already been resolved
+  const isAlertResolved = 
+    (activeScenario === 'cash_flow' && isCdbSweepScheduled) ||
+    (activeScenario === 'travel_shield' && isTravelModeActive) ||
+    (activeScenario === 'open_finance' && isOpenFinanceRefiDone) ||
+    (activeScenario === 'pix_fraud' && isPixBlocked);
 
   return (
     <div className="w-full max-w-[365px] flex flex-col items-center select-none h-full max-h-[calc(100vh-5.5rem)]">
@@ -80,7 +95,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
 
           {/* Status Bar */}
           <div className={`w-full h-8 px-6 pt-1.5 flex justify-between items-center text-xs font-medium select-none flex-shrink-0 ${isDark ? 'text-white/40' : 'text-slate-400'}`}>
-            <span>{t.statusTime}</span>
+            <span>{t.phone.statusTime}</span>
             <div className="w-20 h-4 bg-black rounded-full mx-auto -mt-1 flex items-center justify-center">
               <div className="w-2.5 h-2.5 rounded-full bg-[#111] border border-white/10"></div>
             </div>
@@ -113,7 +128,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
           {/* Balance Hero */}
           <div className={`px-5 py-3.5 border-b flex-shrink-0 ${isDark ? 'border-white/[0.06]' : 'border-slate-100'}`}>
             <div className={`flex items-center justify-between text-xs mb-1 ${isDark ? 'text-white/50' : 'text-slate-500'}`}>
-              <span>{t.balanceTitle}</span>
+              <span>{t.phone.balanceTitle}</span>
               <button 
                 onClick={() => setShowBalance(!showBalance)}
                 className={isDark ? 'hover:text-white transition-colors' : 'hover:text-slate-900 transition-colors'}
@@ -126,41 +141,81 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
             </div>
           </div>
 
-          {/* Scrollable Container */}
+          {/* Scrollable Feed Container */}
           <div className={`flex-1 p-4 overflow-y-auto min-h-0 space-y-3.5 ${isDark ? 'bg-transparent' : 'bg-slate-50/50'}`}>
             
-            {/* Critical Incident Banner */}
-            {criticalAlert && (
-              <div className={`rounded-[10px] p-3.5 border ${
-                isDark
-                  ? 'bg-[#140808] border-rose-900/60'
-                  : 'bg-rose-50 border-rose-200'
+            {/* Contextual Scenario Proactive Alert Banner */}
+            {!isAlertResolved && (
+              <div className={`rounded-[10px] p-3.5 border transition-all ${
+                activeScenario === 'cash_flow'
+                  ? (isDark ? 'bg-[#0E1714] border-emerald-800/60' : 'bg-emerald-50 border-emerald-300')
+                  : activeScenario === 'travel_shield'
+                  ? (isDark ? 'bg-[#18140B] border-amber-800/60' : 'bg-amber-50 border-amber-300')
+                  : activeScenario === 'open_finance'
+                  ? (isDark ? 'bg-[#0A111E] border-blue-800/60' : 'bg-blue-50 border-blue-300')
+                  : (isDark ? 'bg-[#140808] border-rose-900/60' : 'bg-rose-50 border-rose-200')
               }`}>
-                <div className="flex items-center gap-2 text-rose-500 font-bold text-xs mb-1.5">
-                  <AlertCircle className="w-4 h-4 text-rose-500 flex-shrink-0" />
-                  <span>{t.alertCardTitle}</span>
+                <div className="flex items-center gap-2 font-bold text-xs mb-1.5">
+                  {activeScenario === 'cash_flow' && <TrendingUp className="w-4 h-4 text-emerald-400 flex-shrink-0" />}
+                  {activeScenario === 'travel_shield' && <Plane className="w-4 h-4 text-amber-400 flex-shrink-0" />}
+                  {activeScenario === 'open_finance' && <Sparkles className="w-4 h-4 text-blue-400 flex-shrink-0" />}
+                  {activeScenario === 'pix_fraud' && <AlertCircle className="w-4 h-4 text-rose-500 flex-shrink-0" />}
+                  
+                  <span className={
+                    activeScenario === 'cash_flow' ? 'text-emerald-400' :
+                    activeScenario === 'travel_shield' ? 'text-amber-400' :
+                    activeScenario === 'open_finance' ? 'text-blue-400' : 'text-rose-500'
+                  }>
+                    {activeScenarioDef.alert.title}
+                  </span>
                 </div>
+
                 <p className={`text-xs leading-relaxed mb-3 ${isDark ? 'text-white/80' : 'text-slate-700'}`}>
-                  {t.alertCardDesc}
+                  {activeScenarioDef.alert.description}
                 </p>
+
                 <div className="flex gap-2">
                   <button
-                    onClick={() => onActionClick('block_pix', criticalAlert.id)}
-                    className="flex-1 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold py-2 rounded-[4px] text-center transition-colors"
+                    onClick={() => onActionClick(activeScenarioDef.alert.primaryActionType)}
+                    className={`flex-1 text-white text-xs font-semibold py-2 rounded-[4px] text-center transition-colors shadow-sm ${
+                      activeScenario === 'cash_flow'
+                        ? 'bg-emerald-600 hover:bg-emerald-700'
+                        : activeScenario === 'travel_shield'
+                        ? 'bg-amber-600 hover:bg-amber-700'
+                        : activeScenario === 'open_finance'
+                        ? 'bg-blue-600 hover:bg-blue-700'
+                        : 'bg-rose-600 hover:bg-rose-700'
+                    }`}
                   >
-                    {t.btnBlockRefund}
+                    {activeScenarioDef.alert.primaryActionLabel}
                   </button>
+                  
                   <button
-                    onClick={() => onActionClick('approve_pix', criticalAlert.id)}
+                    onClick={() => onActionClick(activeScenarioDef.alert.secondaryActionType)}
                     className={`flex-1 text-xs font-medium py-2 rounded-[4px] text-center border transition-colors ${
                       isDark
                         ? 'bg-white/5 hover:bg-white/10 text-white/90 border-white/10'
                         : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-300'
                     }`}
                   >
-                    {t.btnApprove}
+                    {activeScenarioDef.alert.secondaryActionLabel}
                   </button>
                 </div>
+              </div>
+            )}
+
+            {/* If Alert Resolved Message */}
+            {isAlertResolved && (
+              <div className={`rounded-[8px] p-3 border text-xs flex items-center gap-2 ${
+                isDark ? 'bg-emerald-950/30 border-emerald-800/40 text-emerald-300' : 'bg-emerald-50 border-emerald-200 text-emerald-800'
+              }`}>
+                <Sparkles className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+                <span>
+                  {activeScenario === 'cash_flow' && (currentLang === 'en' ? "CDB Sweep scheduled for Thursday (Zero Overdraft)." : "Resgate de CDB agendado para quinta-feira (Zero LIS).")}
+                  {activeScenario === 'travel_shield' && (currentLang === 'en' ? "Travel Shield active for Portugal & Spain." : "Aviso de Viagem ativo para Portugal e Espanha.")}
+                  {activeScenario === 'open_finance' && (currentLang === 'en' ? "Debt Portability CCB executed — R$ 14,280 saved." : "Portabilidade CCB executada — R$ 14.280 economizados.")}
+                  {activeScenario === 'pix_fraud' && (currentLang === 'en' ? "Pix blocked & refunded via BACEN MED." : "Pix bloqueado e estornado via BACEN MED.")}
+                </span>
               </div>
             )}
 
@@ -170,25 +225,25 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                 <div className={`w-9 h-9 rounded-full border flex items-center justify-center ${isDark ? 'border-white/15 text-white' : 'border-slate-200 bg-white text-slate-800'}`}>
                   <QrCode className="w-4 h-4 text-brand-orange" />
                 </div>
-                <span>{t.quickPix}</span>
+                <span>{t.phone.quickPix}</span>
               </div>
               <div className={`flex flex-col items-center gap-1.5 py-2 rounded-[8px] transition-colors cursor-pointer ${isDark ? 'hover:bg-white/[0.05]' : 'hover:bg-white shadow-sm'}`}>
                 <div className={`w-9 h-9 rounded-full border flex items-center justify-center ${isDark ? 'border-white/15 text-white' : 'border-slate-200 bg-white text-slate-800'}`}>
                   <ArrowUpRight className="w-4 h-4" />
                 </div>
-                <span>{t.quickPay}</span>
+                <span>{t.phone.quickPay}</span>
               </div>
               <div className={`flex flex-col items-center gap-1.5 py-2 rounded-[8px] transition-colors cursor-pointer ${isDark ? 'hover:bg-white/[0.05]' : 'hover:bg-white shadow-sm'}`}>
                 <div className={`w-9 h-9 rounded-full border flex items-center justify-center ${isDark ? 'border-white/15 text-white' : 'border-slate-200 bg-white text-slate-800'}`}>
                   <ArrowDownLeft className="w-4 h-4" />
                 </div>
-                <span>{t.quickReceive}</span>
+                <span>{t.phone.quickReceive}</span>
               </div>
               <div className={`flex flex-col items-center gap-1.5 py-2 rounded-[8px] transition-colors cursor-pointer ${isDark ? 'hover:bg-white/[0.05]' : 'hover:bg-white shadow-sm'}`}>
                 <div className={`w-9 h-9 rounded-full border flex items-center justify-center ${isDark ? 'border-white/15 text-white' : 'border-slate-200 bg-white text-slate-800'}`}>
                   <CreditCard className="w-4 h-4" />
                 </div>
-                <span>{t.quickCards}</span>
+                <span>{t.phone.quickCards}</span>
               </div>
             </div>
 
@@ -200,28 +255,41 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
             }`}>
               <div className="flex justify-between items-center text-xs mb-1">
                 <span className={`font-semibold text-xs ${isDark ? 'text-white/95' : 'text-slate-900'}`}>{profile.cards[0]?.name}</span>
-                <span className={`text-[10px] font-mono font-bold ${isDark ? 'text-white/50' : 'text-slate-500'}`}>
-                  {profile.cards[0]?.status === 'frozen' ? t.frozenBadge : t.activeBadge}
+                <span className={`text-[10px] font-mono font-bold ${
+                  profile.cards[0]?.status === 'frozen' ? 'text-rose-400' : 'text-emerald-400'
+                }`}>
+                  {profile.cards[0]?.status === 'frozen' ? t.phone.frozenBadge : t.phone.activeBadge}
                 </span>
               </div>
-              <div className={`text-xs font-mono mb-2 ${isDark ? 'text-white/50' : 'text-slate-500'}`}>
-                •••• {profile.cards[0]?.last4}
+              
+              <div className="flex items-center justify-between mb-2">
+                <div className={`text-xs font-mono ${isDark ? 'text-white/50' : 'text-slate-500'}`}>
+                  •••• {profile.cards[0]?.last4}
+                </div>
+                {isTravelModeActive && (
+                  <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                    ✈️ {currentLang === 'en' ? 'EUROPE TRAVEL MODE' : 'MODO VIAGEM ATIVO'}
+                  </span>
+                )}
               </div>
+
               <div className={`flex items-center justify-between text-xs pt-2 border-t ${isDark ? 'border-white/[0.06]' : 'border-slate-100'}`}>
-                <span className={isDark ? 'text-white/60' : 'text-slate-600'}>R$ 72.569,50</span>
+                <span className={isDark ? 'text-white/60' : 'text-slate-600'}>
+                  {isTravelModeActive ? 'Limite: R$ 50.000,00' : 'R$ 72.569,50'}
+                </span>
                 <button
                   onClick={() => onActionClick(profile.cards[0]?.status === 'frozen' ? 'unfreeze_card' : 'freeze_card', profile.cards[0]?.id)}
                   className="text-xs font-bold text-brand-orange hover:underline"
                 >
-                  {profile.cards[0]?.status === 'frozen' ? t.unfreeze : t.freeze}
+                  {profile.cards[0]?.status === 'frozen' ? t.phone.unfreeze : t.phone.freeze}
                 </button>
               </div>
             </div>
 
-            {/* Recent Transactions (Localized) */}
+            {/* Recent Transactions */}
             <div className="space-y-2 pt-1">
               <div className={`text-[10px] font-bold uppercase tracking-wider px-1 ${isDark ? 'text-white/40' : 'text-slate-500'}`}>
-                {t.recentStatements}
+                {t.phone.recentStatements}
               </div>
               {localizedTransactions.map((tx) => (
                 <div
@@ -251,25 +319,25 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
               onClick={() => setActiveNavTab('home')}
               className={activeNavTab === 'home' ? 'text-brand-orange font-bold' : (isDark ? 'hover:text-white' : 'hover:text-slate-900')}
             >
-              {t.navHome}
+              {t.phone.navHome}
             </button>
             <button 
               onClick={() => setActiveNavTab('extrato')}
               className={activeNavTab === 'extrato' ? 'text-brand-orange font-bold' : (isDark ? 'hover:text-white' : 'hover:text-slate-900')}
             >
-              {t.navStatements}
+              {t.phone.navStatements}
             </button>
             <button 
               onClick={() => setActiveNavTab('pix')}
               className={activeNavTab === 'pix' ? 'text-brand-orange font-bold' : (isDark ? 'hover:text-white' : 'hover:text-slate-900')}
             >
-              {t.navPix}
+              {t.phone.navPix}
             </button>
             <button 
               onClick={() => setActiveNavTab('cartoes')}
               className={activeNavTab === 'cartoes' ? 'text-brand-orange font-bold' : (isDark ? 'hover:text-white' : 'hover:text-slate-900')}
             >
-              {t.navCards}
+              {t.phone.navCards}
             </button>
           </div>
 

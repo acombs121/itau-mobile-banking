@@ -1,22 +1,23 @@
+export type ScenarioId = 'cash_flow' | 'travel_shield' | 'open_finance' | 'pix_fraud';
+
 export interface SubAgent {
   id: string;
   name: string;
-  type: 'fraud' | 'med' | 'cards' | 'limits' | 'geolocation';
+  type: 'fraud' | 'med' | 'cards' | 'limits' | 'geolocation' | 'cash_flow' | 'travel' | 'open_finance';
   description: string;
   capabilities: string[];
-  status: 'idle' | 'processing' | 'completed';
+  status: 'idle' | 'processing' | 'completed' | 'failed';
   lastRun?: string;
-  resultData?: any;
+  resultData?: Record<string, any>;
 }
 
 export interface SecurityActionItem {
   id: string;
   time: string;
-  type: 'pix_hold' | 'card_freeze' | 'med_claim' | 'limit_adjust' | 'geo_verify';
+  type: 'pix_hold' | 'geo_verify' | 'card_freeze' | 'med_claim' | 'limit_adjust' | 'cdb_sweep' | 'travel_mode' | 'open_finance_ccb';
   title: string;
   description: string;
   status: 'Confirmed' | 'Pending' | 'Active' | 'Safeguarded';
-  location?: string;
   details?: string;
 }
 
@@ -25,7 +26,7 @@ export interface IOSNotification {
   app: string;
   title: string;
   subtitle: string;
-  icon: 'shield' | 'pix' | 'card' | 'alert';
+  icon?: string;
   timestamp: string;
 }
 
@@ -35,6 +36,32 @@ export interface TelemetryLog {
   agentId: string;
   agentName: string;
   action: string;
-  status: 'success' | 'warning' | 'info';
-  payload: any;
+  status: 'success' | 'warning' | 'error' | 'info';
+  payload: Record<string, any>;
+}
+
+export interface ScenarioDefinition {
+  id: ScenarioId;
+  title: string;
+  shortLabel: string;
+  tag: string;
+  agentId: string;
+  alert: {
+    badge: string;
+    title: string;
+    description: string;
+    primaryActionLabel: string;
+    primaryActionType: string;
+    secondaryActionLabel: string;
+    secondaryActionType: string;
+  };
+  telemetryPayload: Record<string, any>;
+  graphNodes: Array<{
+    id: string;
+    name: string;
+    group: string;
+    layer: string;
+    color: string;
+    details: string;
+  }>;
 }

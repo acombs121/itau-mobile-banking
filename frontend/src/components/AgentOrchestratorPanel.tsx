@@ -1,16 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Play } from 'lucide-react';
-import { SubAgent, SecurityActionItem, TelemetryLog } from '../types/itau_concierge';
-import { SecurityAlert } from '../types/banking';
+import { SubAgent, SecurityActionItem, TelemetryLog, ScenarioId } from '../types/itau_concierge';
 import { Language, translations } from '../i18n/translations';
 
 interface AgentOrchestratorPanelProps {
   subAgents: SubAgent[];
   actionItems: SecurityActionItem[];
   telemetryLogs: TelemetryLog[];
-  activeAlerts: SecurityAlert[];
   currentLang: Language;
   theme: 'dark' | 'light';
+  activeScenario: ScenarioId;
   onTriggerAgent: (agentId: string) => void;
   isProcessingAgent?: string | null;
 }
@@ -21,22 +20,32 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
   telemetryLogs,
   currentLang,
   theme,
+  activeScenario,
   onTriggerAgent,
   isProcessingAgent = null
 }) => {
   const [activeTab, setActiveTab] = useState<'agents' | 'actions' | 'graph' | 'logs'>('agents');
-  const [selectedAgentId, setSelectedAgentId] = useState<string>('itau_fraud_monitor');
   const t = translations[currentLang];
   const isDark = theme === 'dark';
 
-  // Merge localized metadata with live runtime state
+  const activeScenarioDef = t.scenarios.find(s => s.id === activeScenario) || t.scenarios[0];
+  const [selectedAgentId, setSelectedAgentId] = useState<string>(activeScenarioDef.agentId);
+
+  // Sync selected agent when active scenario changes
+  useEffect(() => {
+    setSelectedAgentId(activeScenarioDef.agentId);
+  }, [activeScenario]);
+
+  // Merge localized subagents with live runtime state
   const localizedSubAgents = t.subagents.list.map(localizedAgent => {
     const liveMatch = subAgents.find(a => a.id === localizedAgent.id);
+    const isScenarioDefaultAgent = localizedAgent.id === activeScenarioDef.agentId;
+
     return {
       ...localizedAgent,
-      status: liveMatch?.status || 'idle',
-      lastRun: liveMatch?.lastRun || (localizedAgent.id === 'itau_fraud_monitor' ? '14:52:10 BRT' : undefined),
-      resultData: liveMatch?.resultData || localizedAgent.defaultResult
+      status: liveMatch?.status || (isScenarioDefaultAgent ? 'completed' : 'idle'),
+      lastRun: liveMatch?.lastRun || (isScenarioDefaultAgent ? '14:52:10 BRT' : undefined),
+      resultData: liveMatch?.resultData || (isScenarioDefaultAgent ? activeScenarioDef.telemetryPayload : localizedAgent.defaultResult)
     };
   });
 
@@ -130,6 +139,7 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
                 const isProcessing = isProcessingAgent === agent.id || agent.status === 'processing';
                 const isCompleted = agent.status === 'completed';
                 const isSelected = selectedAgentDetail?.id === agent.id;
+                const isScenarioAgent = agent.id === activeScenarioDef.agentId;
 
                 return (
                   <div
@@ -164,9 +174,17 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
                           {agent.name}
                         </h3>
                       </div>
-                      <span className={`text-xs font-mono flex-shrink-0 ml-2 ${isDark ? 'text-white/40' : 'text-slate-400'}`}>
-                        {isProcessing ? t.subagents.statusProcessing : isCompleted ? t.subagents.statusCompleted : t.subagents.statusIdle}
-                      </span>
+
+                      <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
+                        {isScenarioAgent && (
+                          <span className="text-[9px] font-mono font-bold px-1 rounded bg-brand-orange/20 text-brand-orange">
+                            SCENARIO
+                          </span>
+                        )}
+                        <span className={`text-xs font-mono ${isDark ? 'text-white/40' : 'text-slate-400'}`}>
+                          {isProcessing ? t.subagents.statusProcessing : isCompleted ? t.subagents.statusCompleted : t.subagents.statusIdle}
+                        </span>
+                      </div>
                     </div>
 
                     <p className={`text-xs leading-relaxed mb-2.5 ${isDark ? 'text-white/70' : 'text-slate-600'}`}>
@@ -221,8 +239,6 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
                       agent: selectedAgentDetail.name,
                       id: selectedAgentDetail.id,
                       status: selectedAgentDetail.status,
-                      system_compliance: currentLang === 'en' ? "Central Bank Resolution 147 (MED)" : "BACEN Resolução 147 (MED)",
-                      risk_score: "94/100",
                       capabilities: selectedAgentDetail.capabilities
                     }, null, 2)}
                   </pre>
@@ -272,7 +288,7 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
                       )}
                     </div>
 
-                    <span className={`text-xs font-mono font-medium ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                    <span className={`text-xs font-mono font-medium flex-shrink-0 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>
                       {t.actionPlan.statusSafeguarded}
                     </span>
                   </div>
@@ -282,11 +298,20 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
           </div>
         )}
 
-        {/* TAB 3: DECISION GRAPH */}
+        {/* TAB 3: DECISION GRAPH (Scenario-Aware) */}
         {activeTab === 'graph' && (
           <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-mono uppercase text-brand-orange font-bold">
+                {activeScenarioDef.title} — Reasoning Pipeline
+              </span>
+              <span className={`text-[10px] font-mono ${isDark ? 'text-white/40' : 'text-slate-400'}`}>
+                5-Stage Property Graph
+              </span>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-5 gap-2.5">
-              {translations[currentLang].graph.nodes.map((node) => (
+              {activeScenarioDef.graphNodes.map((node) => (
                 <div
                   key={node.id}
                   className={`border rounded-[10px] p-3.5 transition-colors ${
@@ -307,14 +332,25 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
             <div className={`border rounded-[10px] p-3.5 transition-colors ${
               isDark ? 'border-white/[0.06] bg-black/40' : 'border-slate-200 bg-slate-50'
             }`}>
-              <div className={`text-xs font-mono uppercase mb-1.5 ${isDark ? 'text-white/40' : 'text-slate-500'}`}>
-                GRAPH QUERY (CYPHER)
+              <div className={`text-xs font-mono uppercase mb-1.5 flex items-center justify-between ${isDark ? 'text-white/40' : 'text-slate-500'}`}>
+                <span>CYPHER GRAPH QUERY ({activeScenarioDef.tag})</span>
+                <span className="text-brand-orange font-bold">GEMINI REASONING TRACE</span>
               </div>
-              <pre className={`text-xs font-mono overflow-x-auto ${isDark ? 'text-white/70' : 'text-slate-700'}`}>
-MATCH (c:Cardholder &#123; id: "ROBERTO_SILVA_7749" &#125;)-[:INITIATED_TX]-&gt;(tx:PixTransaction)
-WHERE tx.risk_score &gt; 85 AND tx.ip_anomaly = true
-MATCH (p:ProtectionPolicy &#123; name: "BACEN_MED_147" &#125;)
-RETURN tx.amount, tx.recipient, p.precautionary_action;
+              <pre className={`text-xs font-mono overflow-x-auto leading-relaxed ${isDark ? 'text-white/70' : 'text-slate-700'}`}>
+{activeScenario === 'cash_flow' && `MATCH (c:Cardholder { id: "ROBERTO_SILVA_7749" })-[:HAS_SCHEDULED_DEBITS]->(d:ScheduledPayments)
+WHERE d.due_date = "2026-08-25" AND d.projected_checking_balance < 0
+MATCH (c)-[:HOLDS_ASSET]->(a:Asset { type: "CDB_DI_LIQUIDEZ_DIARIA" })
+RETURN d.shortfall_amount, a.yield_rate, "SCHEDULE_OPTIMAL_SWEEP_0600";`}
+{activeScenario === 'travel_shield' && `MATCH (c:Cardholder { id: "ROBERTO_SILVA_7749" })-[:HOLDS_CARD]->(card:MastercardBlack { last4: "8841" })
+MATCH (c)-[:FLIGHT_BOOKING]->(trip:Trip { destinations: ["Portugal", "Spain"] })
+RETURN card.id, trip.dates, "ELEVATE_POS_LIMIT_50K", "ACTIVATE_TRAVEL_HEALTH_POLICY";`}
+{activeScenario === 'open_finance' && `MATCH (c:Cardholder { id: "ROBERTO_SILVA_7749" })-[:OPEN_FINANCE_DEBT]->(ext:ExternalLoan { apr: 240.5 })
+MATCH (p:RefinancePolicy { tier: "Itaú Personnalité", rate_mo: 1.69 })
+RETURN ext.balance_brl, p.monthly_savings_brl, "ISSUE_DIGITAL_CCB_LEI_10931";`}
+{activeScenario === 'pix_fraud' && `MATCH (c:Cardholder { id: "ROBERTO_SILVA_7749" })-[:INITIATED_TX]->(tx:PixTransaction { amount: 4200.00 })
+WHERE tx.risk_score > 85 AND tx.ip_anomaly = true
+MATCH (p:ProtectionPolicy { name: "BACEN_MED_147" })
+RETURN tx.amount, tx.recipient, p.precautionary_action;`}
               </pre>
             </div>
           </div>

@@ -1,6 +1,7 @@
 import React from 'react';
-import { PhoneCall, PhoneOff, RotateCcw, Save, Sun, Moon } from 'lucide-react';
+import { PhoneCall, PhoneOff, RotateCcw, Save, Sun, Moon, Layers } from 'lucide-react';
 import { Language, translations } from '../i18n/translations';
+import { ScenarioId } from '../types/itau_concierge';
 
 interface CockpitHeaderProps {
   currentLang: Language;
@@ -12,6 +13,8 @@ interface CockpitHeaderProps {
   onReset: () => void;
   onSaveSession: () => void;
   isSaving?: boolean;
+  activeScenario: ScenarioId;
+  onSelectScenario: (scenarioId: ScenarioId) => void;
 }
 
 export const CockpitHeader: React.FC<CockpitHeaderProps> = ({
@@ -23,32 +26,61 @@ export const CockpitHeader: React.FC<CockpitHeaderProps> = ({
   onToggleCall,
   onReset,
   onSaveSession,
-  isSaving = false
+  isSaving = false,
+  activeScenario,
+  onSelectScenario
 }) => {
-  const t = translations[currentLang].header;
+  const t = translations[currentLang];
   const isDark = theme === 'dark';
 
   return (
     <header
-      className={`w-full h-16 sm:h-18 px-6 sm:px-8 flex items-center justify-between z-40 sticky top-0 transition-colors duration-200 flex-shrink-0 ${
+      className={`w-full h-16 sm:h-18 px-4 sm:px-6 md:px-8 flex items-center justify-between z-40 sticky top-0 transition-colors duration-200 flex-shrink-0 ${
         isDark
           ? 'bg-[#151518] border-b border-white/[0.08] text-white'
           : 'bg-white border-b border-slate-200 text-slate-900 shadow-sm'
       }`}
     >
-      {/* Brand & Context - Prominent & Legible Typography */}
-      <div className="flex items-center gap-4 min-w-0">
+      {/* Left: Brand & Context */}
+      <div className="flex items-center gap-3.5 min-w-0">
         <div className="bg-brand-orange text-white font-extrabold text-sm sm:text-base px-3 py-1.5 rounded-[4px] tracking-tight select-none flex-shrink-0 shadow-sm">
           itau
         </div>
         <div className={`h-5 w-[1px] hidden sm:block flex-shrink-0 ${isDark ? 'bg-white/15' : 'bg-slate-300'}`} />
         <span className={`text-sm sm:text-base md:text-lg font-bold tracking-tight truncate ${isDark ? 'text-white/95' : 'text-slate-900'}`}>
-          {t.brandTitle}
+          {t.header.brandTitle}
         </span>
       </div>
 
-      {/* Right Controls - Enhanced Scale & Proportions */}
-      <div className="flex items-center gap-2.5 sm:gap-3.5 flex-shrink-0">
+      {/* Center: Scenario Quick Switcher Bar */}
+      <div className="hidden lg:flex items-center gap-1.5 p-1 rounded-[6px] border transition-colors bg-black/30 border-white/10">
+        <div className="flex items-center gap-1 px-2 text-[11px] font-mono uppercase text-white/40 select-none">
+          <Layers className="w-3 h-3 text-brand-orange" />
+          <span>{currentLang === 'en' ? 'Scenario:' : 'Cenário:'}</span>
+        </div>
+
+        {t.scenarios.map((sc) => {
+          const isActive = activeScenario === sc.id;
+          return (
+            <button
+              key={sc.id}
+              onClick={() => onSelectScenario(sc.id)}
+              className={`px-2.5 py-1 text-xs font-semibold rounded-[4px] transition-all truncate select-none ${
+                isActive
+                  ? 'bg-brand-orange text-white shadow-sm ring-1 ring-white/20 font-bold'
+                  : isDark
+                  ? 'text-white/60 hover:text-white hover:bg-white/5'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200'
+              }`}
+            >
+              {sc.shortLabel}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Right Controls */}
+      <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
         
         {/* Language Switcher */}
         <div
@@ -109,36 +141,36 @@ export const CockpitHeader: React.FC<CockpitHeaderProps> = ({
         {/* Reset */}
         <button
           onClick={onReset}
-          className={`h-9 px-2.5 text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 transition-colors flex-shrink-0 ${
+          className={`h-9 px-2 text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 transition-colors flex-shrink-0 ${
             isDark
               ? 'text-white/50 hover:text-white'
               : 'text-slate-500 hover:text-slate-900'
           }`}
-          title={t.resetSession}
+          title={t.header.resetSession}
         >
           <RotateCcw className="w-4 h-4 flex-shrink-0" />
-          <span className="hidden md:inline">{t.resetSession}</span>
+          <span className="hidden xl:inline">{t.header.resetSession}</span>
         </button>
 
         {/* Save */}
         <button
           onClick={onSaveSession}
           disabled={isSaving}
-          className={`h-9 px-2.5 text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 transition-colors disabled:opacity-30 flex-shrink-0 ${
+          className={`h-9 px-2 text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 transition-colors disabled:opacity-30 flex-shrink-0 ${
             isDark
               ? 'text-white/50 hover:text-white'
               : 'text-slate-500 hover:text-slate-900'
           }`}
-          title={t.saveSession}
+          title={t.header.saveSession}
         >
           <Save className="w-4 h-4 flex-shrink-0" />
-          <span className="hidden md:inline">{isSaving ? '...' : t.saveSession}</span>
+          <span className="hidden xl:inline">{isSaving ? '...' : t.header.saveSession}</span>
         </button>
 
         {/* Primary Call AI Trigger */}
         <button
           onClick={onToggleCall}
-          className={`w-40 sm:w-48 md:w-52 h-9 sm:h-10 px-3.5 rounded-[5px] text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all flex-shrink-0 select-none shadow-sm ${
+          className={`w-36 sm:w-44 md:w-48 h-9 sm:h-10 px-3 rounded-[5px] text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all flex-shrink-0 select-none shadow-sm ${
             isCallActive
               ? 'bg-rose-600 text-white hover:bg-rose-700'
               : 'bg-brand-orange hover:bg-brand-orange-hover text-white'
@@ -147,12 +179,12 @@ export const CockpitHeader: React.FC<CockpitHeaderProps> = ({
           {isCallActive ? (
             <>
               <PhoneOff className="w-4 h-4 flex-shrink-0" />
-              <span className="truncate">{t.hangUp}</span>
+              <span className="truncate">{t.header.hangUp}</span>
             </>
           ) : (
             <>
               <PhoneCall className="w-4 h-4 flex-shrink-0" />
-              <span className="truncate">{t.callAi}</span>
+              <span className="truncate">{t.header.callAi}</span>
             </>
           )}
         </button>

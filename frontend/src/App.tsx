@@ -1,18 +1,13 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CockpitHeader } from './components/CockpitHeader';
 import { PhoneContainer } from './components/PhoneContainer';
 import { AgentOrchestratorPanel } from './components/AgentOrchestratorPanel';
 import { VoiceBankingModal } from './components/VoiceBankingModal';
 import { BankingProfile, SecurityAlert } from './types/banking';
-import { SubAgent, SecurityActionItem, IOSNotification, TelemetryLog } from './types/itau_concierge';
+import { SubAgent, SecurityActionItem, IOSNotification, TelemetryLog, ScenarioId } from './types/itau_concierge';
 import { Language, translations } from './i18n/translations';
 
-const STORAGE_KEYS = {
-  THEME: 'itau_cockpit_theme',
-  LANG: 'itau_cockpit_lang'
-};
-
-const INITIAL_PROFILE: BankingProfile = {
+const DEFAULT_PROFILE: BankingProfile = {
   account_id: "ITAU-7749-00912",
   customer_name: "Roberto Silva",
   segment: "Itaú Personnalité",
@@ -71,85 +66,67 @@ const INITIAL_PROFILE: BankingProfile = {
   ]
 };
 
-const INITIAL_ALERTS: SecurityAlert[] = [
-  {
-    id: "alert_pix_fraud",
-    severity: "CRITICAL",
-    category: "fraud_anomaly",
-    title: "Tentativa de Pix Suspeito Bloqueada",
-    timestamp: "Agora mesmo",
-    description: "Transferência Pix de R$ 4.200,00 para 'Eletro Tech SP' interceptada pelo sistema Itaú Guard. Divergência detectada: dispositivo em São Paulo acessando via proxy internacional.",
-    amount_brl: 4200.00,
-    recipient: "Eletro Tech SP Ltda (CNPJ 48.910.221/0001-09)",
-    risk_score: 94,
-    recommended_action: "Validar por biometria ou congelar token virtual",
-    status: "held_pending_confirmation",
-    policy_matched: "BACEN Resolução 147 — Mecanismo Especial de Devolução (MED)"
-  },
-  {
-    id: "alert_night_limit",
-    severity: "WARNING",
-    category: "limit_management",
-    title: "Diretriz Noturna BACEN Ativa (R$ 1.000,00)",
-    timestamp: "20:00 - 06:00 BRT",
-    description: "Regra preventiva do Banco Central limita transferências noturnas. Liberação emergencial exige validação por voz.",
-    amount_brl: null,
-    recipient: null,
-    risk_score: 15,
-    recommended_action: "Solicitar aumento temporário via IA se necessário",
-    status: "active_rule",
-    policy_matched: "Diretrizes de Segurança do Banco Central do Brasil"
-  }
-];
-
-export function App() {
-  // Initialize state with localStorage persistence
-  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
-    const savedTheme = localStorage.getItem(STORAGE_KEYS.THEME);
-    return savedTheme === 'light' ? 'light' : 'dark';
-  });
-
+export const App: React.FC = () => {
+  // Read persisted language and theme from localStorage
   const [currentLang, setCurrentLang] = useState<Language>(() => {
-    const savedLang = localStorage.getItem(STORAGE_KEYS.LANG);
-    return savedLang === 'en' ? 'en' : 'pt';
+    const savedLang = localStorage.getItem('itau_cockpit_lang');
+    return (savedLang === 'en' || savedLang === 'pt') ? savedLang : 'pt';
   });
 
-  const [profile, setProfile] = useState<BankingProfile>(INITIAL_PROFILE);
-  const [alerts, setAlerts] = useState<SecurityAlert[]>(INITIAL_ALERTS);
-  const [subAgents, setSubAgents] = useState<SubAgent[]>([]);
-  const [actionItems, setActionItems] = useState<SecurityActionItem[]>(translations[currentLang].actionPlan.initialItems);
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    const savedTheme = localStorage.getItem('itau_cockpit_theme');
+    return (savedTheme === 'light' || savedTheme === 'dark') ? savedTheme : 'dark';
+  });
+
+  // Active Scenario State: Default is 'cash_flow' (Scenario 1)
+  const [activeScenario, setActiveScenario] = useState<ScenarioId>('cash_flow');
+
+  const [profile, setProfile] = useState<BankingProfile>(DEFAULT_PROFILE);
+  const alerts: SecurityAlert[] = [];
+  const subAgents: SubAgent[] = [];
+  const [actionItems, setActionItems] = useState<SecurityActionItem[]>([]);
   const [notifications, setNotifications] = useState<IOSNotification[]>([]);
   const [telemetryLogs, setTelemetryLogs] = useState<TelemetryLog[]>([]);
-  const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
-  const [isCallActive, setIsCallActive] = useState(false);
-  const selectedAlertContext = alerts[0] || null;
-  const [isSaving, setIsSaving] = useState(false);
-  const [isProcessingAgent, setIsProcessingAgent] = useState<string | null>(null);
 
-  // Sync theme changes to localStorage
+  // Scenario Resolution Flags
+  const [isCdbSweepScheduled, setIsCdbSweepScheduled] = useState(false);
+  const [isTravelModeActive, setIsTravelModeActive] = useState(false);
+  const [isOpenFinanceRefiDone, setIsOpenFinanceRefiDone] = useState(false);
+  const [isPixBlocked, setIsPixBlocked] = useState(false);
+
+  // Voice Modal
+  const [isVoiceOpen, setIsVoiceOpen] = useState(false);
+  const [isCallActive, setIsCallActive] = useState(false);
+  const [isProcessingAgent, setIsProcessingAgent] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Sync lang changes to localStorage
+  const handleToggleLang = (newLang: Language) => {
+    setCurrentLang(newLang);
+    localStorage.setItem('itau_cockpit_lang', newLang);
+  };
+
+  // Sync theme changes to localStorage and HTML root
+  const handleToggleTheme = () => {
+    const nextTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(nextTheme);
+    localStorage.setItem('itau_cockpit_theme', nextTheme);
+  };
+
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.THEME, theme);
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
   }, [theme]);
 
-  // Sync language changes to localStorage
+  // Initial Actions in Plan
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.LANG, currentLang);
+    setActionItems(translations[currentLang].actionPlan.initialItems);
   }, [currentLang]);
 
-  const t = translations[currentLang];
-
-  const toggleTheme = () => {
-    setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
-  };
-
-  const handleLanguageChange = (newLang: Language) => {
-    setCurrentLang(newLang);
-    // If no custom actions were taken yet, update the initial actions to the new language
-    if (actionItems.length === 2 && (actionItems[0].id === 'act_01' || actionItems[0].id === 'act_02')) {
-      setActionItems(translations[newLang].actionPlan.initialItems);
-    }
-  };
-
+  // Trigger iOS Push Toast
   const triggerNotification = (title: string, subtitle: string) => {
     const newNotif: IOSNotification = {
       id: "notif_" + Date.now(),
@@ -159,251 +136,291 @@ export function App() {
       icon: "shield",
       timestamp: currentLang === 'en' ? "Now" : "Agora"
     };
-    setNotifications(prev => [newNotif, ...prev]);
+    setNotifications([newNotif]);
     setTimeout(() => {
       setNotifications(prev => prev.filter(n => n.id !== newNotif.id));
-    }, 6000);
+    }, 5500);
   };
 
-  const handleAction = async (actionType: string, targetId: string) => {
-    if (actionType === 'block_pix') {
-      setIsProcessingAgent('itau_med_dispute');
-      
-      setSubAgents(prev => {
-        const others = prev.filter(a => a.id !== 'itau_med_dispute');
-        return [
-          ...others,
-          {
-            id: 'itau_med_dispute',
-            name: "BACEN MED & Reversal Desk",
-            type: "med",
-            description: "",
-            capabilities: [],
-            status: 'completed',
-            lastRun: new Date().toLocaleTimeString(currentLang === 'en' ? 'en-US' : 'pt-BR'),
-            resultData: {
-              action: "MED_DISPUTE_FILED",
-              protocol: "MED-2026-" + Math.floor(100000 + Math.random() * 900000),
-              status: "FUNDS_SAFEGUARDED_IN_ACCOUNT",
-              amount_brl: 4200.00,
-              central_bank_compliance: currentLang === 'en' ? "Resolution 147" : "Resolução 147"
-            }
-          }
-        ];
-      });
-
-      setAlerts(prev => prev.map(a => a.id === targetId ? { ...a, status: 'blocked_and_reversed' } : a));
-
-      const newAction: SecurityActionItem = {
-        id: "act_" + Date.now(),
-        time: new Date().toLocaleTimeString(currentLang === 'en' ? 'en-US' : 'pt-BR', { hour: '2-digit', minute: '2-digit' }) + " BRT",
-        type: "med_claim",
-        title: currentLang === 'en' ? "Pix Blocked & Central Bank MED Filed" : "Bloqueio Definitivo & Protocolo MED Gerado",
-        description: currentLang === 'en' ? "R$ 4,200.00 refunded to checking balance. Counterparty key reported to BACEN." : "R$ 4.200,00 estornados para o saldo disponível. Chave Pix reportada ao BACEN.",
-        status: "Safeguarded",
-        details: "Protocolo MED #2026-ITAU-" + Math.floor(1000 + Math.random() * 9000)
+  // Scenario Switcher Handler
+  const handleSelectScenario = (scenarioId: ScenarioId) => {
+    setActiveScenario(scenarioId);
+    const scenarioDef = translations[currentLang].scenarios.find(s => s.id === scenarioId);
+    if (scenarioDef) {
+      // Add Telemetry Log for Scenario Switch
+      const newLog: TelemetryLog = {
+        id: "log_" + Date.now(),
+        timestamp: new Date().toLocaleTimeString(),
+        agentId: scenarioDef.agentId,
+        agentName: scenarioDef.title,
+        action: `SWITCH_SCENARIO_${scenarioDef.tag}`,
+        status: "info",
+        payload: scenarioDef.telemetryPayload
       };
-      setActionItems(prev => [newAction, ...prev]);
-
-      triggerNotification(
-        t.notifications.pixBlockedTitle,
-        t.notifications.pixBlockedSubtitle
-      );
-
-      setTelemetryLogs(prev => [
-        {
-          id: "log_" + Date.now(),
-          timestamp: new Date().toISOString(),
-          agentId: "itau_med_dispute",
-          agentName: "BACEN MED & Reversal Desk",
-          action: "FILE_MED_DISPUTE_AND_REVERSE",
-          status: "success",
-          payload: {
-            alert_id: targetId,
-            refund_amount: 4200.00,
-            bacen_resolution: "Res. 147"
-          }
-        },
-        ...prev
-      ]);
-
-      setIsProcessingAgent(null);
-
-    } else if (actionType === 'freeze_card' || actionType === 'unfreeze_card') {
-      const isFreezing = actionType === 'freeze_card';
-      setIsProcessingAgent('itau_card_token_servicing');
-
-      setProfile(prev => ({
-        ...prev,
-        cards: prev.cards.map(c => c.id === targetId ? { ...c, status: isFreezing ? 'frozen' : 'active' } : c)
-      }));
-
-      setSubAgents(prev => {
-        const others = prev.filter(a => a.id !== 'itau_card_token_servicing');
-        return [
-          ...others,
-          {
-            id: 'itau_card_token_servicing',
-            name: "Card & Token Guardian",
-            type: "cards",
-            description: "",
-            capabilities: [],
-            status: 'completed',
-            lastRun: new Date().toLocaleTimeString(currentLang === 'en' ? 'en-US' : 'pt-BR'),
-            resultData: {
-              card_id: targetId,
-              action: isFreezing ? "CARD_FROZEN" : "CARD_UNFROZEN",
-              tokens_deactivated: isFreezing ? ["ApplePay_Token_9912", "GooglePay_Token_4410"] : []
-            }
-          }
-        ];
-      });
-
-      const newAction: SecurityActionItem = {
-        id: "act_" + Date.now(),
-        time: new Date().toLocaleTimeString(currentLang === 'en' ? 'en-US' : 'pt-BR', { hour: '2-digit', minute: '2-digit' }) + " BRT",
-        type: "card_freeze",
-        title: isFreezing
-          ? (currentLang === 'en' ? "Mastercard Black Card Frozen" : "Cartão Mastercard Black Congelado")
-          : (currentLang === 'en' ? "Mastercard Black Card Reactivated" : "Cartão Mastercard Black Reativado"),
-        description: isFreezing
-          ? (currentLang === 'en' ? "Digital tokens suspended to stop unauthorized recurring charges." : "Tokens digitais suspensos preventivamente contra compras recorrentes.")
-          : (currentLang === 'en' ? "Biometric authentication confirmed by account holder." : "Biometria confirmada pelo titular."),
-        status: isFreezing ? "Safeguarded" : "Confirmed",
-        details: isFreezing ? "Card •• 8841" : "Secure Reactivation"
-      };
-      setActionItems(prev => [newAction, ...prev]);
-
-      triggerNotification(
-        isFreezing ? t.notifications.cardFrozenTitle : t.notifications.cardUnfrozenTitle,
-        isFreezing ? t.notifications.cardFrozenSubtitle : t.notifications.cardUnfrozenSubtitle
-      );
-
-      setIsProcessingAgent(null);
+      setTelemetryLogs(prev => [newLog, ...prev]);
     }
   };
 
-  const handleTriggerManualAgent = (agentId: string) => {
+  // Central Action Handler (Triggered from phone buttons, modals, or manual agent runs)
+  const handleBankingAction = (actionType: string, targetId?: string) => {
+    const tNotif = translations[currentLang].notifications;
+    const nowTime = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + ' BRT';
+
+    if (actionType === 'sweep_cdb' || actionType === 'view_cash_flow') {
+      setIsCdbSweepScheduled(true);
+      triggerNotification(tNotif.cdbSweepTitle, tNotif.cdbSweepSubtitle);
+      
+      const newAction: SecurityActionItem = {
+        id: "act_" + Date.now(),
+        time: nowTime,
+        type: "cdb_sweep",
+        title: currentLang === 'en' ? "CDB Sweep Scheduled — R$ 15,000.00" : "Resgate CDB Agendado — R$ 15.000,00",
+        description: currentLang === 'en' ? "Automatic rebalance from CDB DI Liquidez Diária on Thursday morning to avoid LIS overdraft." : "Rebalanceamento programado do CDB DI para quinta-feira de manhã, eliminando juros LIS.",
+        status: "Safeguarded",
+        details: "Yield Optimized • Zero LIS Overdraft"
+      };
+      setActionItems(prev => [newAction, ...prev]);
+
+      const newLog: TelemetryLog = {
+        id: "log_" + Date.now(),
+        timestamp: new Date().toLocaleTimeString(),
+        agentId: "cash_flow_forecast_agent",
+        agentName: "Cash Flow & Overdraft Preemption Agent",
+        action: "EXECUTE_OPTIMAL_CDB_SWEEP",
+        status: "success",
+        payload: {
+          target_date: "2026-08-25 06:00 BRT",
+          sweep_amount_brl: 15000.00,
+          source: "CDB_DI_LIQUIDEZ_DIARIA",
+          estimated_overdraft_interest_saved_brl: 184.60
+        }
+      };
+      setTelemetryLogs(prev => [newLog, ...prev]);
+    }
+    else if (actionType === 'activate_travel_mode' || actionType === 'view_travel_insurance') {
+      setIsTravelModeActive(true);
+      triggerNotification(tNotif.travelModeTitle, tNotif.travelModeSubtitle);
+
+      const newAction: SecurityActionItem = {
+        id: "act_" + Date.now(),
+        time: nowTime,
+        type: "travel_mode",
+        title: currentLang === 'en' ? "Travel Shield Activated: Portugal & Spain" : "Aviso de Viagem Ativado: Portugal e Espanha",
+        description: currentLang === 'en' ? "Mastercard Black international spend limit raised to R$ 50,000. Travel health insurance verified." : "Limite internacional do Mastercard Black elevado para R$ 50.000. Seguro saúde internacional validado.",
+        status: "Confirmed",
+        details: "Policy: MASTERCARD_BLACK_MED_GLOBAL"
+      };
+      setActionItems(prev => [newAction, ...prev]);
+
+      const newLog: TelemetryLog = {
+        id: "log_" + Date.now(),
+        timestamp: new Date().toLocaleTimeString(),
+        agentId: "travel_shield_agent",
+        agentName: "Travel Shield & International Card Guardian",
+        action: "ACTIVATE_TRAVEL_ROAMING_SHIELD",
+        status: "success",
+        payload: {
+          destinations: ["Portugal", "Spain"],
+          dates: "20/08 - 05/09",
+          international_pos_limit_brl: 50000.00,
+          fraud_engine_mode: "SUPPRESS_FALSE_DECLINES"
+        }
+      };
+      setTelemetryLogs(prev => [newLog, ...prev]);
+    }
+    else if (actionType === 'refinance_open_finance' || actionType === 'simulate_open_finance') {
+      setIsOpenFinanceRefiDone(true);
+      triggerNotification(tNotif.openFinanceTitle, tNotif.openFinanceSubtitle);
+
+      const newAction: SecurityActionItem = {
+        id: "act_" + Date.now(),
+        time: nowTime,
+        type: "open_finance_ccb",
+        title: currentLang === 'en' ? "Debt Portability CCB Executed — R$ 14,280 Saved" : "Portabilidade CCB Executada — R$ 14.280 Salvos",
+        description: currentLang === 'en' ? "Settled R$ 18,000 revolving balance at competitor via electronic CCB (Lei 10.931). Locked Personnalité rate at 1.69%/mo." : "Liquidado saldo rotativo de R$ 18.000 em concorrente via CCB eletrônica (Lei 10.931). Taxa Personnalité 1,69% a.m.",
+        status: "Safeguarded",
+        details: "CCB #2026-ITAU-CCB-8819 • Rail: CIP/STR"
+      };
+      setActionItems(prev => [newAction, ...prev]);
+
+      const newLog: TelemetryLog = {
+        id: "log_" + Date.now(),
+        timestamp: new Date().toLocaleTimeString(),
+        agentId: "open_finance_optimizer",
+        agentName: "Open Finance & Debt Portability Optimizer",
+        action: "DISPATCH_INTERBANK_PAYOFF_CIP",
+        status: "success",
+        payload: {
+          external_balance_settled_brl: 18000.00,
+          previous_rate: "11.2% a.m.",
+          new_rate: "1.69% a.m.",
+          total_interest_saved_brl: 14280.00
+        }
+      };
+      setTelemetryLogs(prev => [newLog, ...prev]);
+    }
+    else if (actionType === 'block_pix') {
+      setIsPixBlocked(true);
+      triggerNotification(tNotif.pixBlockedTitle, tNotif.pixBlockedSubtitle);
+
+      const newAction: SecurityActionItem = {
+        id: "act_" + Date.now(),
+        time: nowTime,
+        type: "med_claim",
+        title: currentLang === 'en' ? "Pix Blocked & Refunded via MED" : "Pix Bloqueado & Estornado via MED",
+        description: currentLang === 'en' ? "R$ 4,200.00 retained in checking account under Central Bank Resolution 147 directives." : "R$ 4.200,00 preservados em conta corrente sob diretrizes da Resolução BACEN 147.",
+        status: "Safeguarded",
+        details: "MED Claim #2026-ITAU-9914"
+      };
+      setActionItems(prev => [newAction, ...prev]);
+    }
+    else if (actionType === 'freeze_card') {
+      setProfile(prev => ({
+        ...prev,
+        cards: prev.cards.map(c => c.id === targetId || targetId === 'card_01' ? { ...c, status: 'frozen' } : c)
+      }));
+      triggerNotification(tNotif.cardFrozenTitle, tNotif.cardFrozenSubtitle);
+    }
+    else if (actionType === 'unfreeze_card') {
+      setProfile(prev => ({
+        ...prev,
+        cards: prev.cards.map(c => c.id === targetId || targetId === 'card_01' ? { ...c, status: 'active' } : c)
+      }));
+      triggerNotification(tNotif.cardUnfrozenTitle, tNotif.cardUnfrozenSubtitle);
+    }
+  };
+
+  // Trigger Sub-Agent Manually
+  const handleTriggerAgent = (agentId: string) => {
     setIsProcessingAgent(agentId);
     setTimeout(() => {
-      setSubAgents(prev => {
-        const others = prev.filter(a => a.id !== agentId);
-        const existing = prev.find(a => a.id === agentId);
-        return [
-          ...others,
-          {
-            id: agentId,
-            name: existing?.name || agentId,
-            type: existing?.type || "fraud",
-            description: existing?.description || "",
-            capabilities: existing?.capabilities || [],
-            status: 'completed',
-            lastRun: new Date().toLocaleTimeString(currentLang === 'en' ? 'en-US' : 'pt-BR'),
-            resultData: {
-              trigger: "MANUAL_ORCHESTRATOR_DISPATCH",
-              status: "SUCCESS_VALIDATED",
-              timestamp: new Date().toISOString()
-            }
-          }
-        ];
-      });
-
-      triggerNotification(t.notifications.agentTriggeredTitle, `${t.notifications.agentTriggeredSubtitle}${agentId}`);
       setIsProcessingAgent(null);
-    }, 800);
+      const agentObj = translations[currentLang].subagents.list.find(a => a.id === agentId);
+      triggerNotification(
+        translations[currentLang].notifications.agentTriggeredTitle,
+        `${translations[currentLang].notifications.agentTriggeredSubtitle} ${agentObj?.name || agentId}`
+      );
+
+      const newLog: TelemetryLog = {
+        id: "log_" + Date.now(),
+        timestamp: new Date().toLocaleTimeString(),
+        agentId,
+        agentName: agentObj?.name || agentId,
+        action: "MANUAL_INVOCATION",
+        status: "success",
+        payload: agentObj?.defaultResult || { timestamp: Date.now(), status: "SUCCESS" }
+      };
+      setTelemetryLogs(prev => [newLog, ...prev]);
+    }, 1100);
   };
 
-  const handleToggleCall = () => {
-    setIsCallActive(!isCallActive);
-    setIsVoiceModalOpen(!isVoiceModalOpen);
-  };
-
-  const handleReset = () => {
-    setProfile(INITIAL_PROFILE);
-    setAlerts(INITIAL_ALERTS);
-    setSubAgents([]);
+  // Reset Demo to Baseline
+  const handleResetDemo = () => {
+    setProfile(DEFAULT_PROFILE);
+    setIsCdbSweepScheduled(false);
+    setIsTravelModeActive(false);
+    setIsOpenFinanceRefiDone(false);
+    setIsPixBlocked(false);
     setActionItems(translations[currentLang].actionPlan.initialItems);
-    setNotifications([]);
     setTelemetryLogs([]);
-    triggerNotification(t.notifications.demoResetTitle, t.notifications.demoResetSubtitle);
+    triggerNotification(
+      translations[currentLang].notifications.demoResetTitle,
+      translations[currentLang].notifications.demoResetSubtitle
+    );
   };
 
+  // Save Session
   const handleSaveSession = async () => {
     setIsSaving(true);
     setTimeout(() => {
       setIsSaving(false);
-      triggerNotification(t.notifications.sessionSavedTitle, t.notifications.sessionSavedSubtitle);
-    }, 600);
+      triggerNotification(
+        translations[currentLang].notifications.sessionSavedTitle,
+        translations[currentLang].notifications.sessionSavedSubtitle
+      );
+    }, 800);
   };
-
-  const isDark = theme === 'dark';
 
   return (
     <div
-      className={`h-screen max-h-screen w-full flex flex-col overflow-hidden transition-colors duration-200 ${
-        isDark ? 'bg-[#1C1C20] text-white' : 'bg-[#EAEBED] text-slate-900'
+      className={`w-screen h-screen overflow-hidden flex flex-col font-sans antialiased transition-colors duration-200 ${
+        theme === 'dark' ? 'bg-[#1C1C20] text-white' : 'bg-[#EAEBED] text-slate-900'
       }`}
     >
       
-      {/* Top Cockpit Header with Sun / Moon Toggle */}
+      {/* Top Header */}
       <CockpitHeader
         currentLang={currentLang}
-        onToggleLang={handleLanguageChange}
+        onToggleLang={handleToggleLang}
         theme={theme}
-        onToggleTheme={toggleTheme}
+        onToggleTheme={handleToggleTheme}
         isCallActive={isCallActive}
-        onToggleCall={handleToggleCall}
-        onReset={handleReset}
+        onToggleCall={() => {
+          setIsCallActive(!isCallActive);
+          setIsVoiceOpen(!isVoiceOpen);
+        }}
+        onReset={handleResetDemo}
         onSaveSession={handleSaveSession}
         isSaving={isSaving}
+        activeScenario={activeScenario}
+        onSelectScenario={handleSelectScenario}
       />
 
-      {/* Main Side-by-Side Dual-Pane Canvas on Charcoal Background */}
-      <main className="flex-1 w-full max-w-[1500px] mx-auto p-3 sm:p-4 grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch min-h-0 overflow-hidden">
-        
-        {/* Left Pane: Interactive Mobile Smartphone Container (5 Cols) */}
-        <div className="lg:col-span-5 flex justify-center items-center h-full min-min-0 overflow-hidden">
-          <PhoneContainer
-            profile={profile}
-            alerts={alerts}
-            notifications={notifications}
-            currentLang={currentLang}
-            theme={theme}
-            onOpenVoiceAssistant={handleToggleCall}
-            onActionClick={handleAction}
-          />
-        </div>
+      {/* Main Dual-Column Cockpit Canvas */}
+      <main className="flex-1 p-3 sm:p-5 md:p-6 overflow-hidden min-h-0">
+        <div className="max-w-[1780px] h-full mx-auto grid grid-cols-1 md:grid-cols-12 gap-5 items-stretch min-h-0">
+          
+          {/* Left Column: Authentic Smartphone Simulator */}
+          <div className="md:col-span-4 lg:col-span-4 xl:col-span-3 flex justify-center items-center h-full min-h-0">
+            <PhoneContainer
+              profile={profile}
+              notifications={notifications}
+              currentLang={currentLang}
+              theme={theme}
+              activeScenario={activeScenario}
+              onOpenVoiceAssistant={() => {
+                setIsCallActive(true);
+                setIsVoiceOpen(true);
+              }}
+              onActionClick={handleBankingAction}
+              isTravelModeActive={isTravelModeActive}
+              isCdbSweepScheduled={isCdbSweepScheduled}
+              isOpenFinanceRefiDone={isOpenFinanceRefiDone}
+              isPixBlocked={isPixBlocked}
+            />
+          </div>
 
-        {/* Right Pane: Agent & Process Orchestration Panel (7 Cols) */}
-        <div className="lg:col-span-7 flex flex-col h-full min-h-0 overflow-hidden">
-          <AgentOrchestratorPanel
-            subAgents={subAgents}
-            actionItems={actionItems}
-            telemetryLogs={telemetryLogs}
-            activeAlerts={alerts}
-            currentLang={currentLang}
-            theme={theme}
-            onTriggerAgent={handleTriggerManualAgent}
-            isProcessingAgent={isProcessingAgent}
-          />
-        </div>
+          {/* Right Column: Multi-Agent Telemetry & Orchestrator Panel */}
+          <div className="md:col-span-8 lg:col-span-8 xl:col-span-9 h-full min-h-0">
+            <AgentOrchestratorPanel
+              subAgents={subAgents}
+              actionItems={actionItems}
+              telemetryLogs={telemetryLogs}
+              currentLang={currentLang}
+              theme={theme}
+              activeScenario={activeScenario}
+              onTriggerAgent={handleTriggerAgent}
+              isProcessingAgent={isProcessingAgent}
+            />
+          </div>
 
+        </div>
       </main>
 
-      {/* Multimodal Gemini AI Modal */}
+      {/* Multimodal Gemini Live AI Voice Concierge Modal */}
       <VoiceBankingModal
-        isOpen={isVoiceModalOpen}
+        isOpen={isVoiceOpen}
         onClose={() => {
-          setIsVoiceModalOpen(false);
+          setIsVoiceOpen(false);
           setIsCallActive(false);
         }}
-        alertContext={selectedAlertContext}
+        alertContext={alerts[0] || null}
         currentLang={currentLang}
-        onActionClick={handleAction}
+        onActionClick={handleBankingAction}
       />
 
     </div>
   );
-}
+};
 
 export default App;

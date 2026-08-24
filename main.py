@@ -231,45 +231,92 @@ async def execute_banking_action(payload: BankingActionRequest, user: Dict[str, 
 
     return {"status": "error", "message": f"Unknown action type '{action}'"}
 
-@app.post("/api/banking/ai-assist")
-async def ai_assistant(payload: AiAssistRequest, user: Dict[str, Any] = Depends(get_authenticated_user)):
+class ChatRequest(BaseModel):
+    message: str
+    context: Optional[Dict[str, Any]] = None
+    lang: Optional[str] = "pt"
+
+@app.post("/api/chat")
+async def chat_endpoint(payload: ChatRequest, user: Dict[str, Any] = Depends(get_authenticated_user)):
     """
-    Invokes Gemini Enterprise Agent Platform (fka Vertex AI Platform)
-    with customer context and registered banking tools.
+    Multimodal Gemini Conversational Endpoint for Itaú Guard.
+    Supports Portuguese and English across all 4 autonomous scenarios:
+    1. Cash Flow Forecasting & CDB DI Sweeping
+    2. Travel Notice & Mastercard Black Limit Elevation
+    3. Open Finance Debt Consolidation & CCB Issuance
+    4. Pix Fraud Interception & MED Dispute
     """
+    lang = payload.lang or "pt"
+    user_msg = payload.message.lower()
+
+    # System instruction tailored for Itaú Guard persona
     system_prompt = f"""
-    You are the Banco Itaú AI Personal Banking Concierge and Fraud Protection Agent for Roberto Silva (Itaú Personnalité).
-    Customer Profile:
-    - Checking Balance: R$ {BANKING_PROFILE['checking_balance_brl']:,.2f}
-    - Active Security Alerts: {len(ACTIVE_ALERTS)} alerts active.
-    - Alert Details: {ACTIVE_ALERTS}
+    You are Itaú Guard, the elite AI Banking Concierge & Multi-Agent Orchestrator for Roberto Silva (Itaú Personnalité).
+    Language Mode: {'English' if lang == 'en' else 'Portuguese (pt-BR)'}.
     
-    Guidelines:
-    1. Respond with executive precision, courteous tone, and clear banking security advice.
-    2. If the user asks about the blocked Pix or fraud alert, explain the risk factors (unknown vendor, overseas VPN anomaly).
-    3. Clearly explain available actions: freezing the card, blocking the Pix transfer permanently, or submitting a MED dispute.
-    4. Keep answers clear, professional, and compliant with Brazilian Central Bank (BACEN) standards.
+    Customer Profile:
+    - Checking Account Balance: R$ 48.950,20
+    - Daily Liquidity CDB DI (100% CDI): R$ 85.000,00
+    - Mastercard Black (last 4: 8841): Available Limit R$ 72.569,50
+    - Scheduled Debits next Thursday (D+4): R$ 38.000,00 (Condo Pix R$ 3.850 + Mastercard Black Bill R$ 34.150)
+    - Connected Open Finance Debt: R$ 18.000,00 at Competitor Bank charging 11.2%/month (CET > 240% APR)
+    - Pre-Approved Itaú Sob Medida Line: 1.69%/month (Total savings: R$ 14.280,00 / R$ 680,40 monthly)
+
+    Rules:
+    1. Respond with executive precision, warm and professional tone, zero markdown asterisks in spoken numbers where possible.
+    2. SCENARIO 1 (Flight Tickets / Balance Forecast): If the user asks about buying tickets (e.g. R$ 24.000 to Lisbon) or asks if next week's bills will clear, calculate that checking will have a shortfall of R$ 13.050 next Thursday. Proactively suggest scheduling an automated sweep of R$ 15.000 from the Daily Liquidity CDB on Thursday morning so funds keep earning full CDI until the exact moment of payment.
+    3. SCENARIO 2 (Travel / Europe / Spain / Portugal / Mastercard): If the user mentions traveling to Portugal/Spain/Europe or asking about card safety, confirm you have activated Travel Shielding, raised the international POS limit to R$ 50.000, and verified complimentary Mastercard Black travel health insurance.
+    4. SCENARIO 3 (Open Finance / Debt Refinance / Savings): If the user asks about saving money or refinancing debt, explain the R$ 18.000 competitor balance at 11.2%/mo and offer to issue the electronic CCB under Lei 10.931 at 1.69%/mo, saving R$ 14.280 overall.
+    5. SCENARIO 4 (Pix Fraud / Block / Hold): If the user asks about the R$ 4.200 Pix attempt to 'Eletro Tech SP', explain the overseas VPN anomaly and confirm the precautionary hold under BACEN Resolution 147 (MED).
     """
 
     if gemini_client:
         try:
             response = gemini_client.models.generate_content(
                 model=GEMINI_MODEL,
-                contents=payload.user_query,
+                contents=payload.message,
                 config=types.GenerateContentConfig(
                     system_instruction=system_prompt,
                     temperature=0.2,
                 )
             )
-            return {"response": response.text, "model": GEMINI_MODEL}
+            return {"reply": response.text, "model": GEMINI_MODEL}
         except Exception as e:
-            logger.error(f"Gemini generation error: {e}")
+            logger.error(f"Gemini generation error in /api/chat: {e}")
 
-    # Fallback deterministic response for local/offline testing
-    return {
-        "response": f"Olá Roberto. Identificamos uma tentativa de transferência Pix de R$ 4.200,00 para 'Eletro Tech SP' com divergência de geolocalização e IP suspeito. O valor foi retido preventivamente para sua segurança. Deseja que eu bloqueie definitivamente a transação e congele o cartão virtual?",
-        "model": "local-fallback"
-    }
+    # High-fidelity deterministic fallbacks tailored to the user's intent
+    if "passag" in user_msg or "ticket" in user_msg or "saldo" in user_msg or "balance" in user_msg or "voo" in user_msg or "flight" in user_msg:
+        if lang == "en":
+            reply = "Hello Roberto. You currently have R$ 48,950 available in checking. However, if you purchase the tickets today, your scheduled credit card bill and condominium Pix next Thursday will result in a shortfall of R$ 13,050, entering high-interest overdraft. I see you have R$ 85,000 in your Daily Liquidity CDB. Would you like me to schedule an automatic transfer of R$ 15,000 on Thursday morning so your funds keep earning full CDI until the exact moment they are needed?"
+        else:
+            reply = "Olá Roberto. Você tem R$ 48.950,20 disponíveis em conta corrente. Contudo, ao comprar as passagens hoje, os débitos agendados de condomínio e cartão na próxima quinta-feira resultarão em um déficit de R$ 13.050,00, entrando no cheque especial (LIS). Identifiquei R$ 85.000,00 no seu CDB DI Liquidez Diária. Deseja que eu agende um resgate automático de R$ 15.000,00 para quinta-feira de manhã para manter seu rendimento até o minuto exato do débito?"
+    elif "viagem" in user_msg or "travel" in user_msg or "portugal" in user_msg or "espanha" in user_msg or "spain" in user_msg or "lisboa" in user_msg or "madrid" in user_msg:
+        if lang == "en":
+            reply = "All set, Roberto! I have activated Travel Shielding for Portugal and Spain on your Mastercard Black ending in 8841. I also increased your international daily spend limit to R$ 50,000 and verified that your complimentary Mastercard Black travel medical insurance is fully active for you and your companion. You're ready to travel with zero merchant friction."
+        else:
+            reply = "Tudo pronto, Roberto! Ativei o Aviso de Viagem para Portugal e Espanha no seu Mastercard Black final 8841. Também elevei seu limite diário internacional para R$ 50.000,00 e validei que o seguro médico internacional Mastercard Black está ativo para você e seu acompanhante. Sua viagem está totalmente protegida contra bloqueios indevidos."
+    elif "dívida" in user_msg or "debt" in user_msg or "refinanc" in user_msg or "open finance" in user_msg or "econom" in user_msg or "sav" in user_msg:
+        if lang == "en":
+            reply = "Roberto, reviewing your connected Open Finance portfolio, you have an outstanding revolving credit balance of R$ 18,000 at a competitor bank charging 11.2% per month. Because of your Personnalité tier, you have a pre-approved Itaú Sob Medida consolidation rate of just 1.69% per month. Refinancing this saves you R$ 680.40 every month—a total of R$ 14,280 in avoided interest. Would you like me to issue the digital CCB and settle that external balance directly?"
+        else:
+            reply = "Roberto, analisando seu Open Finance, identifiquei um saldo devedor de R$ 18.000,00 no banco concorrente a uma taxa de 11,2% ao mês. Pelo seu perfil Personnalité, você possui taxa pré-aprovada de 1,69% ao mês no Itaú Sob Medida. Essa portabilidade economiza R$ 680,40 por mês, totalizando R$ 14.280,00 em juros evitados. Deseja que eu emita a CCB eletrônica e liquide a dívida externa?"
+    else:
+        if lang == "en":
+            reply = "Itaú Guard is monitoring all active sub-agents. Your accounts, liquidity schedules, and Mastercard Black protections are operating securely under Central Bank standards."
+        else:
+            reply = "O Itaú Guard está monitorando todos os sub-agentes ativos. Suas contas, cronogramas de liquidez e proteções do Mastercard Black estão operando com segurança total sob as normas do Banco Central."
+
+    return {"reply": reply, "model": "local-orchestrator"}
+
+@app.post("/api/banking/ai-assist")
+async def ai_assistant(payload: AiAssistRequest, user: Dict[str, Any] = Depends(get_authenticated_user)):
+    """
+    Invokes Gemini Enterprise Agent Platform (fka Vertex AI Platform)
+    with customer context and registered banking tools.
+    """
+    chat_req = ChatRequest(message=payload.user_query, lang="pt")
+    res = await chat_endpoint(chat_req, user)
+    return {"response": res["reply"], "model": res["model"]}
 
 @app.get("/api/banking/decision-graph")
 async def get_decision_graph():
