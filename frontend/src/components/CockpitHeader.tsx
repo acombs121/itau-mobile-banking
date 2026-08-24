@@ -1,5 +1,5 @@
 import React from 'react';
-import { PhoneCall, PhoneOff, RotateCcw, Save, Sun, Moon, Layers } from 'lucide-react';
+import { RotateCcw, Save, Sun, Moon, Layers } from 'lucide-react';
 import { Language, translations } from '../i18n/translations';
 import { ScenarioId } from '../types/itau_concierge';
 
@@ -8,8 +8,6 @@ interface CockpitHeaderProps {
   onToggleLang: (lang: Language) => void;
   theme: 'dark' | 'light';
   onToggleTheme: () => void;
-  isCallActive: boolean;
-  onToggleCall: () => void;
   onReset: () => void;
   onSaveSession: () => void;
   isSaving?: boolean;
@@ -22,8 +20,6 @@ export const CockpitHeader: React.FC<CockpitHeaderProps> = ({
   onToggleLang,
   theme,
   onToggleTheme,
-  isCallActive,
-  onToggleCall,
   onReset,
   onSaveSession,
   isSaving = false,
@@ -165,28 +161,6 @@ export const CockpitHeader: React.FC<CockpitHeaderProps> = ({
         >
           <Save className="w-4 h-4 flex-shrink-0" />
           <span className="hidden xl:inline">{isSaving ? '...' : t.header.saveSession}</span>
-        </button>
-
-        {/* Primary Call AI Trigger */}
-        <button
-          onClick={onToggleCall}
-          className={`w-36 sm:w-44 md:w-48 h-9 sm:h-10 px-3 rounded-[5px] text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all flex-shrink-0 select-none shadow-sm ${
-            isCallActive
-              ? 'bg-rose-600 text-white hover:bg-rose-700'
-              : 'bg-brand-orange hover:bg-brand-orange-hover text-white'
-          }`}
-        >
-          {isCallActive ? (
-            <>
-              <PhoneOff className="w-4 h-4 flex-shrink-0" />
-              <span className="truncate">{t.header.hangUp}</span>
-            </>
-          ) : (
-            <>
-              <PhoneCall className="w-4 h-4 flex-shrink-0" />
-              <span className="truncate">{t.header.callAi}</span>
-            </>
-          )}
         </button>
 
       </div>

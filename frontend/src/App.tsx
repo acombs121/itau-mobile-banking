@@ -351,8 +351,6 @@ export const App: React.FC = () => {
         onToggleLang={handleToggleLang}
         theme={theme}
         onToggleTheme={handleToggleTheme}
-        isCallActive={isCallActive}
-        onToggleCall={() => setIsCallActive(!isCallActive)}
         onReset={handleResetDemo}
         onSaveSession={handleSaveSession}
         isSaving={isSaving}
