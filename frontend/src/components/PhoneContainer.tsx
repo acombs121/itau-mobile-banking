@@ -104,7 +104,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                   ? 'bg-white/10 hover:bg-brand-orange text-white'
                   : 'bg-slate-200 hover:bg-brand-orange hover:text-white text-slate-700'
               }`}
-              title="Personnalité Concierge"
+              title="Itaú Guard"
             >
               <Mic className="w-3.5 h-3.5" />
             </button>

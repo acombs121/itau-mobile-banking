@@ -15,17 +15,17 @@ export const translations = {
   pt: {
     header: {
       brandTitle: "Banco Itaú",
-      brandSub: "Painel de Orquestração & Concierge Financeiro em Tempo Real",
+      brandSub: "Painel de Orquestração & Proteção Itaú Guard em Tempo Real",
       saveSession: "Salvar Sessão",
       resetSession: "Reiniciar Demonstração",
-      callAi: "Chamar Personnalité Concierge",
+      callAi: "Chamar Itaú Guard",
       hangUp: "Encerrar Chamada",
       customer: "Roberto Silva",
       account: "Ag. 7749 • CC 00912-8",
     },
     tabs: {
       agents: "Sub-Agentes Ativos",
-      actionPlan: "Plano de Ações & Concierge",
+      actionPlan: "Plano de Salvaguarda",
       decisionGraph: "Grafo de Risco & Decisão",
       transcript: "Transcrição & Logs",
     },
@@ -42,7 +42,7 @@ export const translations = {
       list: [
         {
           id: "itau_fraud_monitor",
-          name: "Personnalité Fraud & Risk Monitor",
+          name: "Itaú Guard Fraud Monitor",
           type: "fraud",
           description: "Analisa telemetria de rede e geolocalização para contenção imediata de fraudes Pix.",
           capabilities: ["Detecção < 200ms", "Contenção Cautelar", "Validação IP"],
@@ -108,7 +108,7 @@ export const translations = {
     actionPlan: {
       title: "Plano de Salvaguarda & Ações Confirmadas",
       subtitle: "Medidas protetivas e otimizações registradas na conta corrente e dispositivos do cliente",
-      emptyState: "Nenhuma ação executada ainda. Interaja no app ou acione o Personnalité Concierge.",
+      emptyState: "Nenhuma ação executada ainda. Interaja no app ou acione o Itaú Guard.",
       statusConfirmed: "Confirmado",
       statusSafeguarded: "Protegido",
       statusPending: "Pendente",
@@ -141,7 +141,7 @@ export const translations = {
       alertCardDesc: "Pix de R$ 4.200,00 para 'Eletro Tech SP' retido preventivamente por anomalia de IP e geolocalização.",
       btnBlockRefund: "Bloquear & Estornar",
       btnApprove: "Confirmar Transação",
-      allSafe: "Conta, cartões e Pix protegidos com Personnalité Concierge.",
+      allSafe: "Conta, cartões e Pix protegidos com Itaú Guard.",
       quickPix: "Pix",
       quickPay: "Pagar",
       quickReceive: "Receber",
@@ -230,7 +230,7 @@ export const translations = {
         },
         {
           id: "ai_guard_engine",
-          name: "Motor de Decisão Personnalité Concierge",
+          name: "Motor de Decisão Itaú Guard",
           group: "Processamento IA",
           layer: "Decision",
           color: "#070707",
@@ -252,35 +252,35 @@ export const translations = {
       empty: "Inicie uma conversa por voz ou execute ações no app para gerar logs de telemetria.",
     },
     modal: {
-      title: "Personnalité Concierge",
+      title: "Itaú Guard",
       subtitle: "Atendimento por Voz & Concierge Financeiro",
       incidentContext: "Contexto Ativo:",
-      initialGreeting: "Olá Roberto. Sou o Personnalité Concierge. Como posso ajudar com seus pagamentos, saldo projetado ou planejamento de viagem hoje?",
-      analyzing: "Personnalité Concierge está analisando as informações...",
+      initialGreeting: "Olá Roberto. Sou o Itaú Guard. Como posso ajudar com seus pagamentos, saldo projetado ou planejamento de viagem hoje?",
+      analyzing: "Itaú Guard está analisando as informações...",
       quickPrompt1: "Verifique meu saldo e pagamentos previstos para a viagem.",
       quickPrompt2: "Ative o aviso de viagem para Europa no meu Mastercard Black.",
-      placeholder: "Digite ou fale com o Personnalité Concierge...",
+      placeholder: "Digite ou fale com o Itaú Guard...",
       send: "Enviar",
     },
     footer: {
       brand: "Banco Itaú Unibanco S.A.",
-      tagline: "Protegido por Personnalité Concierge & Gemini Enterprise Agent Platform",
+      tagline: "Protegido por Itaú Guard & Gemini Enterprise Agent Platform",
     }
   },
   en: {
     header: {
       brandTitle: "Banco Itaú",
-      brandSub: "Real-Time Sub-Agent Orchestration & Wealth Concierge Cockpit",
+      brandSub: "Real-Time Sub-Agent Orchestration & Itaú Guard Cockpit",
       saveSession: "Save Session",
       resetSession: "Reset Demo",
-      callAi: "Call Personnalité Concierge",
+      callAi: "Call Itaú Guard",
       hangUp: "End Call",
       customer: "Roberto Silva",
       account: "Branch 7749 • Acct 00912-8",
     },
     tabs: {
       agents: "Active Sub-Agents",
-      actionPlan: "Action Plan & Concierge",
+      actionPlan: "Safeguard Action Plan",
       decisionGraph: "Risk & Decision Graph",
       transcript: "Transcript & Logs",
     },
@@ -297,7 +297,7 @@ export const translations = {
       list: [
         {
           id: "itau_fraud_monitor",
-          name: "Personnalité Fraud & Risk Monitor",
+          name: "Itaú Guard Fraud Monitor",
           type: "fraud",
           description: "Analyzes network telemetry, geolocations, and payments for instant Pix fraud mitigation.",
           capabilities: ["Detection < 200ms", "Precautionary Hold", "IP Validation"],
@@ -361,9 +361,9 @@ export const translations = {
       ] as LocalizedSubAgentItem[]
     },
     actionPlan: {
-      title: "Action Plan & Concierge Execution",
+      title: "Safeguard Action Plan",
       subtitle: "Active protective measures and optimizations logged across checking account and cards",
-      emptyState: "No actions executed yet. Interact with the mobile app or voice concierge.",
+      emptyState: "No actions executed yet. Interact with the mobile app or voice assistant.",
       statusConfirmed: "Confirmed",
       statusSafeguarded: "Safeguarded",
       statusPending: "Pending",
@@ -396,7 +396,7 @@ export const translations = {
       alertCardDesc: "Pix transfer of R$ 4,200.00 to 'Eletro Tech SP' held due to IP and geolocation discrepancy.",
       btnBlockRefund: "Block & Refund",
       btnApprove: "Authorize Transfer",
-      allSafe: "Account, cards, and payments protected with Personnalité Concierge.",
+      allSafe: "Account, cards, and payments protected with Itaú Guard.",
       quickPix: "Pix",
       quickPay: "Pay",
       quickReceive: "Receive",
@@ -485,7 +485,7 @@ export const translations = {
         },
         {
           id: "ai_guard_engine",
-          name: "Personnalité Concierge Decision Engine",
+          name: "Itaú Guard Decision Engine",
           group: "AI Processing",
           layer: "Decision",
           color: "#070707",
@@ -507,19 +507,19 @@ export const translations = {
       empty: "Start a voice conversation or perform actions in the mobile app to stream telemetry.",
     },
     modal: {
-      title: "Personnalité Concierge",
+      title: "Itaú Guard",
       subtitle: "Voice & Wealth Advisory Assistant",
       incidentContext: "Active Context:",
-      initialGreeting: "Hello Roberto. I am Personnalité Concierge. How can I assist with your payments, cash flow forecast, or travel plans today?",
-      analyzing: "Personnalité Concierge is analyzing financial data...",
+      initialGreeting: "Hello Roberto. I am Itaú Guard. How can I assist with your payments, cash flow forecast, or travel plans today?",
+      analyzing: "Itaú Guard is analyzing financial data...",
       quickPrompt1: "Check my balance and projected payments for my upcoming trip.",
       quickPrompt2: "Activate international travel mode for Europe on my Mastercard Black.",
-      placeholder: "Type or speak to Personnalité Concierge...",
+      placeholder: "Type or speak to Itaú Guard...",
       send: "Send",
     },
     footer: {
       brand: "Banco Itaú Unibanco S.A.",
-      tagline: "Protected by Personnalité Concierge & Gemini Enterprise Agent Platform",
+      tagline: "Protected by Itaú Guard & Gemini Enterprise Agent Platform",
     }
   }
 };
