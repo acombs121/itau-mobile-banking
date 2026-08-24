@@ -137,7 +137,7 @@ ACTIVE_ALERTS = [
         "category": "fraud_anomaly",
         "title": "Suspected Out-of-Pattern Pix Transfer Blocked",
         "timestamp": "Just now",
-        "description": "High-risk Pix transfer of R$ 4.200,00 to unknown merchant 'Eletro Tech SP' was intercepted by Itaú Guard System. Geolocation anomaly: device located in São Paulo, but IP proxy traces to overseas VPN.",
+        "description": "High-risk Pix transfer of R$ 4.200,00 to unknown merchant 'Eletro Tech SP' was intercepted by Itaú Concierge System. Geolocation anomaly: device located in São Paulo, but IP proxy traces to overseas VPN.",
         "amount_brl": 4200.00,
         "recipient": "Eletro Tech SP Ltda (CNPJ 48.910.221/0001-09)",
         "risk_score": 94,
@@ -239,7 +239,7 @@ class ChatRequest(BaseModel):
 @app.post("/api/chat")
 async def chat_endpoint(payload: ChatRequest, user: Dict[str, Any] = Depends(get_authenticated_user)):
     """
-    Multimodal Gemini Conversational Endpoint for Itaú Guard.
+    Multimodal Gemini Conversational Endpoint for Itaú Concierge.
     Supports Portuguese and English across all 4 autonomous scenarios:
     1. Cash Flow Forecasting & CDB DI Sweeping
     2. Travel Notice & Mastercard Black Limit Elevation
@@ -249,9 +249,9 @@ async def chat_endpoint(payload: ChatRequest, user: Dict[str, Any] = Depends(get
     lang = payload.lang or "pt"
     user_msg = payload.message.lower()
 
-    # System instruction tailored for Itaú Guard persona
+    # System instruction tailored for Itaú Concierge persona
     system_prompt = f"""
-    You are Itaú Guard, the elite AI Banking Concierge & Multi-Agent Orchestrator for Roberto Silva (Itaú Personnalité).
+    You are Itaú Concierge, the elite AI Banking Concierge & Multi-Agent Orchestrator for Roberto Silva (Itaú Personnalité).
     Language Mode: {'English' if lang == 'en' else 'Portuguese (pt-BR)'}.
     
     Customer Profile:
@@ -302,9 +302,9 @@ async def chat_endpoint(payload: ChatRequest, user: Dict[str, Any] = Depends(get
             reply = "Roberto, analisando seu Open Finance, identifiquei um saldo devedor de R$ 18.000,00 no banco concorrente a uma taxa de 11,2% ao mês. Pelo seu perfil Personnalité, você possui taxa pré-aprovada de 1,69% ao mês no Itaú Sob Medida. Essa portabilidade economiza R$ 680,40 por mês, totalizando R$ 14.280,00 em juros evitados. Deseja que eu emita a CCB eletrônica e liquide a dívida externa?"
     else:
         if lang == "en":
-            reply = "Itaú Guard is monitoring all active sub-agents. Your accounts, liquidity schedules, and Mastercard Black protections are operating securely under Central Bank standards."
+            reply = "Itaú Concierge is monitoring all active sub-agents. Your accounts, liquidity schedules, and Mastercard Black protections are operating securely under Central Bank standards."
         else:
-            reply = "O Itaú Guard está monitorando todos os sub-agentes ativos. Suas contas, cronogramas de liquidez e proteções do Mastercard Black estão operando com segurança total sob as normas do Banco Central."
+            reply = "O Itaú Concierge está monitorando todos os sub-agentes ativos. Suas contas, cronogramas de liquidez e proteções do Mastercard Black estão operando com segurança total sob as normas do Banco Central."
 
     return {"reply": reply, "model": "local-orchestrator"}
 
@@ -351,7 +351,7 @@ async def get_decision_graph():
         },
         {
             "id": "ai_guard_engine",
-            "name": "Itaú Guard AI Risk Engine",
+            "name": "Itaú Concierge AI Risk Engine",
             "group": "Decision",
             "layer": "Decision",
             "color": "#070707",

@@ -15,10 +15,10 @@ export const translations = {
   pt: {
     header: {
       brandTitle: "Banco Itaú",
-      brandSub: "Painel de Orquestração & Proteção Itaú Guard em Tempo Real",
+      brandSub: "Painel de Orquestração & Itaú Concierge em Tempo Real",
       saveSession: "Salvar Sessão",
       resetSession: "Reiniciar Demonstração",
-      callAi: "Chamar Itaú Guard",
+      callAi: "Chamar Itaú Concierge",
       hangUp: "Encerrar Chamada",
       customer: "Roberto Silva",
       account: "Ag. 7749 • CC 00912-8",
@@ -84,7 +84,7 @@ export const translations = {
           },
           {
             id: "cash_agent",
-            name: "Motor Cash Flow & Yield Optimizer",
+            name: "Motor Cash Flow & Yield Concierge",
             group: "Processamento IA",
             layer: "Decision",
             color: "#070707",
@@ -151,7 +151,7 @@ export const translations = {
           },
           {
             id: "travel_agent",
-            name: "Motor Travel & Geo Shielding",
+            name: "Motor Travel Concierge",
             group: "Processamento IA",
             layer: "Decision",
             color: "#070707",
@@ -286,7 +286,7 @@ export const translations = {
           },
           {
             id: "ai_guard_engine",
-            name: "Motor de Decisão Itaú Guard",
+            name: "Motor de Decisão Itaú Concierge",
             group: "Processamento IA",
             layer: "Decision",
             color: "#070707",
@@ -330,7 +330,7 @@ export const translations = {
         },
         {
           id: "travel_shield_agent",
-          name: "Travel Shield & International Card Guardian",
+          name: "Travel & International Concierge Guardian",
           type: "travel",
           description: "Habilita avisos de viagem inteligentes, eleva limites POS internacionais e valida seguro Mastercard Black.",
           capabilities: ["Aviso Viagem Automático", "Limite R$ 50k", "Supressão Recusas"],
@@ -356,7 +356,7 @@ export const translations = {
         },
         {
           id: "itau_fraud_monitor",
-          name: "Itaú Guard Fraud Monitor",
+          name: "Itaú Concierge Fraud Monitor",
           type: "fraud",
           description: "Analisa telemetria de rede e geolocalização para contenção imediata de fraudes Pix.",
           capabilities: ["Detecção < 200ms", "Contenção Cautelar", "Validação IP"],
@@ -397,7 +397,7 @@ export const translations = {
     actionPlan: {
       title: "Plano de Salvaguarda & Ações Confirmadas",
       subtitle: "Medidas protetivas e otimizações registradas na conta corrente e dispositivos do cliente",
-      emptyState: "Nenhuma ação executada ainda. Interaja no app ou acione o Itaú Guard.",
+      emptyState: "Nenhuma ação executada ainda. Interaja no app ou acione o Itaú Concierge.",
       statusConfirmed: "Confirmado",
       statusSafeguarded: "Protegido",
       statusPending: "Pendente",
@@ -426,7 +426,7 @@ export const translations = {
       statusTime: "14:52",
       balanceTitle: "Saldo em conta corrente",
       investments: "Investimentos",
-      allSafe: "Conta, cartões e pagamentos protegidos com Itaú Guard.",
+      allSafe: "Conta, cartões e pagamentos protegidos com Itaú Concierge.",
       quickPix: "Pix",
       quickPay: "Pagar",
       quickReceive: "Receber",
@@ -495,28 +495,28 @@ export const translations = {
       empty: "Inicie uma conversa por voz ou execute ações no app para gerar logs de telemetria.",
     },
     modal: {
-      title: "Itaú Guard",
+      title: "Itaú Concierge",
       subtitle: "Atendimento por Voz & Concierge Financeiro",
       incidentContext: "Contexto Ativo:",
-      initialGreeting: "Olá Roberto. Sou o Itaú Guard. Como posso ajudar com seus pagamentos, saldo projetado ou planejamento de viagem hoje?",
-      analyzing: "Itaú Guard está analisando as informações...",
+      initialGreeting: "Olá Roberto. Sou o Itaú Concierge. Como posso ajudar com seus pagamentos, saldo projetado ou planejamento de viagem hoje?",
+      analyzing: "Itaú Concierge está analisando as informações...",
       quickPrompt1: "Verifique meu saldo e pagamentos previstos para a viagem.",
       quickPrompt2: "Ative o aviso de viagem para Europa no meu Mastercard Black.",
-      placeholder: "Digite ou fale com o Itaú Guard...",
+      placeholder: "Digite ou fale com o Itaú Concierge...",
       send: "Enviar",
     },
     footer: {
       brand: "Banco Itaú Unibanco S.A.",
-      tagline: "Protegido por Itaú Guard & Gemini Enterprise Agent Platform",
+      tagline: "Protegido por Itaú Concierge & Gemini Enterprise Agent Platform",
     }
   },
   en: {
     header: {
       brandTitle: "Banco Itaú",
-      brandSub: "Real-Time Sub-Agent Orchestration & Itaú Guard Cockpit",
+      brandSub: "Real-Time Sub-Agent Orchestration & Itaú Concierge Cockpit",
       saveSession: "Save Session",
       resetSession: "Reset Demo",
-      callAi: "Call Itaú Guard",
+      callAi: "Call Itaú Concierge",
       hangUp: "End Call",
       customer: "Roberto Silva",
       account: "Branch 7749 • Acct 00912-8",
@@ -582,7 +582,7 @@ export const translations = {
           },
           {
             id: "cash_agent",
-            name: "Cash Flow & Yield Engine",
+            name: "Cash Flow & Yield Concierge",
             group: "AI Decision",
             layer: "Decision",
             color: "#070707",
@@ -649,7 +649,7 @@ export const translations = {
           },
           {
             id: "travel_agent",
-            name: "Travel & Geo Shielding Engine",
+            name: "Travel Concierge Engine",
             group: "AI Decision",
             layer: "Decision",
             color: "#070707",
@@ -717,7 +717,7 @@ export const translations = {
           },
           {
             id: "refi_agent",
-            name: "Underwriting & Portability Engine",
+            name: "Underwriting & Portability Concierge",
             group: "AI Decision",
             layer: "Decision",
             color: "#070707",
@@ -784,7 +784,7 @@ export const translations = {
           },
           {
             id: "ai_guard_engine",
-            name: "Itaú Guard Decision Engine",
+            name: "Itaú Concierge Decision Engine",
             group: "AI Decision",
             layer: "Decision",
             color: "#070707",
@@ -828,7 +828,7 @@ export const translations = {
         },
         {
           id: "travel_shield_agent",
-          name: "Travel Shield & International Card Guardian",
+          name: "Travel & International Concierge Guardian",
           type: "travel",
           description: "Enables smart travel notices, elevates international POS limits, and validates Mastercard Black travel insurance.",
           capabilities: ["Automated Travel Notice", "R$ 50k Limit Elevation", "Zero Foreign Declines"],
@@ -854,7 +854,7 @@ export const translations = {
         },
         {
           id: "itau_fraud_monitor",
-          name: "Itaú Guard Fraud Monitor",
+          name: "Itaú Concierge Fraud Monitor",
           type: "fraud",
           description: "Analyzes network telemetry, geolocations, and payments for instant Pix fraud mitigation.",
           capabilities: ["Detection < 200ms", "Precautionary Hold", "IP Validation"],
@@ -924,7 +924,7 @@ export const translations = {
       statusTime: "14:52",
       balanceTitle: "Checking Account Balance",
       investments: "Investments",
-      allSafe: "Account, cards, and payments protected with Itaú Guard.",
+      allSafe: "Account, cards, and payments protected with Itaú Concierge.",
       quickPix: "Pix",
       quickPay: "Pay",
       quickReceive: "Receive",
@@ -993,19 +993,19 @@ export const translations = {
       empty: "Start a voice conversation or perform actions in the mobile app to stream telemetry.",
     },
     modal: {
-      title: "Itaú Guard",
+      title: "Itaú Concierge",
       subtitle: "Voice & Wealth Advisory Assistant",
       incidentContext: "Active Context:",
-      initialGreeting: "Hello Roberto. I am Itaú Guard. How can I assist with your payments, cash flow forecast, or travel plans today?",
-      analyzing: "Itaú Guard is analyzing financial data...",
+      initialGreeting: "Hello Roberto. I am Itaú Concierge. How can I assist with your payments, cash flow forecast, or travel plans today?",
+      analyzing: "Itaú Concierge is analyzing financial data...",
       quickPrompt1: "Check my balance and projected payments for my upcoming trip.",
       quickPrompt2: "Activate international travel mode for Europe on my Mastercard Black.",
-      placeholder: "Type or speak to Itaú Guard...",
+      placeholder: "Type or speak to Itaú Concierge...",
       send: "Send",
     },
     footer: {
       brand: "Banco Itaú Unibanco S.A.",
-      tagline: "Protected by Itaú Guard & Gemini Enterprise Agent Platform",
+      tagline: "Protected by Itaú Concierge & Gemini Enterprise Agent Platform",
     }
   }
 };

@@ -130,7 +130,7 @@ export const App: React.FC = () => {
   const triggerNotification = (title: string, subtitle: string) => {
     const newNotif: IOSNotification = {
       id: "notif_" + Date.now(),
-      app: "Itaú Guard",
+      app: "Itaú Concierge",
       title,
       subtitle,
       icon: "shield",

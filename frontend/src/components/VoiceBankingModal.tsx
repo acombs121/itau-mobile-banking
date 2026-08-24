@@ -60,8 +60,8 @@ export const VoiceBankingModal: React.FC<VoiceBankingModalProps> = ({
           {
             role: 'assistant',
             text: currentLang === 'en'
-              ? "I have analyzed your request with Itaú Guard. Your accounts and transactions are fully safeguarded."
-              : "Analisei sua solicitação com o Itaú Guard. Suas contas e transações estão devidamente protegidas."
+              ? "I have analyzed your request with Itaú Concierge. Your accounts and transactions are fully safeguarded."
+              : "Analisei sua solicitação com o Itaú Concierge. Suas contas e transações estão devidamente protegidas."
           }
         ]);
       }
