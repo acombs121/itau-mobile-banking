@@ -62,6 +62,8 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
   const isSpeakingRef = useRef<boolean>(false);
   const activeSourcesRef = useRef<AudioBufferSourceNode[]>([]);
   const isProcessingRef = useRef<boolean>(false);
+  const lastAssistantSpokenTimeRef = useRef<number>(0);
+  const lastSentQueryRef = useRef<{ text: string; time: number }>({ text: '', time: 0 });
 
   // Initialize or get playback AudioContext
   const getPlaybackContext = useCallback(() => {
@@ -151,6 +153,7 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
 
       // Check if all queued audio is finished
       if (ctx.currentTime >= nextPlayTimeRef.current - 0.08) {
+        lastAssistantSpokenTimeRef.current = Date.now();
         // Cooldown buffer before re-enabling mic listening
         setTimeout(() => {
           if (activeSourcesRef.current.length === 0) {
@@ -158,7 +161,7 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
             setIsSpeaking(false);
             setAudioLevels([15, 25, 40, 20, 35, 15, 30, 20, 25]);
           }
-        }, 350);
+        }, 500);
       }
     };
   }, [getPlaybackContext]);
@@ -247,12 +250,20 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
 
   // Send text query
   const sendTextQuery = useCallback((text: string) => {
-    if (!text.trim()) return;
+    const cleanText = text.trim();
+    if (!cleanText) return;
+
+    // Deduplicate identical queries sent within 1.5 seconds
+    const now = Date.now();
+    if (lastSentQueryRef.current.text.toLowerCase() === cleanText.toLowerCase() && (now - lastSentQueryRef.current.time) < 1500) {
+      console.log("Suppressed duplicate query within 1.5s window:", cleanText);
+      return;
+    }
+    lastSentQueryRef.current = { text: cleanText, time: now };
 
     // Barge-in: stop any playing assistant speech when new user query arrives
     stopAllAudioPlayback();
 
-    const cleanText = text.trim();
     if (onUserQueryRef.current) {
       onUserQueryRef.current(cleanText);
     }
@@ -319,10 +330,16 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
           rec.interimResults = false;
 
           rec.onresult = (e: any) => {
-            // ACOUSTIC ECHO SUPPRESSION:
-            // If the model is currently speaking or in cooldown, ignore microphone input so it doesn't self-hear!
-            if (isSpeakingRef.current) {
-              console.log("Suppressed echo input while model was speaking.");
+            // ACOUSTIC ECHO & MID-FLIGHT SUPPRESSION:
+            // If the model is currently speaking or processing/generating, ignore microphone input so it doesn't self-hear!
+            if (isSpeakingRef.current || isProcessingRef.current) {
+              console.log("Suppressed echo input while model was speaking or processing.");
+              return;
+            }
+
+            const now = Date.now();
+            if (now - lastAssistantSpokenTimeRef.current < 650) {
+              console.log("Suppressed input within post-speech cooldown buffer.");
               return;
             }
 
