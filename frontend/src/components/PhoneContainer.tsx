@@ -155,44 +155,41 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
             </span>
           </div>
 
-          {/* Dynamic Canvas Feed with Quick Actions and 70% Transparent Center Logo */}
-          <div className={`flex-1 p-3.5 flex flex-col justify-between overflow-hidden min-h-0 ${isDark ? 'bg-transparent' : 'bg-slate-50/50'}`}>
-            
-            {/* Quick Actions 4-Grid */}
-            <div className={`grid grid-cols-4 gap-1.5 text-center text-[11px] font-medium flex-shrink-0 ${isDark ? 'text-white/80' : 'text-slate-700'}`}>
-              <div className={`flex flex-col items-center gap-1 py-1.5 rounded-[8px] transition-colors cursor-pointer ${isDark ? 'hover:bg-white/[0.05]' : 'hover:bg-white shadow-sm'}`}>
+          {/* Quick Actions 4-Grid Top Bar */}
+          <div className={`px-4 pt-3.5 pb-3 border-b flex-shrink-0 ${isDark ? 'border-white/[0.04]' : 'border-slate-100'}`}>
+            <div className={`grid grid-cols-4 gap-1.5 text-center text-[11px] font-medium ${isDark ? 'text-white/80' : 'text-slate-700'}`}>
+              <div className={`flex flex-col items-center gap-1 py-1 rounded-[8px] transition-colors cursor-pointer ${isDark ? 'hover:bg-white/[0.05]' : 'hover:bg-white shadow-sm'}`}>
                 <div className={`w-8 h-8 rounded-full border flex items-center justify-center ${isDark ? 'border-white/15 text-white' : 'border-slate-200 bg-white text-slate-800'}`}>
                   <QrCode className="w-3.5 h-3.5 text-brand-orange" />
                 </div>
                 <span>{t.phone.quickPix}</span>
               </div>
-              <div className={`flex flex-col items-center gap-1 py-1.5 rounded-[8px] transition-colors cursor-pointer ${isDark ? 'hover:bg-white/[0.05]' : 'hover:bg-white shadow-sm'}`}>
+              <div className={`flex flex-col items-center gap-1 py-1 rounded-[8px] transition-colors cursor-pointer ${isDark ? 'hover:bg-white/[0.05]' : 'hover:bg-white shadow-sm'}`}>
                 <div className={`w-8 h-8 rounded-full border flex items-center justify-center ${isDark ? 'border-white/15 text-white' : 'border-slate-200 bg-white text-slate-800'}`}>
                   <ArrowUpRight className="w-3.5 h-3.5" />
                 </div>
                 <span>{t.phone.quickPay}</span>
               </div>
-              <div className={`flex flex-col items-center gap-1 py-1.5 rounded-[8px] transition-colors cursor-pointer ${isDark ? 'hover:bg-white/[0.05]' : 'hover:bg-white shadow-sm'}`}>
+              <div className={`flex flex-col items-center gap-1 py-1 rounded-[8px] transition-colors cursor-pointer ${isDark ? 'hover:bg-white/[0.05]' : 'hover:bg-white shadow-sm'}`}>
                 <div className={`w-8 h-8 rounded-full border flex items-center justify-center ${isDark ? 'border-white/15 text-white' : 'border-slate-200 bg-white text-slate-800'}`}>
                   <ArrowDownLeft className="w-3.5 h-3.5" />
                 </div>
                 <span>{t.phone.quickReceive}</span>
               </div>
-              <div className={`flex flex-col items-center gap-1 py-1.5 rounded-[8px] transition-colors cursor-pointer ${isDark ? 'hover:bg-white/[0.05]' : 'hover:bg-white shadow-sm'}`}>
+              <div className={`flex flex-col items-center gap-1 py-1 rounded-[8px] transition-colors cursor-pointer ${isDark ? 'hover:bg-white/[0.05]' : 'hover:bg-white shadow-sm'}`}>
                 <div className={`w-8 h-8 rounded-full border flex items-center justify-center ${isDark ? 'border-white/15 text-white' : 'border-slate-200 bg-white text-slate-800'}`}>
                   <CreditCard className="w-3.5 h-3.5" />
                 </div>
                 <span>{t.phone.quickCards}</span>
               </div>
             </div>
+          </div>
 
-            {/* Dynamic Center Canvas: 70% Transparent Itaú Logo Watermark */}
-            <div className="flex-1 flex items-center justify-center min-h-0 select-none pointer-events-none py-6">
-              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-[28px] bg-brand-orange text-white flex items-center justify-center font-bold text-4xl sm:text-5xl opacity-30 shadow-2xl tracking-tighter">
-                itau
-              </div>
+          {/* Dynamic Center Canvas: Perfectly Centered between Quick Actions and Bottom Voice Bar */}
+          <div className={`flex-1 w-full flex items-center justify-center min-h-0 select-none pointer-events-none ${isDark ? 'bg-transparent' : 'bg-slate-50/40'}`}>
+            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-[28px] bg-brand-orange text-white flex items-center justify-center font-bold text-4xl sm:text-5xl opacity-30 shadow-2xl tracking-tighter">
+              itau
             </div>
-
           </div>
 
           {/* Bottom Voice Concierge Bar (Placed above Footer Nav) */}
