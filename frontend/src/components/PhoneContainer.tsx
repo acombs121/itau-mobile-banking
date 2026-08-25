@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, EyeOff, QrCode, ArrowUpRight, ArrowDownLeft, CreditCard, Mic, MicOff } from 'lucide-react';
+import { QrCode, ArrowUpRight, ArrowDownLeft, CreditCard, Mic, MicOff } from 'lucide-react';
 import { BankingProfile } from '../types/banking';
 import { IOSNotification, ScenarioId } from '../types/itau_concierge';
 import { Language, translations } from '../i18n/translations';
@@ -37,7 +37,6 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
   onUserQuery,
   onTurnComplete
 }) => {
-  const [showBalance, setShowBalance] = useState(true);
   const [activeNavTab, setActiveNavTab] = useState<'home' | 'extrato' | 'pix' | 'cartoes'>('home');
 
   const t = translations[currentLang];
@@ -194,29 +193,6 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
               </div>
             </div>
 
-          </div>
-
-          {/* Balance Hero (Positioned at bottom above voice bar & footer nav) */}
-          <div className={`px-4 py-2.5 border-t flex items-center justify-between flex-shrink-0 transition-colors ${
-            isDark ? 'border-white/[0.08] bg-white/[0.02]' : 'border-slate-200 bg-slate-50'
-          }`}>
-            <div>
-              <span className={`text-[10.5px] font-medium block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>
-                {t.phone.balanceTitle}
-              </span>
-              <div className={`text-lg font-bold tracking-tight font-mono ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                {showBalance ? `R$ ${profile.checking_balance_brl.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : 'R$ ••••••••'}
-              </div>
-            </div>
-            <button 
-              onClick={() => setShowBalance(!showBalance)}
-              className={`p-1.5 rounded-full transition-colors ${
-                isDark ? 'text-white/50 hover:text-white hover:bg-white/10' : 'text-slate-400 hover:text-slate-900 hover:bg-slate-200'
-              }`}
-              title={showBalance ? "Hide Balance" : "Show Balance"}
-            >
-              {showBalance ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            </button>
           </div>
 
           {/* Bottom Voice Concierge Bar (Placed above Footer Nav) */}
