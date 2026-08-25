@@ -185,9 +185,9 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
             </div>
           </div>
 
-          {/* Dynamic Center Canvas: Perfectly Centered between Quick Actions and Bottom Voice Bar */}
+          {/* Dynamic Center Canvas: Optically Centered between Quick Actions and Bottom Voice Bar */}
           <div className={`flex-1 w-full flex items-center justify-center min-h-0 select-none pointer-events-none ${isDark ? 'bg-transparent' : 'bg-slate-50/40'}`}>
-            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-[28px] bg-brand-orange text-white flex items-center justify-center font-bold text-4xl sm:text-5xl opacity-30 shadow-2xl tracking-tighter">
+            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-[28px] bg-brand-orange text-white flex items-center justify-center font-bold text-4xl sm:text-5xl opacity-30 shadow-2xl tracking-tighter -translate-y-4 sm:-translate-y-6">
               itau
             </div>
           </div>
