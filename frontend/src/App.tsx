@@ -146,7 +146,14 @@ export const App: React.FC = () => {
     const q = query.toLowerCase();
     const nowTime = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' BRT';
 
-    if (q.includes('benefit') || q.includes('benefício') || q.includes('lounge') || q.includes('sala vip') || q.includes('insurance') || q.includes('seguro') || q.includes('coverage') || q.includes('cobertura') || q.includes('schengen') || q.includes('baggage') || q.includes('bagagem') || q.includes('delay') || q.includes('atraso')) {
+    if (
+      q.includes('benefit') || q.includes('benefício') || q.includes('lounge') || q.includes('sala vip') || 
+      q.includes('insurance') || q.includes('seguro') || q.includes('coverage') || q.includes('cobertura') || 
+      q.includes('schengen') || q.includes('baggage') || q.includes('bagagem') || q.includes('delay') || 
+      q.includes('atraso') || q.includes('guarulhos') || q.includes('car rental') || q.includes('aluguel') ||
+      ((q.includes('yes') || q.includes('sim') || q.includes('sure') || q.includes('please') || q.includes('quero') || q.includes('por favor') || q.includes('tell me') || q.includes('conte')) && 
+       (activeRunningAgentId === 'travel_shield_agent' || activeScenario === 'travel_shield' || agentStates.travel_shield_agent?.status === 'completed'))
+    ) {
       setActiveRunningAgentId('card_benefits_agent');
       setAgentStates(prev => ({
         ...prev,
@@ -155,11 +162,12 @@ export const App: React.FC = () => {
           lastRun: nowTime,
           liveResult: {
             card_tier: "Itaú Personnalité Mastercard Black",
-            medical_insurance_schengen_eur: 30000.00,
-            emergency_medical_usd: 150000.00,
-            vip_lounges: "LoungeKey (GRU Unlimited + 4 Int Passes)",
-            trip_cancellation_usd: 3000.00,
-            status: "RETRIEVING_COVERAGE_POLICY"
+            gru_vip_lounge_t3: "UNLIMITED_COMPLIMENTARY",
+            international_loungekey_passes: "4 PASSES (LIS/MAD)",
+            schengen_medical_insurance_eur: 30000.00,
+            masterseguro_car_rental: "CDW/LDW INCLUDED",
+            concierge_service_24h: "AVAILABLE",
+            status: "ANALYZING_TRIP_BENEFITS"
           }
         }
       }));

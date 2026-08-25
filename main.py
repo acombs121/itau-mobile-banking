@@ -341,26 +341,30 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
     1. Account Information Agent (`get_account_info`): When user answers which balance they want or asks about specific statements/scheduled debits, call `get_account_info` and provide the exact requested position.
     2. Cash Flow & Yield Forecasting Agent (`sweep_cdb`): When asked about large purchases (e.g. R$ 24k–27k flight tickets to Lisbon) or account balance optimization (how much in checking vs CDB DI), simulate the cash flow, calculate that checking will have a shortfall of R$ 13.050 on D+4 Thursday due to scheduled debits, and offer to schedule a sweep of R$ 15.000 from CDB DI on Thursday morning (06:00 BRT). Call `sweep_cdb`.
     3. Travel Notice & International Card Shield Agent (`activate_travel_mode`):
-       - Triggered when conversation turns to upcoming travel (trips, flight tickets, Portugal, Spain, Europe).
-       - Focuses on fraud prevention and card reliability:
-         1) Registers active travel notice for Portugal and Spain across Visa and Mastercard network authorizers.
-         2) Elevates daily international POS limit to R$ 50,000.00.
-         3) Pre-suppresses false-positive fraud declines at foreign airport, airline, and hotel terminals.
-       - Always call `activate_travel_mode`.
-       - AT THE END OF THIS TURN, YOU MUST ASK THE USER:
-         - If in English: "Would you like me to review the travel insurance and airport lounge benefits included with your Mastercard Black?"
-         - If in Portuguese: "Gostaria que eu apresentasse os benefícios de seguro viagem e salas VIP inclusos no seu Mastercard Black?"
+       - TRIGGER: When the user mentions an upcoming trip or travel plans (e.g., flight tickets, traveling to Portugal and Spain).
+       - FOCUS: STRICTLY on fraud prevention and transaction authorization reliability. DO NOT mention medical insurance, lounge perks, or rental cars here (to avoid duplicate overlap with the Benefits agent).
+       - ACTIONS:
+         1) Call `activate_travel_mode`.
+         2) Explain clearly that active travel notices are registered for Portugal and Spain across Visa and Mastercard networks, daily POS limits are elevated to R$ 50,000, and false-positive fraud declines at foreign airport and hotel terminals are suppressed.
+         3) SMOOTH CONVERSATIONAL HAND-OFF: End with a clean, conversational question inviting the user to explore trip benefits:
+            - If in English: "I've secured your cards for Portugal and Spain with an elevated R$ 50,000 limit and active fraud protection. Are you departing from São Paulo Guarulhos, and would you like to explore the travel insurance and VIP lounge access included with your Mastercard Black?"
+            - If in Portuguese: "Seus cartões estão protegidos para Portugal e Espanha com limite internacional elevado para R$ 50.000 e proteção ativa contra bloqueios indevidos. Você vai embarcar por Guarulhos? Gostaria que eu apresentasse os benefícios de seguro viagem e salas VIP do seu Mastercard Black?"
     4. Mastercard Black Benefits & Coverage Agent (`get_card_benefits`):
-       - Triggered when the user confirms the travel benefits question (e.g. saying "yes", "sure", "please", "sim", "quero", "quais são os benefícios") OR when asked directly about card benefits, travel insurance, or VIP lounges.
-       - Call `get_card_benefits`.
-       - Explain the key travel benefits:
-         1) Worldwide Emergency Medical Insurance: €30,000 Schengen Compliant (up to $150,000 USD coverage).
-         2) Airport VIP Lounges: Mastercard Airport Experiences / LoungeKey (unlimited access at GRU Terminal 3 Lounge + 4 complimentary international passes).
-         3) Trip Protection: Baggage loss & flight delay reimbursement up to $3,000 USD, plus worldwide car rental coverage.
+       - TRIGGER: When the user confirms the hand-off question (e.g., "Yes", "Please", "Sim", "Quero", "I'm flying from Guarulhos") OR asks directly about card perks/lounges/insurance.
+       - ACTIONS:
+         1) Call `get_card_benefits`.
+         2) CONVERSATIONAL & TRIP-TAILORED DIALOGUE (CRITICAL: DO NOT RECITE A LAUNDRY LIST):
+            - Acknowledge their departure and trip conversationally.
+            - Explain the VIP lounge access tailored to their departure:
+              "For your flight, you and a companion have unlimited, complimentary access to the dedicated Mastercard Black VIP Lounge at Guarulhos Terminal 3, plus 4 complimentary LoungeKey passes for VIP lounges in Lisbon and Madrid."
+            - Highlight the Schengen healthcare coverage:
+              "In Europe, your card automatically provides €30,000 in Schengen-compliant emergency medical insurance, fully meeting European immigration requirements without needing to purchase third-party insurance."
+            - Engage conversationally by asking about their on-the-ground plans:
+              "Are you planning to rent a car or make special restaurant reservations while in Lisbon or Madrid? You also have complimentary Masterseguro CDW coverage for rental vehicles and our 24/7 Concierge ready to help."
     5. Open Finance Optimizer (`refinance_open_finance`): When asked about debt, loans, or savings, explain the R$ 18.000 competitor revolving balance at 11.2%/mo, offer to issue the electronic CCB at 1.69%/mo saving R$ 14.280, and call `refinance_open_finance`.
 
     Spoken Persona Directives:
-    - Speak concisely, clearly, with high-touch executive banking poise. Avoid formatting symbols like markdown asterisks in spoken output.
+    - Speak concisely, warmly, and conversationally with executive banking poise. Avoid formatting symbols like markdown asterisks in spoken output.
     - Always call the corresponding tool so the multi-agent telemetry panel updates in real time.
     """
 
@@ -544,9 +548,14 @@ async def chat_endpoint(payload: ChatRequest, user: Dict[str, Any] = Depends(get
             reply = "Certainly, Roberto. Are you looking for the balance of your checking account, your savings and CDB investments, or your Mastercard Black card?" if lang == "en" else "Com certeza, Roberto. Você está procurando o saldo da sua conta corrente, da sua poupança e investimentos CDB, ou do seu cartão Mastercard Black?"
     elif "viagem" in user_msg or "travel" in user_msg or "portugal" in user_msg or "espanha" in user_msg or "spain" in user_msg or "lisboa" in user_msg or "madrid" in user_msg:
         if lang == "en":
-            reply = "All set, Roberto! I have activated Travel Shielding for Portugal and Spain on your Mastercard Black ending in 8841. I also increased your international daily spend limit to R$ 50,000 and verified that your complimentary Mastercard Black travel medical insurance is fully active for you and your companion. You're ready to travel with zero merchant friction."
+            reply = "All set, Roberto! I've registered your active travel notice for Portugal and Spain across the Mastercard network, elevated your daily international limit to R$ 50,000, and suppressed false-positive declines at European airport and hotel terminals. Are you departing from São Paulo Guarulhos, and would you like to explore the travel insurance and VIP lounge access included with your Mastercard Black?"
         else:
-            reply = "Tudo pronto, Roberto! Ativei o Aviso de Viagem para Portugal e Espanha no seu Mastercard Black final 8841. Também elevei seu limite diário internacional para R$ 50.000,00 e validei que o seguro médico internacional Mastercard Black está ativo para você e seu acompanhante. Sua viagem está totalmente protegida contra bloqueios indevidos."
+            reply = "Tudo pronto, Roberto! Registrei seu aviso de viagem para Portugal e Espanha na rede Mastercard, elevei seu limite internacional para R$ 50.000,00 e suprimi bloqueios indevidos em aeroportos e hotéis na Europa. Você vai embarcar por Guarulhos? Gostaria que eu apresentasse os benefícios de seguro viagem e salas VIP do seu Mastercard Black?"
+    elif "benef" in user_msg or "lounge" in user_msg or "seguro" in user_msg or "insuran" in user_msg or "guarulhos" in user_msg or "schengen" in user_msg or "sim" in user_msg or "yes" in user_msg or "sure" in user_msg or "quero" in user_msg:
+        if lang == "en":
+            reply = "For your flight, you and a companion have unlimited complimentary access to the dedicated Mastercard Black VIP Lounge at Guarulhos Terminal 3, plus 4 worldwide LoungeKey passes in Lisbon and Madrid. In Europe, your card automatically provides €30,000 in Schengen-compliant emergency medical coverage. Are you planning to rent a car or arrange special dining while abroad? You also have automatic Masterseguro vehicle coverage and our 24/7 Concierge."
+        else:
+            reply = "Para seu embarque no Terminal 3 de Guarulhos, você e seu acompanhante têm acesso ilimitado e gratuito à Sala VIP Mastercard Black, além de 4 acessos LoungeKey para as salas de Lisboa e Madri. Na Europa, seu cartão cobre automaticamente €30.000 em seguro médico Schengen. Você pretende alugar um carro ou reservar restaurantes em Lisboa ou Madri? Você também conta com o Masterseguro de Automóveis e nosso Concierge 24 horas."
     elif "dívida" in user_msg or "debt" in user_msg or "refinanc" in user_msg or "open finance" in user_msg or "econom" in user_msg or "sav" in user_msg:
         if lang == "en":
             reply = "Roberto, reviewing your connected Open Finance portfolio, you have an outstanding revolving credit balance of R$ 18,000 at a competitor bank charging 11.2% per month. Because of your Personnalité tier, you have a pre-approved Itaú Sob Medida consolidation rate of just 1.69% per month. Refinancing this saves you R$ 680.40 every month—a total of R$ 14,280 in avoided interest. Would you like me to issue the digital CCB and settle that external balance directly?"
