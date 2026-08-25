@@ -10,30 +10,22 @@ const DEFAULT_PROFILE: BankingProfile = {
   account_id: "ITAU-7749-00912",
   customer_name: "Roberto Silva",
   segment: "Itaú Personnalité",
-  cpf_masked: "•••.491.808-••",
+  cpf_masked: "•••.842.108-••",
   agency: "7749",
   account_number: "00912-8",
   checking_balance_brl: 48950.20,
   investments_balance_brl: 320450.00,
   credit_limit_total: 85000.00,
   credit_limit_used: 12430.50,
-  pix_daily_limit: 20000.00,
-  pix_night_limit: 1000.00,
+  pix_daily_limit: 50000.00,
+  pix_night_limit: 5000.00,
   cards: [
     {
       id: "card_01",
-      name: "Itaú Personnalité Mastercard Black",
+      name: "Mastercard Black",
       last4: "8841",
       status: "active",
       virtual_card_active: true,
-      contactless_enabled: true
-    },
-    {
-      id: "card_02",
-      name: "Itaú Visa Infinite",
-      last4: "3390",
-      status: "active",
-      virtual_card_active: false,
       contactless_enabled: true
     }
   ],
@@ -77,8 +69,17 @@ export const App: React.FC = () => {
     return (savedTheme === 'light' || savedTheme === 'dark') ? savedTheme : 'dark';
   });
 
-  // Active Scenario State: Default is 'cash_flow' (Scenario 1)
+  // Active Scenario State: Default is 'cash_flow'
   const [activeScenario, setActiveScenario] = useState<ScenarioId>('cash_flow');
+  const [activeRunningAgentId, setActiveRunningAgentId] = useState<string | null>(null);
+
+  // Dynamic Sub-Agent Lifecycle States
+  const [agentStates, setAgentStates] = useState<Record<string, { status: 'idle' | 'running' | 'completed'; lastRun?: string; liveResult?: Record<string, any> }>>({
+    account_info_agent: { status: 'idle' },
+    cash_flow_forecast_agent: { status: 'completed', lastRun: '14:52:10 BRT' },
+    travel_shield_agent: { status: 'idle' },
+    open_finance_optimizer: { status: 'idle' }
+  });
 
   const [profile, setProfile] = useState<BankingProfile>(DEFAULT_PROFILE);
   const subAgents: SubAgent[] = [];
@@ -92,7 +93,7 @@ export const App: React.FC = () => {
   const [isOpenFinanceRefiDone, setIsOpenFinanceRefiDone] = useState(false);
   const [isPixBlocked, setIsPixBlocked] = useState(false);
 
-  // In-Phone Live Voice State (No modal popup!)
+  // In-Phone Live Voice State
   const [isCallActive, setIsCallActive] = useState(false);
   const [isProcessingAgent, setIsProcessingAgent] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -139,11 +140,116 @@ export const App: React.FC = () => {
     }, 5500);
   };
 
+  // User Spoken Query / Intent Detection -> Immediately Highlights & Runs Matching Agent
+  const handleUserQuery = (query: string) => {
+    const q = query.toLowerCase();
+    const nowTime = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' BRT';
+
+    if (q.includes('balance') || q.includes('saldo') || q.includes('extrato') || q.includes('statement') || q.includes('fatura') || q.includes('limit') || q.includes('limite') || q.includes('conta') || q.includes('checking')) {
+      setActiveRunningAgentId('account_info_agent');
+      setActiveScenario('account_info');
+      setAgentStates(prev => ({
+        ...prev,
+        account_info_agent: {
+          status: 'running',
+          lastRun: nowTime,
+          liveResult: {
+            account_id: "ITAU-7749-00912",
+            customer: "Roberto Silva",
+            checking_balance_brl: 48950.20,
+            cdb_di_balance_brl: 85000.00,
+            mastercard_black_available_limit_brl: 72569.50,
+            scheduled_debits_next_thursday_brl: 38000.00,
+            status: "ANALYZING_BALANCES"
+          }
+        }
+      }));
+    }
+    else if (q.includes('ticket') || q.includes('passagem') || q.includes('lisbon') || q.includes('lisboa') || q.includes('forecast') || q.includes('previsão') || q.includes('shortfall') || q.includes('cdb') || q.includes('sweep') || q.includes('resgate') || q.includes('yield') || q.includes('rendimento')) {
+      setActiveRunningAgentId('cash_flow_forecast_agent');
+      setActiveScenario('cash_flow');
+      setAgentStates(prev => ({
+        ...prev,
+        cash_flow_forecast_agent: {
+          status: 'running',
+          lastRun: nowTime,
+          liveResult: {
+            account: "ITAU-7749-00912",
+            projected_shortfall: 13050.00,
+            projected_date: "2026-08-25 (Thursday)",
+            recommended_sweep_brl: 15000.00,
+            source: "CDB_DI_LIQUIDEZ_DIARIA",
+            status: "RUNNING_HYPOTHETICAL_SIMULATION"
+          }
+        }
+      }));
+    }
+    else if (q.includes('travel') || q.includes('viagem') || q.includes('portugal') || q.includes('spain') || q.includes('espanha') || q.includes('madrid') || q.includes('trip') || q.includes('flight') || q.includes('abroad')) {
+      setActiveRunningAgentId('travel_shield_agent');
+      setActiveScenario('travel_shield');
+      setAgentStates(prev => ({
+        ...prev,
+        travel_shield_agent: {
+          status: 'running',
+          lastRun: nowTime,
+          liveResult: {
+            travel_mode: "CONFIGURING",
+            destinations: ["Portugal", "Spain"],
+            pos_limit_requested: 50000.00,
+            insurance: "MASTERCARD_BLACK_MED_GLOBAL",
+            status: "ENGAGING_TRAVEL_SHIELD"
+          }
+        }
+      }));
+    }
+    else if (q.includes('refinance') || q.includes('refinanciamento') || q.includes('open finance') || q.includes('debt') || q.includes('dívida') || q.includes('loan') || q.includes('empréstimo') || q.includes('ccb') || q.includes('rate') || q.includes('taxa')) {
+      setActiveRunningAgentId('open_finance_optimizer');
+      setActiveScenario('open_finance');
+      setAgentStates(prev => ({
+        ...prev,
+        open_finance_optimizer: {
+          status: 'running',
+          lastRun: nowTime,
+          liveResult: {
+            competitor_debt_balance_brl: 18000.00,
+            previous_rate: "11.2% a.m.",
+            itau_sob_medida_rate: "1.69% a.m.",
+            projected_savings_brl: 14280.00,
+            status: "EVALUATING_DEBT_ARBITRAGE"
+          }
+        }
+      }));
+    }
+  };
+
+  // Turn Complete Handler
+  const handleTurnComplete = () => {
+    if (activeRunningAgentId) {
+      const finishedAgent = activeRunningAgentId;
+      const nowTime = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' BRT';
+      setAgentStates(prev => {
+        const current = prev[finishedAgent];
+        return {
+          ...prev,
+          [finishedAgent]: {
+            ...current,
+            status: 'completed',
+            lastRun: nowTime
+          }
+        };
+      });
+      setTimeout(() => {
+        setActiveRunningAgentId(null);
+      }, 1800);
+    }
+  };
+
   // Scenario Switcher Handler
   const handleSelectScenario = (scenarioId: ScenarioId) => {
     setActiveScenario(scenarioId);
     const scenarioDef = translations[currentLang].scenarios.find(s => s.id === scenarioId);
     if (scenarioDef) {
+      setActiveRunningAgentId(scenarioDef.agentId);
       const newLog: TelemetryLog = {
         id: "log_" + Date.now(),
         timestamp: new Date().toLocaleTimeString(),
@@ -163,6 +269,25 @@ export const App: React.FC = () => {
     const nowTime = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + ' BRT';
 
     if (actionType === 'get_account_info' || actionType === 'view_statements' || actionType === 'view_limits') {
+      setActiveRunningAgentId('account_info_agent');
+      setActiveScenario('account_info');
+      setAgentStates(prev => ({
+        ...prev,
+        account_info_agent: {
+          status: 'completed',
+          lastRun: nowTime,
+          liveResult: {
+            account_id: "ITAU-7749-00912",
+            customer: "Roberto Silva",
+            checking_balance_brl: 48950.20,
+            cdb_di_balance_brl: 85000.00,
+            mastercard_black_available_limit_brl: 72569.50,
+            scheduled_debits_next_thursday_brl: 38000.00,
+            status: "SYNCHRONIZED"
+          }
+        }
+      }));
+
       triggerNotification(
         currentLang === 'en' ? "Account Overview Retrieved" : "Posição Consolidada Obtida",
         currentLang === 'en' ? "Checking R$ 48,950.20 • CDB DI R$ 85,000.00 • Mastercard Black R$ 72.5k" : "Conta Corrente R$ 48.950,20 • CDB DI R$ 85.000,00 • Mastercard Black R$ 72,5k"
@@ -200,6 +325,23 @@ export const App: React.FC = () => {
     }
     else if (actionType === 'sweep_cdb' || actionType === 'view_cash_flow') {
       setIsCdbSweepScheduled(true);
+      setActiveRunningAgentId('cash_flow_forecast_agent');
+      setActiveScenario('cash_flow');
+      setAgentStates(prev => ({
+        ...prev,
+        cash_flow_forecast_agent: {
+          status: 'completed',
+          lastRun: nowTime,
+          liveResult: {
+            target_date: "2026-08-25 06:00 BRT",
+            sweep_amount_brl: 15000.00,
+            source: "CDB_DI_LIQUIDEZ_DIARIA",
+            estimated_overdraft_interest_saved_brl: 184.60,
+            status: "SCHEDULED_AUTOMATED_SWEEP"
+          }
+        }
+      }));
+
       triggerNotification(tNotif.cdbSweepTitle, tNotif.cdbSweepSubtitle);
       
       const newAction: SecurityActionItem = {
@@ -231,6 +373,24 @@ export const App: React.FC = () => {
     }
     else if (actionType === 'activate_travel_mode' || actionType === 'view_travel_insurance') {
       setIsTravelModeActive(true);
+      setActiveRunningAgentId('travel_shield_agent');
+      setActiveScenario('travel_shield');
+      setAgentStates(prev => ({
+        ...prev,
+        travel_shield_agent: {
+          status: 'completed',
+          lastRun: nowTime,
+          liveResult: {
+            destinations: ["Portugal", "Spain"],
+            dates: "20/08 - 05/09",
+            international_pos_limit_brl: 50000.00,
+            fraud_engine_mode: "SUPPRESS_FALSE_DECLINES",
+            travel_insurance_policy: "MASTERCARD_BLACK_MED_GLOBAL_ACTIVE",
+            status: "EUROPE_READY"
+          }
+        }
+      }));
+
       triggerNotification(tNotif.travelModeTitle, tNotif.travelModeSubtitle);
 
       const newAction: SecurityActionItem = {
@@ -262,6 +422,24 @@ export const App: React.FC = () => {
     }
     else if (actionType === 'refinance_open_finance' || actionType === 'simulate_open_finance') {
       setIsOpenFinanceRefiDone(true);
+      setActiveRunningAgentId('open_finance_optimizer');
+      setActiveScenario('open_finance');
+      setAgentStates(prev => ({
+        ...prev,
+        open_finance_optimizer: {
+          status: 'completed',
+          lastRun: nowTime,
+          liveResult: {
+            external_balance_settled_brl: 18000.00,
+            previous_rate: "11.2% a.m.",
+            new_rate: "1.69% a.m.",
+            total_interest_saved_brl: 14280.00,
+            instrument_type: "CCB_DIGITAL_LEI_10931",
+            status: "REFINANCE_PROPOSAL_DISPATCHED"
+          }
+        }
+      }));
+
       triggerNotification(tNotif.openFinanceTitle, tNotif.openFinanceSubtitle);
 
       const newAction: SecurityActionItem = {
@@ -310,9 +488,30 @@ export const App: React.FC = () => {
   // Trigger Sub-Agent Manually
   const handleTriggerAgent = (agentId: string) => {
     setIsProcessingAgent(agentId);
+    setActiveRunningAgentId(agentId);
+    const nowTime = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' BRT';
+    
+    setAgentStates(prev => ({
+      ...prev,
+      [agentId]: {
+        status: 'running',
+        lastRun: nowTime
+      }
+    }));
+
     setTimeout(() => {
       setIsProcessingAgent(null);
       const agentObj = translations[currentLang].subagents.list.find(a => a.id === agentId);
+      
+      setAgentStates(prev => ({
+        ...prev,
+        [agentId]: {
+          status: 'completed',
+          lastRun: nowTime,
+          liveResult: agentObj?.defaultResult || { timestamp: Date.now(), status: "SUCCESS" }
+        }
+      }));
+
       triggerNotification(
         translations[currentLang].notifications.agentTriggeredTitle,
         `${translations[currentLang].notifications.agentTriggeredSubtitle} ${agentObj?.name || agentId}`
@@ -339,6 +538,13 @@ export const App: React.FC = () => {
     setIsOpenFinanceRefiDone(false);
     setIsPixBlocked(false);
     setIsCallActive(false);
+    setActiveRunningAgentId(null);
+    setAgentStates({
+      account_info_agent: { status: 'idle' },
+      cash_flow_forecast_agent: { status: 'completed' },
+      travel_shield_agent: { status: 'idle' },
+      open_finance_optimizer: { status: 'idle' }
+    });
     setActionItems(translations[currentLang].actionPlan.initialItems);
     setTelemetryLogs([]);
     triggerNotification(
@@ -398,6 +604,8 @@ export const App: React.FC = () => {
               isCdbSweepScheduled={isCdbSweepScheduled}
               isOpenFinanceRefiDone={isOpenFinanceRefiDone}
               isPixBlocked={isPixBlocked}
+              onUserQuery={handleUserQuery}
+              onTurnComplete={handleTurnComplete}
             />
           </div>
 
@@ -412,6 +620,8 @@ export const App: React.FC = () => {
               activeScenario={activeScenario}
               onTriggerAgent={handleTriggerAgent}
               isProcessingAgent={isProcessingAgent}
+              activeRunningAgentId={activeRunningAgentId}
+              agentStates={agentStates}
             />
           </div>
 

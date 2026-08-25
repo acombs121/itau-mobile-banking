@@ -13,9 +13,11 @@ export interface UseGeminiLiveOptions {
   lang: 'pt' | 'en';
   onToolCall?: (toolName: string, args: Record<string, any>) => void;
   onActionTriggered?: (action: string) => void;
+  onUserQuery?: (query: string) => void;
+  onTurnComplete?: () => void;
 }
 
-export const useGeminiLive = ({ lang, onToolCall, onActionTriggered }: UseGeminiLiveOptions) => {
+export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery, onTurnComplete }: UseGeminiLiveOptions) => {
   const [isConnected, setIsConnected] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -27,6 +29,8 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered }: UseGemini
   const langRef = useRef(lang);
   const onToolCallRef = useRef(onToolCall);
   const onActionTriggeredRef = useRef(onActionTriggered);
+  const onUserQueryRef = useRef(onUserQuery);
+  const onTurnCompleteRef = useRef(onTurnComplete);
 
   useEffect(() => {
     langRef.current = lang;
@@ -39,6 +43,14 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered }: UseGemini
   useEffect(() => {
     onActionTriggeredRef.current = onActionTriggered;
   }, [onActionTriggered]);
+
+  useEffect(() => {
+    onUserQueryRef.current = onUserQuery;
+  }, [onUserQuery]);
+
+  useEffect(() => {
+    onTurnCompleteRef.current = onTurnComplete;
+  }, [onTurnComplete]);
 
   const wsRef = useRef<WebSocket | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -208,6 +220,9 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered }: UseGemini
         if (data.turn_complete) {
           isProcessingRef.current = false;
           setIsProcessing(false);
+          if (onTurnCompleteRef.current) {
+            onTurnCompleteRef.current();
+          }
         }
       } catch (err) {
         console.error("Error parsing Live WS message:", err);
@@ -237,13 +252,18 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered }: UseGemini
     // Barge-in: stop any playing assistant speech when new user query arrives
     stopAllAudioPlayback();
 
-    setTranscript(prev => [...prev, { role: 'user', text: text.trim() }]);
+    const cleanText = text.trim();
+    if (onUserQueryRef.current) {
+      onUserQueryRef.current(cleanText);
+    }
+
+    setTranscript(prev => [...prev, { role: 'user', text: cleanText }]);
     isProcessingRef.current = true;
     setIsProcessing(true);
 
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify({
-        text_input: text.trim()
+        text_input: cleanText
       }));
     }
   }, [stopAllAudioPlayback]);

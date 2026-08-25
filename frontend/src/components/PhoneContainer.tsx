@@ -18,6 +18,8 @@ interface PhoneContainerProps {
   isCdbSweepScheduled?: boolean;
   isOpenFinanceRefiDone?: boolean;
   isPixBlocked?: boolean;
+  onUserQuery?: (query: string) => void;
+  onTurnComplete?: () => void;
 }
 
 export const PhoneContainer: React.FC<PhoneContainerProps> = ({
@@ -31,7 +33,9 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
   onActionClick,
   isTravelModeActive = false,
   isCdbSweepScheduled = false,
-  isOpenFinanceRefiDone = false
+  isOpenFinanceRefiDone = false,
+  onUserQuery,
+  onTurnComplete
 }) => {
   const [showBalance, setShowBalance] = useState(true);
   const [activeNavTab, setActiveNavTab] = useState<'home' | 'extrato' | 'pix' | 'cartoes'>('home');
@@ -67,7 +71,9 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
     },
     onActionTriggered: (action) => {
       onActionClick(action);
-    }
+    },
+    onUserQuery,
+    onTurnComplete
   });
 
   // Handle call toggle
