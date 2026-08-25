@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, EyeOff, QrCode, ArrowUpRight, ArrowDownLeft, CreditCard, Mic, MicOff, Plane, Sparkles, TrendingUp, ShieldCheck } from 'lucide-react';
+import { Eye, EyeOff, QrCode, ArrowUpRight, ArrowDownLeft, CreditCard, Mic, MicOff } from 'lucide-react';
 import { BankingProfile } from '../types/banking';
 import { IOSNotification, ScenarioId } from '../types/itau_concierge';
 import { Language, translations } from '../i18n/translations';
@@ -27,13 +27,13 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
   notifications,
   currentLang,
   theme,
-  activeScenario,
+  activeScenario: _activeScenario,
   isVoiceCallActive,
   onToggleVoiceCall,
   onActionClick,
   isTravelModeActive = false,
-  isCdbSweepScheduled = false,
-  isOpenFinanceRefiDone = false,
+  isCdbSweepScheduled: _isCdbSweepScheduled = false,
+  isOpenFinanceRefiDone: _isOpenFinanceRefiDone = false,
   onUserQuery,
   onTurnComplete
 }) => {
@@ -42,7 +42,6 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
 
   const t = translations[currentLang];
   const isDark = theme === 'dark';
-  const activeScenarioDef = t.scenarios.find(s => s.id === activeScenario) || t.scenarios[0];
   const localizedTransactions = t.phone.transactions || profile.recent_transactions;
 
   // Connect directly to Gemini Multimodal Live WebSocket
@@ -79,12 +78,6 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isVoiceCallActive]);
-
-  // Determine if current scenario alert has been resolved
-  const isAlertResolved = 
-    (activeScenario === 'cash_flow' && isCdbSweepScheduled) ||
-    (activeScenario === 'travel_shield' && isTravelModeActive) ||
-    (activeScenario === 'open_finance' && isOpenFinanceRefiDone);
 
   return (
     <div className="relative flex flex-col items-center justify-center select-none py-2">
@@ -227,80 +220,6 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
           {/* Scrollable Banking App Feed */}
           <div className={`flex-1 p-3.5 overflow-y-auto min-h-0 space-y-3 custom-scrollbar ${isDark ? 'bg-transparent' : 'bg-slate-50/50'}`}>
             
-            {/* Contextual Scenario Proactive Alert Banner */}
-            {!isAlertResolved && (
-              <div className={`rounded-[10px] p-3 border transition-all ${
-                activeScenario === 'account_info'
-                  ? (isDark ? 'bg-[#0E131E] border-blue-800/60' : 'bg-blue-50 border-blue-300')
-                  : activeScenario === 'cash_flow'
-                  ? (isDark ? 'bg-[#0E1714] border-emerald-800/60' : 'bg-emerald-50 border-emerald-300')
-                  : activeScenario === 'travel_shield'
-                  ? (isDark ? 'bg-[#18140B] border-amber-800/60' : 'bg-amber-50 border-amber-300')
-                  : (isDark ? 'bg-[#0A111E] border-indigo-800/60' : 'bg-indigo-50 border-indigo-300')
-              }`}>
-                <div className="flex items-center gap-1.5 font-bold text-xs mb-1">
-                  {activeScenario === 'account_info' && <ShieldCheck className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />}
-                  {activeScenario === 'cash_flow' && <TrendingUp className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />}
-                  {activeScenario === 'travel_shield' && <Plane className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />}
-                  {activeScenario === 'open_finance' && <Sparkles className="w-3.5 h-3.5 text-indigo-400 flex-shrink-0" />}
-                  
-                  <span className={
-                    activeScenario === 'account_info' ? 'text-blue-400' :
-                    activeScenario === 'cash_flow' ? 'text-emerald-400' :
-                    activeScenario === 'travel_shield' ? 'text-amber-400' : 'text-indigo-400'
-                  }>
-                    {activeScenarioDef.alert.title}
-                  </span>
-                </div>
-
-                <p className={`text-[11px] leading-relaxed mb-2.5 ${isDark ? 'text-white/80' : 'text-slate-700'}`}>
-                  {activeScenarioDef.alert.description}
-                </p>
-
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => onActionClick(activeScenarioDef.alert.primaryActionType)}
-                    className={`flex-1 text-white text-xs font-semibold py-1.5 rounded-[4px] text-center transition-colors shadow-sm ${
-                      activeScenario === 'account_info'
-                        ? 'bg-blue-600 hover:bg-blue-700'
-                        : activeScenario === 'cash_flow'
-                        ? 'bg-emerald-600 hover:bg-emerald-700'
-                        : activeScenario === 'travel_shield'
-                        ? 'bg-amber-600 hover:bg-amber-700'
-                        : 'bg-indigo-600 hover:bg-indigo-700'
-                    }`}
-                  >
-                    {activeScenarioDef.alert.primaryActionLabel}
-                  </button>
-                  
-                  <button
-                    onClick={() => onActionClick(activeScenarioDef.alert.secondaryActionType)}
-                    className={`flex-1 text-xs font-medium py-1.5 rounded-[4px] text-center border transition-colors ${
-                      isDark
-                        ? 'bg-white/5 hover:bg-white/10 text-white/90 border-white/10'
-                        : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-300'
-                    }`}
-                  >
-                    {activeScenarioDef.alert.secondaryActionLabel}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* If Alert Resolved Message */}
-            {isAlertResolved && (
-              <div className={`rounded-[8px] p-2.5 border text-[11px] flex items-center gap-2 ${
-                isDark ? 'bg-emerald-950/30 border-emerald-800/40 text-emerald-300' : 'bg-emerald-50 border-emerald-200 text-emerald-800'
-              }`}>
-                <Sparkles className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
-                <span>
-                  {activeScenario === 'cash_flow' && (currentLang === 'en' ? "CDB Sweep scheduled for Thursday (Zero Overdraft)." : "Resgate de CDB agendado para quinta-feira (Zero LIS).")}
-                  {activeScenario === 'travel_shield' && (currentLang === 'en' ? "Travel Shield active for Portugal & Spain." : "Aviso de Viagem ativo para Portugal e Espanha.")}
-                  {activeScenario === 'open_finance' && (currentLang === 'en' ? "Debt Portability CCB executed — R$ 14,280 saved." : "Portabilidade CCB executada — R$ 14.280 economizados.")}
-                </span>
-              </div>
-            )}
-
             {/* Quick Actions 4-Grid */}
             <div className={`grid grid-cols-4 gap-1.5 text-center text-[11px] font-medium ${isDark ? 'text-white/80' : 'text-slate-700'}`}>
               <div className={`flex flex-col items-center gap-1 py-1.5 rounded-[8px] transition-colors cursor-pointer ${isDark ? 'hover:bg-white/[0.05]' : 'hover:bg-white shadow-sm'}`}>
