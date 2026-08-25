@@ -94,9 +94,10 @@ export const App: React.FC = () => {
   const [isOpenFinanceRefiDone, setIsOpenFinanceRefiDone] = useState(false);
   const [isPixBlocked, setIsPixBlocked] = useState(false);
 
-  // In-Phone Live Voice State
+  // In-Phone Live Voice & Dynamic Canvas State
   const [isCallActive, setIsCallActive] = useState(false);
   const [isProcessingAgent, setIsProcessingAgent] = useState<string | null>(null);
+  const [activeDynamicCardId, setActiveDynamicCardId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   // Sync lang changes to localStorage
@@ -141,11 +142,12 @@ export const App: React.FC = () => {
     }, 5500);
   };
 
-  // User Spoken Query / Intent Detection -> Immediately Highlights & Runs Matching Agent
+  // User Spoken Query / Intent Detection -> Query-Specific Dynamic Card & Sub-Agent Dispatch
   const handleUserQuery = (query: string) => {
     const q = query.toLowerCase();
     const nowTime = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' BRT';
 
+    // 1. Benefits & Insurance Agent
     if (
       q.includes('benefit') || q.includes('benefício') || q.includes('lounge') || q.includes('sala vip') || 
       q.includes('insurance') || q.includes('seguro') || q.includes('coverage') || q.includes('cobertura') || 
@@ -155,6 +157,7 @@ export const App: React.FC = () => {
        (activeRunningAgentId === 'travel_shield_agent' || activeScenario === 'travel_shield' || agentStates.travel_shield_agent?.status === 'completed'))
     ) {
       setActiveRunningAgentId('card_benefits_agent');
+      setActiveDynamicCardId('card_benefits_agent');
       setAgentStates(prev => ({
         ...prev,
         card_benefits_agent: {
@@ -172,28 +175,72 @@ export const App: React.FC = () => {
         }
       }));
     }
-    else if (q.includes('balance') || q.includes('saldo') || q.includes('extrato') || q.includes('statement') || q.includes('fatura') || q.includes('limit') || q.includes('limite') || q.includes('conta') || q.includes('checking')) {
+    // 2. Specific Checking Account Query
+    else if (q.includes('checking') || q.includes('corrente') || (q.includes('conta') && !q.includes('cartão') && !q.includes('investimento') && !q.includes('cdb'))) {
       setActiveRunningAgentId('account_info_agent');
-      setActiveScenario('account_info');
+      setActiveDynamicCardId('balance_checking');
       setAgentStates(prev => ({
         ...prev,
         account_info_agent: {
           status: 'running',
           lastRun: nowTime,
           liveResult: {
-            account_id: "ITAU-7749-00912",
-            customer: "Roberto Silva",
+            account_type: "CHECKING_ACCOUNT",
             checking_balance_brl: 48950.20,
-            cdb_di_balance_brl: 85000.00,
-            mastercard_black_available_limit_brl: 72569.50,
+            lis_limit_brl: 10000.00,
             scheduled_debits_next_thursday_brl: 38000.00,
-            status: "ANALYZING_BALANCES"
+            status: "QUERY_COMPLETE"
           }
         }
       }));
     }
-    else if (q.includes('ticket') || q.includes('passagem') || q.includes('lisbon') || q.includes('lisboa') || q.includes('forecast') || q.includes('previsão') || q.includes('shortfall') || q.includes('cdb') || q.includes('sweep') || q.includes('resgate') || q.includes('yield') || q.includes('rendimento')) {
+    // 3. Specific Savings / CDB Investment Query
+    else if (q.includes('saving') || q.includes('poupança') || q.includes('cdb') || q.includes('invest') || q.includes('aplicação')) {
+      setActiveRunningAgentId('account_info_agent');
+      setActiveDynamicCardId('balance_cdb');
+      setAgentStates(prev => ({
+        ...prev,
+        account_info_agent: {
+          status: 'running',
+          lastRun: nowTime,
+          liveResult: {
+            investment_type: "CDB_DI_LIQUIDEZ_DIARIA",
+            balance_brl: 85000.00,
+            rate_percent_cdi: 100.0,
+            liquidity: "IMMEDIATE_24_7",
+            status: "QUERY_COMPLETE"
+          }
+        }
+      }));
+    }
+    // 4. Specific Mastercard Black / Credit Card Query
+    else if (q.includes('black') || q.includes('mastercard') || q.includes('credit card') || q.includes('cartão') || q.includes('fatura') || q.includes('limit') || q.includes('limite')) {
+      setActiveRunningAgentId('account_info_agent');
+      setActiveDynamicCardId('balance_card');
+      setAgentStates(prev => ({
+        ...prev,
+        account_info_agent: {
+          status: 'running',
+          lastRun: nowTime,
+          liveResult: {
+            card_name: "Itaú Personnalité Mastercard Black",
+            available_limit_brl: 72569.50,
+            total_limit_brl: 85000.00,
+            current_invoice_due_thu_brl: 34150.00,
+            status: "QUERY_COMPLETE"
+          }
+        }
+      }));
+    }
+    // 5. Generic Balance Query -> Show Clarification Prompt (Do not leak numbers prematurely!)
+    else if (q.includes('balance') || q.includes('saldo') || q.includes('extrato') || q.includes('statement')) {
+      setActiveRunningAgentId(null);
+      setActiveDynamicCardId('balance_clarification');
+    }
+    // 6. Cash Flow & Yield Forecasting
+    else if (q.includes('ticket') || q.includes('passagem') || q.includes('lisbon') || q.includes('lisboa') || q.includes('forecast') || q.includes('previsão') || q.includes('shortfall') || q.includes('sweep') || q.includes('resgate') || q.includes('yield') || q.includes('rendimento')) {
       setActiveRunningAgentId('cash_flow_forecast_agent');
+      setActiveDynamicCardId('cash_flow_forecast_agent');
       setActiveScenario('cash_flow');
       setAgentStates(prev => ({
         ...prev,
@@ -211,8 +258,10 @@ export const App: React.FC = () => {
         }
       }));
     }
+    // 7. Travel Notice & Fraud Defense
     else if (q.includes('travel') || q.includes('viagem') || q.includes('portugal') || q.includes('spain') || q.includes('espanha') || q.includes('madrid') || q.includes('trip') || q.includes('flight') || q.includes('abroad')) {
       setActiveRunningAgentId('travel_shield_agent');
+      setActiveDynamicCardId('travel_shield_agent');
       setActiveScenario('travel_shield');
       setAgentStates(prev => ({
         ...prev,
@@ -230,8 +279,10 @@ export const App: React.FC = () => {
         }
       }));
     }
+    // 8. Open Finance
     else if (q.includes('refinance') || q.includes('refinanciamento') || q.includes('open finance') || q.includes('debt') || q.includes('dívida') || q.includes('loan') || q.includes('empréstimo') || q.includes('ccb') || q.includes('rate') || q.includes('taxa')) {
       setActiveRunningAgentId('open_finance_optimizer');
+      setActiveDynamicCardId('open_finance_optimizer');
       setActiveScenario('open_finance');
       setAgentStates(prev => ({
         ...prev,
@@ -239,11 +290,12 @@ export const App: React.FC = () => {
           status: 'running',
           lastRun: nowTime,
           liveResult: {
-            competitor_debt_balance_brl: 18000.00,
-            previous_rate: "11.2% a.m.",
-            itau_sob_medida_rate: "1.69% a.m.",
-            projected_savings_brl: 14280.00,
-            status: "EVALUATING_DEBT_ARBITRAGE"
+            external_bank: "BANCO_COMPETITOR_SA",
+            external_rate_pm: 11.20,
+            itau_rate_pm: 1.69,
+            monthly_savings_brl: 680.40,
+            total_savings_brl: 14280.00,
+            status: "READY_FOR_ELECTRONIC_CCB"
           }
         }
       }));
@@ -700,6 +752,7 @@ export const App: React.FC = () => {
               isOpenFinanceRefiDone={isOpenFinanceRefiDone}
               isPixBlocked={isPixBlocked}
               activeRunningAgentId={activeRunningAgentId}
+              activeDynamicCardId={activeDynamicCardId}
               agentStates={agentStates}
               onUserQuery={handleUserQuery}
               onTurnComplete={handleTurnComplete}

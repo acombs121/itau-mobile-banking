@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { QrCode, ArrowUpRight, ArrowDownLeft, CreditCard, Mic, MicOff, X, Check, ShieldCheck, Plane, TrendingUp } from 'lucide-react';
+import { QrCode, ArrowUpRight, ArrowDownLeft, CreditCard, Mic, MicOff, X, Check, ShieldCheck, Plane, TrendingUp, HelpCircle } from 'lucide-react';
 import { BankingProfile } from '../types/banking';
 import { IOSNotification, ScenarioId } from '../types/itau_concierge';
 import { Language, translations } from '../i18n/translations';
@@ -19,6 +19,7 @@ interface PhoneContainerProps {
   isOpenFinanceRefiDone?: boolean;
   isPixBlocked?: boolean;
   activeRunningAgentId?: string | null;
+  activeDynamicCardId?: string | null;
   agentStates?: Record<string, { status: 'idle' | 'running' | 'completed'; lastRun?: string; liveResult?: Record<string, any> }>;
   onUserQuery?: (query: string) => void;
   onTurnComplete?: () => void;
@@ -36,6 +37,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
   isCdbSweepScheduled = false,
   isOpenFinanceRefiDone = false,
   activeRunningAgentId = null,
+  activeDynamicCardId = null,
   agentStates: _agentStates = {},
   onUserQuery,
   onTurnComplete
@@ -48,10 +50,12 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
 
   // Automatically pop up relevant dynamic card when an agent runs or completes
   useEffect(() => {
-    if (activeRunningAgentId) {
+    if (activeDynamicCardId) {
+      setActiveCardId(activeDynamicCardId);
+    } else if (activeRunningAgentId) {
       setActiveCardId(activeRunningAgentId);
     }
-  }, [activeRunningAgentId]);
+  }, [activeDynamicCardId, activeRunningAgentId]);
 
   // Connect directly to Gemini Multimodal Live WebSocket
   const {
@@ -67,7 +71,10 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
     onToolCall: (toolName) => {
       console.log("Executing sub-agent tool call:", toolName);
       onActionClick(toolName);
-      if (toolName === 'get_account_info') setActiveCardId('account_info_agent');
+      if (toolName === 'get_account_info') {
+        // Only show if not already showing a specific sub-balance
+        setActiveCardId(prev => (prev?.startsWith('balance_') ? prev : 'account_info_agent'));
+      }
       else if (toolName === 'sweep_cdb') setActiveCardId('cash_flow_forecast_agent');
       else if (toolName === 'activate_travel_mode') setActiveCardId('travel_shield_agent');
       else if (toolName === 'get_card_benefits') setActiveCardId('card_benefits_agent');
@@ -150,8 +157,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
             <div className={`grid grid-cols-4 gap-1.5 text-center text-[11px] font-medium ${isDark ? 'text-white/80' : 'text-slate-700'}`}>
               <div 
                 onClick={() => {
-                  onActionClick('get_account_info');
-                  setActiveCardId('account_info_agent');
+                  setActiveCardId('balance_clarification');
                 }}
                 className={`flex flex-col items-center gap-1 py-1 rounded-[8px] transition-colors cursor-pointer ${isDark ? 'hover:bg-white/[0.05]' : 'hover:bg-white shadow-sm'}`}
               >
@@ -199,11 +205,192 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
             </div>
           </div>
 
-          {/* Dynamic Center Canvas: Pop-Up Agent Cards or 70% Transparent Watermark */}
-          <div className={`flex-1 w-full p-4 flex items-center justify-center min-h-0 overflow-y-auto ${isDark ? 'bg-transparent' : 'bg-slate-50/40'}`}>
+          {/* Dynamic Center Canvas: Optically Positioned In-Canvas Agent Cards or Watermark */}
+          <div className={`flex-1 w-full px-4 pt-3 pb-2 flex flex-col justify-start items-center min-h-0 overflow-y-auto custom-scrollbar ${isDark ? 'bg-transparent' : 'bg-slate-50/40'}`}>
             
-            {/* 1. Account Info Dynamic Card */}
-            {activeCardId === 'account_info_agent' ? (
+            {/* 0. Balance Clarification Interactive Card (Shown when user asks general balance, BEFORE specifying account) */}
+            {activeCardId === 'balance_clarification' ? (
+              <div className={`w-full rounded-[16px] p-4 border animate-fadeIn shadow-2xl relative ${
+                isDark ? 'bg-[#15151A] border-brand-orange/30 text-white' : 'bg-white border-brand-orange/30 text-slate-900 shadow-lg'
+              }`}>
+                <div className="flex items-center justify-between mb-2.5">
+                  <div className="flex items-center gap-2">
+                    <HelpCircle className="w-3.5 h-3.5 text-brand-orange animate-pulse" />
+                    <span className="text-[10.5px] font-mono font-bold tracking-wide uppercase text-brand-orange">
+                      {currentLang === 'en' ? 'BALANCE INQUIRY' : 'CONSULTA DE SALDO'}
+                    </span>
+                  </div>
+                  <button 
+                    onClick={() => setActiveCardId(null)}
+                    className="w-5 h-5 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-colors"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+
+                <p className={`text-xs mb-3 ${isDark ? 'text-white/80' : 'text-slate-700'}`}>
+                  {currentLang === 'en' 
+                    ? 'Which balance would you like to check?' 
+                    : 'Qual saldo você deseja consultar?'}
+                </p>
+
+                <div className="space-y-1.5">
+                  <button
+                    onClick={() => {
+                      onActionClick('get_account_info');
+                      setActiveCardId('balance_checking');
+                    }}
+                    className={`w-full text-left p-2.5 rounded-[10px] border transition-all text-xs font-medium flex items-center justify-between ${
+                      isDark 
+                        ? 'bg-white/[0.04] border-white/10 hover:bg-brand-orange/10 hover:border-brand-orange/40 text-white' 
+                        : 'bg-slate-50 border-slate-200 hover:bg-orange-50 hover:border-brand-orange/40 text-slate-800'
+                    }`}
+                  >
+                    <span>1. {currentLang === 'en' ? 'Checking Account' : 'Conta Corrente'}</span>
+                    <span className="text-[10px] opacity-60 font-mono">CC • 00912</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      onActionClick('get_account_info');
+                      setActiveCardId('balance_cdb');
+                    }}
+                    className={`w-full text-left p-2.5 rounded-[10px] border transition-all text-xs font-medium flex items-center justify-between ${
+                      isDark 
+                        ? 'bg-white/[0.04] border-white/10 hover:bg-brand-orange/10 hover:border-brand-orange/40 text-white' 
+                        : 'bg-slate-50 border-slate-200 hover:bg-orange-50 hover:border-brand-orange/40 text-slate-800'
+                    }`}
+                  >
+                    <span>2. {currentLang === 'en' ? 'Savings & CDB DI' : 'Investimentos CDB DI'}</span>
+                    <span className="text-[10px] opacity-60 font-mono">100% CDI</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      onActionClick('get_account_info');
+                      setActiveCardId('balance_card');
+                    }}
+                    className={`w-full text-left p-2.5 rounded-[10px] border transition-all text-xs font-medium flex items-center justify-between ${
+                      isDark 
+                        ? 'bg-white/[0.04] border-white/10 hover:bg-brand-orange/10 hover:border-brand-orange/40 text-white' 
+                        : 'bg-slate-50 border-slate-200 hover:bg-orange-50 hover:border-brand-orange/40 text-slate-800'
+                    }`}
+                  >
+                    <span>3. {currentLang === 'en' ? 'Mastercard Black Card' : 'Cartão Mastercard Black'}</span>
+                    <span className="text-[10px] opacity-60 font-mono">•••• 8841</span>
+                  </button>
+                </div>
+              </div>
+            ) : activeCardId === 'balance_checking' ? (
+              /* Specific Checking Balance Card */
+              <div className={`w-full rounded-[16px] p-4 border animate-fadeIn shadow-2xl relative ${
+                isDark ? 'bg-[#15151A] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-lg'
+              }`}>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#10B981]"></span>
+                    <span className="text-[10.5px] font-mono font-bold tracking-wide uppercase text-emerald-400">
+                      {currentLang === 'en' ? 'CHECKING ACCOUNT' : 'CONTA CORRENTE'}
+                    </span>
+                  </div>
+                  <button 
+                    onClick={() => setActiveCardId(null)}
+                    className="w-5 h-5 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-colors"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+
+                <div className="space-y-2.5">
+                  <div className={`p-3 rounded-[10px] ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
+                    <span className="text-[10px] text-white/50 block">{currentLang === 'en' ? 'Available Balance' : 'Saldo Disponível'}</span>
+                    <span className="text-xl font-bold font-mono text-white">R$ 48.950,20</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className={`p-2 rounded-[8px] ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}>
+                      <span className="text-[9px] text-white/40 block">{currentLang === 'en' ? 'Overdraft (LIS)' : 'Limite LIS'}</span>
+                      <span className="font-mono font-semibold text-[11px] text-white/80">R$ 10.000,00</span>
+                    </div>
+                    <div className={`p-2 rounded-[8px] ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}>
+                      <span className="text-[9px] text-white/40 block">{currentLang === 'en' ? 'Debits Next Thu' : 'Débitos Quinta'}</span>
+                      <span className="font-mono font-semibold text-[11px] text-amber-400">R$ 38.000,00</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : activeCardId === 'balance_cdb' ? (
+              /* Specific CDB Investments Card */
+              <div className={`w-full rounded-[16px] p-4 border animate-fadeIn shadow-2xl relative ${
+                isDark ? 'bg-[#15151A] border-emerald-500/30 text-white' : 'bg-white border-emerald-500/30 text-slate-900 shadow-lg'
+              }`}>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#10B981]"></span>
+                    <span className="text-[10.5px] font-mono font-bold tracking-wide uppercase text-emerald-400">
+                      {currentLang === 'en' ? 'CDB DI INVESTMENTS' : 'INVESTIMENTOS CDB DI'}
+                    </span>
+                  </div>
+                  <button 
+                    onClick={() => setActiveCardId(null)}
+                    className="w-5 h-5 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-colors"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+
+                <div className="space-y-2.5">
+                  <div className={`p-3 rounded-[10px] ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
+                    <span className="text-[10px] text-white/50 block">{currentLang === 'en' ? 'Daily Liquidity Balance' : 'Saldo com Liquidez Diária'}</span>
+                    <span className="text-xl font-bold font-mono text-emerald-400">R$ 85.000,00</span>
+                  </div>
+
+                  <div className={`p-2.5 rounded-[8px] ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}>
+                    <div className="text-xs font-semibold text-white/90">📈 {currentLang === 'en' ? 'Yield Rate: 100% of CDI' : 'Rentabilidade: 100% do CDI'}</div>
+                    <div className="text-[10px] text-white/50 mt-0.5">{currentLang === 'en' ? 'Immediate withdrawal 24/7 without penalties.' : 'Resgate imediato 24/7 com liquidez diária.'}</div>
+                  </div>
+                </div>
+              </div>
+            ) : activeCardId === 'balance_card' ? (
+              /* Specific Mastercard Black Balance Card */
+              <div className={`w-full rounded-[16px] p-4 border animate-fadeIn shadow-2xl relative ${
+                isDark ? 'bg-[#15151A] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-lg'
+              }`}>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <CreditCard className="w-3.5 h-3.5 text-brand-orange" />
+                    <span className="text-[10.5px] font-mono font-bold tracking-wide uppercase text-white/90">
+                      Mastercard Black (•••• 8841)
+                    </span>
+                  </div>
+                  <button 
+                    onClick={() => setActiveCardId(null)}
+                    className="w-5 h-5 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-colors"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+
+                <div className="space-y-2.5">
+                  <div className={`p-3 rounded-[10px] ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
+                    <span className="text-[10px] text-white/50 block">{currentLang === 'en' ? 'Available Limit' : 'Limite Disponível'}</span>
+                    <span className="text-xl font-bold font-mono text-white">R$ 72.569,50</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className={`p-2 rounded-[8px] ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}>
+                      <span className="text-[9px] text-white/40 block">{currentLang === 'en' ? 'Total Card Limit' : 'Limite Total'}</span>
+                      <span className="font-mono font-semibold text-[11px] text-white/80">R$ 85.000,00</span>
+                    </div>
+                    <div className={`p-2 rounded-[8px] ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}>
+                      <span className="text-[9px] text-white/40 block">{currentLang === 'en' ? 'Current Bill Due Thu' : 'Fatura Venc. Quinta'}</span>
+                      <span className="font-mono font-semibold text-[11px] text-amber-400">R$ 34.150,00</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : activeCardId === 'account_info_agent' ? (
+              /* Consolidated Position Dynamic Card */
               <div className={`w-full rounded-[16px] p-4 border animate-fadeIn shadow-2xl relative ${
                 isDark ? 'bg-[#15151A] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-lg'
               }`}>
@@ -222,31 +409,25 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                   </button>
                 </div>
 
-                <div className="space-y-2.5">
-                  <div className={`p-2.5 rounded-[10px] ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
-                    <span className="text-[10px] text-white/50 block">{currentLang === 'en' ? 'Checking Balance' : 'Conta Corrente'}</span>
-                    <span className="text-lg font-bold font-mono text-white">R$ 48.950,20</span>
+                <div className="space-y-2 text-xs">
+                  <div className={`p-2 rounded-[8px] flex justify-between items-center ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
+                    <span className="text-white/60">{currentLang === 'en' ? 'Checking' : 'Conta Corrente'}</span>
+                    <span className="font-bold font-mono text-white">R$ 48.950,20</span>
                   </div>
 
-                  <div className={`p-2.5 rounded-[10px] ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
-                    <span className="text-[10px] text-white/50 block">{currentLang === 'en' ? 'Daily Liquidity CDB DI (100% CDI)' : 'CDB DI Liquidez Diária (100% CDI)'}</span>
-                    <span className="text-sm font-bold font-mono text-emerald-400">R$ 85.000,00</span>
+                  <div className={`p-2 rounded-[8px] flex justify-between items-center ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
+                    <span className="text-white/60">CDB DI (100% CDI)</span>
+                    <span className="font-bold font-mono text-emerald-400">R$ 85.000,00</span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 text-xs pt-1">
-                    <div className={`p-2 rounded-[8px] ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}>
-                      <span className="text-[9px] text-white/40 block">{currentLang === 'en' ? 'Black Card Limit' : 'Limite Black'}</span>
-                      <span className="font-mono font-semibold text-[11px]">R$ 72.569,50</span>
-                    </div>
-                    <div className={`p-2 rounded-[8px] ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}>
-                      <span className="text-[9px] text-white/40 block">{currentLang === 'en' ? 'Debits Next Thu' : 'Débitos Quinta'}</span>
-                      <span className="font-mono font-semibold text-[11px] text-amber-400">R$ 38.000,00</span>
-                    </div>
+                  <div className={`p-2 rounded-[8px] flex justify-between items-center ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
+                    <span className="text-white/60">Mastercard Black</span>
+                    <span className="font-bold font-mono text-white/90">R$ 72.569,50</span>
                   </div>
                 </div>
               </div>
             ) : activeCardId === 'cash_flow_forecast_agent' ? (
-              /* 2. Cash Flow & Yield Optimization Dynamic Card */
+              /* Cash Flow & Yield Optimization Dynamic Card */
               <div className={`w-full rounded-[16px] p-4 border animate-fadeIn shadow-2xl relative ${
                 isDark ? 'bg-[#15151A] border-brand-orange/40 text-white' : 'bg-white border-brand-orange/40 text-slate-900 shadow-lg'
               }`}>
@@ -291,7 +472,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                 </div>
               </div>
             ) : activeCardId === 'travel_shield_agent' ? (
-              /* 3. Travel Shield Dynamic Card */
+              /* Travel Shield Dynamic Card */
               <div className={`w-full rounded-[16px] p-4 border animate-fadeIn shadow-2xl relative ${
                 isDark ? 'bg-[#15151A] border-amber-500/40 text-white' : 'bg-white border-amber-500/40 text-slate-900 shadow-lg'
               }`}>
@@ -341,7 +522,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                 </div>
               </div>
             ) : activeCardId === 'card_benefits_agent' ? (
-              /* 4. Mastercard Black Benefits Dynamic Card */
+              /* Mastercard Black Benefits Dynamic Card */
               <div className={`w-full rounded-[16px] p-4 border animate-fadeIn shadow-2xl relative ${
                 isDark ? 'bg-[#15151A] border-blue-500/40 text-white' : 'bg-white border-blue-500/40 text-slate-900 shadow-lg'
               }`}>
@@ -378,7 +559,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                 </div>
               </div>
             ) : activeCardId === 'open_finance_optimizer' ? (
-              /* 5. Open Finance Optimizer Dynamic Card */
+              /* Open Finance Optimizer Dynamic Card */
               <div className={`w-full rounded-[16px] p-4 border animate-fadeIn shadow-2xl relative ${
                 isDark ? 'bg-[#15151A] border-emerald-500/40 text-white' : 'bg-white border-emerald-500/40 text-slate-900 shadow-lg'
               }`}>
@@ -419,8 +600,10 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
               </div>
             ) : (
               /* Centered 70% Transparent Itaú Logo Watermark */
-              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-[28px] bg-brand-orange text-white flex items-center justify-center font-bold text-4xl sm:text-5xl opacity-30 shadow-2xl tracking-tighter -translate-y-2 select-none pointer-events-none">
-                itau
+              <div className="my-auto flex items-center justify-center select-none pointer-events-none">
+                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-[28px] bg-brand-orange text-white flex items-center justify-center font-bold text-4xl sm:text-5xl opacity-30 shadow-2xl tracking-tighter">
+                  itau
+                </div>
               </div>
             )}
 
