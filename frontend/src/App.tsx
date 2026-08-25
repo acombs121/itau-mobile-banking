@@ -697,7 +697,7 @@ export const App: React.FC = () => {
           </div>
 
           {/* Right Column: Multi-Agent Telemetry & Orchestrator Panel */}
-          <div className="flex-1 w-full min-w-0 h-full max-h-[760px] min-h-0">
+          <div className="flex-1 w-full min-w-0 h-[730px] max-h-[86vh] flex items-center justify-center min-h-0">
             <AgentOrchestratorPanel
               subAgents={subAgents}
               actionItems={actionItems}

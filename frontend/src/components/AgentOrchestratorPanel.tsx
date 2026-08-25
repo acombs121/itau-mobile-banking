@@ -64,7 +64,7 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
 
   return (
     <div
-      className={`w-full h-full max-h-[calc(100vh-5.5rem)] rounded-[14px] shadow-2xl flex flex-col min-h-0 border transition-colors duration-200 ${
+      className={`w-full h-[730px] max-h-[86vh] rounded-[16px] shadow-2xl flex flex-col min-h-0 border transition-colors duration-200 ${
         isDark
           ? 'bg-[#0E0E11] border-white/[0.08] text-white'
           : 'bg-white border-slate-200 text-slate-900 shadow-sm'
@@ -76,8 +76,8 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
         isDark ? 'border-white/[0.08]' : 'border-slate-200 bg-slate-50/50'
       }`}>
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-brand-orange"></div>
-          <span className={`text-sm font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
+          <div className="w-2.5 h-2.5 rounded-full bg-brand-orange"></div>
+          <span className={`text-sm sm:text-base font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
             {t.tabs.agents}
           </span>
         </div>
@@ -91,11 +91,11 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
       </div>
 
       {/* Main Sub-Agents Workspace (Single-Column Cards Left, JSON Telemetry Right) */}
-      <div className="flex-1 p-5 overflow-y-auto min-h-0">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 h-full items-stretch min-h-0">
+      <div className="flex-1 p-4 sm:p-5 overflow-hidden min-h-0">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 h-full items-stretch min-h-0">
           
-          {/* Left Column: Stacked Agent Cards (Single Column) */}
-          <div className="lg:col-span-6 flex flex-col gap-2.5 overflow-y-auto pr-1 min-h-0">
+          {/* Left Column: 5 Stacked Agent Cards (Expanded with more whitespace, larger typography, filling exact height) */}
+          <div className="lg:col-span-6 flex flex-col justify-between gap-2.5 sm:gap-3 h-full min-h-0 overflow-y-auto pr-0.5">
             {localizedSubAgents.map((agent) => {
               const isRunning = agent.status === 'processing';
               const isCompleted = agent.status === 'completed';
@@ -105,7 +105,7 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
                 <div
                   key={agent.id}
                   onClick={() => setSelectedAgentId(agent.id)}
-                  className={`rounded-[10px] p-3.5 border transition-all cursor-pointer relative ${
+                  className={`flex-1 flex flex-col justify-center rounded-[12px] px-4.5 py-3 sm:py-3.5 border transition-all cursor-pointer relative ${
                     isRunning
                       ? 'bg-brand-orange/[0.12] border-brand-orange ring-2 ring-brand-orange shadow-[0_0_20px_rgba(255,100,35,0.35)]'
                       : isSelected
@@ -117,8 +117,8 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
                       : 'bg-white border-slate-200 hover:border-slate-300 shadow-sm'
                   }`}
                 >
-                  <div className="flex items-start justify-between mb-1">
-                    <div className="flex items-center gap-2 min-w-0">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center gap-2.5 min-w-0">
                       <span
                         className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
                           isRunning
@@ -128,30 +128,30 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
                             : isDark ? 'bg-white/30' : 'bg-slate-300'
                         }`}
                       />
-                      <h3 className={`text-xs sm:text-sm font-semibold leading-snug truncate ${isDark ? 'text-white/95' : 'text-slate-900'}`}>
+                      <h3 className={`text-xs sm:text-[13.5px] lg:text-[14px] font-semibold leading-snug truncate ${isDark ? 'text-white/95' : 'text-slate-900'}`}>
                         {agent.name}
                       </h3>
                     </div>
 
                     <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
                       {isRunning ? (
-                        <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-brand-orange text-white animate-pulse flex items-center gap-1 shadow-sm">
+                        <span className="text-[10px] sm:text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-brand-orange text-white animate-pulse flex items-center gap-1 shadow-sm">
                           <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
                           {currentLang === 'en' ? 'RUNNING' : 'EXECUTANDO'}
                         </span>
                       ) : isCompleted ? (
-                        <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                        <span className="text-[10px] sm:text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                           {currentLang === 'en' ? 'COMPLETED' : 'CONCLUÍDO'}
                         </span>
                       ) : (
-                        <span className={`text-xs font-mono ${isDark ? 'text-white/40' : 'text-slate-400'}`}>
+                        <span className={`text-xs font-mono font-medium ${isDark ? 'text-white/40' : 'text-slate-400'}`}>
                           {t.subagents.statusIdle}
                         </span>
                       )}
                     </div>
                   </div>
 
-                  <p className={`text-xs leading-relaxed ${isDark ? 'text-white/70' : 'text-slate-600'}`}>
+                  <p className={`text-xs sm:text-[12.5px] lg:text-[13px] leading-relaxed ${isDark ? 'text-white/70' : 'text-slate-600'}`}>
                     {agent.description}
                   </p>
                 </div>
@@ -160,29 +160,29 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
           </div>
 
           {/* Right Column: Full-Height JSON Telemetry Inspector */}
-          <div className="lg:col-span-6 flex flex-col h-full min-h-[320px]">
+          <div className="lg:col-span-6 flex flex-col h-full min-h-0">
             <div
-              className={`flex-1 rounded-[10px] p-4 font-mono text-xs overflow-y-auto border flex flex-col transition-colors ${
+              className={`flex-1 rounded-[12px] p-4.5 font-mono text-xs overflow-y-auto border flex flex-col transition-colors ${
                 isDark
                   ? 'bg-black/50 border-white/[0.06] text-white/90'
                   : 'bg-slate-50 border-slate-200 text-slate-800'
               }`}
             >
               {selectedAgentDetail ? (
-                <div className="flex flex-col h-full">
-                  <div className="flex justify-between items-center mb-3 pb-2 border-b border-white/[0.08]">
+                <div className="flex flex-col h-full min-h-0">
+                  <div className="flex justify-between items-center mb-3 pb-2.5 border-b border-white/[0.08] flex-shrink-0">
                     <div className="flex items-center gap-2">
                       <span className={`w-2 h-2 rounded-full ${selectedAgentDetail.status === 'processing' ? 'bg-brand-orange animate-ping' : 'bg-emerald-400'}`}></span>
-                      <span className="font-bold text-brand-orange text-xs uppercase tracking-wide">
+                      <span className="font-bold text-brand-orange text-xs sm:text-[12.5px] uppercase tracking-wide">
                         {selectedAgentDetail.id}
                       </span>
                     </div>
-                    <span className="text-[11px] text-white/40">
+                    <span className="text-xs text-white/40">
                       {selectedAgentDetail.lastRun || '14:52:10 BRT'}
                     </span>
                   </div>
 
-                  <pre className="flex-1 overflow-x-auto text-[11.5px] leading-relaxed select-text font-mono">
+                  <pre className="flex-1 overflow-auto text-xs sm:text-[12px] lg:text-[12.5px] leading-relaxed select-text font-mono">
                     {JSON.stringify(selectedAgentDetail.resultData, null, 2)}
                   </pre>
                 </div>
