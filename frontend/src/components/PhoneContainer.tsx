@@ -160,45 +160,6 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                 {profile.customer_name}
               </span>
             </div>
-
-            {/* Live Audio Waveform (Embedded cleanly between Roberto Silva and the Mic Button) */}
-            {isVoiceCallActive && (
-              <div className="flex items-center gap-1 h-6 px-2.5 bg-black/40 rounded-full border border-white/10 mx-2 animate-fadeIn flex-shrink-0">
-                {audioLevels.slice(0, 7).map((level, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      height: `${Math.max(22, level)}%`,
-                      transition: 'height 0.1s ease-in-out'
-                    }}
-                    className={`w-1 rounded-full ${
-                      isSpeaking
-                        ? 'bg-brand-orange shadow-[0_0_8px_#FF6423]'
-                        : isListening
-                        ? 'bg-emerald-400 shadow-[0_0_8px_#34D399] animate-pulse'
-                        : 'bg-white/20'
-                    }`}
-                  />
-                ))}
-              </div>
-            )}
-            
-            {/* Top Right Orange Mic Button */}
-            <button
-              onClick={onToggleVoiceCall}
-              className={`w-8 h-8 rounded-full flex items-center justify-center transition-all flex-shrink-0 ${
-                isVoiceCallActive
-                  ? isSpeaking
-                    ? 'bg-brand-orange text-white ring-4 ring-brand-orange/40 shadow-[0_0_15px_#FF6423] animate-pulse'
-                    : isListening
-                    ? 'bg-emerald-500 text-white ring-4 ring-emerald-500/40 shadow-[0_0_15px_#10B981] animate-pulse'
-                    : 'bg-brand-orange text-white shadow-md'
-                  : 'bg-brand-orange hover:bg-brand-orange-hover text-white shadow-sm'
-              }`}
-              title={isVoiceCallActive ? "Itaú Concierge Voice Active (Click to End)" : "Start Itaú Concierge Voice"}
-            >
-              {isVoiceCallActive && !isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-            </button>
           </div>
 
           {/* Balance Hero */}
@@ -310,6 +271,68 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
               ))}
             </div>
 
+          </div>
+
+          {/* Bottom Voice Concierge Bar (Placed above Footer Nav) */}
+          <div className={`px-4 py-2 border-t flex items-center justify-between flex-shrink-0 transition-colors ${
+            isDark ? 'border-white/[0.08] bg-[#121217]' : 'border-slate-200 bg-slate-100/90'
+          }`}>
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-2 h-2 rounded-full bg-brand-orange flex-shrink-0"></div>
+              <span className={`text-xs font-semibold tracking-tight truncate ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
+                Itaú Concierge
+              </span>
+              {isVoiceCallActive && (
+                <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded ${
+                  isSpeaking
+                    ? 'bg-brand-orange/20 text-brand-orange animate-pulse'
+                    : isListening
+                    ? 'bg-emerald-500/20 text-emerald-400 animate-pulse'
+                    : 'bg-white/10 text-white/50'
+                }`}>
+                  {isSpeaking ? (currentLang === 'en' ? 'SPEAKING' : 'FALANDO') : isListening ? (currentLang === 'en' ? 'LISTENING' : 'OUVINDO') : 'ACTIVE'}
+                </span>
+              )}
+            </div>
+
+            {/* Live Audio Waveform (Appears beside the Mic button) */}
+            {isVoiceCallActive && (
+              <div className="flex items-center gap-1 h-6 px-2.5 bg-black/40 rounded-full border border-white/10 mx-2 animate-fadeIn flex-shrink-0">
+                {audioLevels.slice(0, 7).map((level, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      height: `${Math.max(22, level)}%`,
+                      transition: 'height 0.1s ease-in-out'
+                    }}
+                    className={`w-1 rounded-full ${
+                      isSpeaking
+                        ? 'bg-brand-orange shadow-[0_0_8px_#FF6423]'
+                        : isListening
+                        ? 'bg-emerald-400 shadow-[0_0_8px_#34D399] animate-pulse'
+                        : 'bg-white/20'
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Mic Trigger Button */}
+            <button
+              onClick={onToggleVoiceCall}
+              className={`w-8 h-8 rounded-full flex items-center justify-center transition-all flex-shrink-0 ${
+                isVoiceCallActive
+                  ? isSpeaking
+                    ? 'bg-brand-orange text-white ring-4 ring-brand-orange/40 shadow-[0_0_15px_#FF6423] animate-pulse'
+                    : isListening
+                    ? 'bg-emerald-500 text-white ring-4 ring-emerald-500/40 shadow-[0_0_15px_#10B981] animate-pulse'
+                    : 'bg-brand-orange text-white shadow-md'
+                  : 'bg-brand-orange hover:bg-brand-orange-hover text-white shadow-sm'
+              }`}
+              title={isVoiceCallActive ? "Itaú Concierge Voice Active (Click to End)" : "Start Itaú Concierge Voice"}
+            >
+              {isVoiceCallActive && !isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+            </button>
           </div>
 
           {/* Minimalist Bottom Bar */}
