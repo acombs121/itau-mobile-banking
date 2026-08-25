@@ -350,6 +350,7 @@ export const App: React.FC = () => {
 
     if (actionType === 'get_account_info' || actionType === 'view_statements' || actionType === 'view_limits') {
       setActiveRunningAgentId('account_info_agent');
+      setActiveDynamicCardId(prev => (prev?.startsWith('balance_') ? prev : 'account_info_agent'));
       setActiveScenario('account_info');
       setAgentStates(prev => ({
         ...prev,
@@ -406,6 +407,7 @@ export const App: React.FC = () => {
     else if (actionType === 'sweep_cdb' || actionType === 'view_cash_flow') {
       setIsCdbSweepScheduled(true);
       setActiveRunningAgentId('cash_flow_forecast_agent');
+      setActiveDynamicCardId('cash_flow_forecast_agent');
       setActiveScenario('cash_flow');
       setAgentStates(prev => ({
         ...prev,
@@ -454,6 +456,7 @@ export const App: React.FC = () => {
     else if (actionType === 'activate_travel_mode') {
       setIsTravelModeActive(true);
       setActiveRunningAgentId('travel_shield_agent');
+      setActiveDynamicCardId('travel_shield_agent');
       setActiveScenario('travel_shield');
       setAgentStates(prev => ({
         ...prev,
@@ -506,6 +509,7 @@ export const App: React.FC = () => {
     }
     else if (actionType === 'get_card_benefits' || actionType === 'view_travel_insurance') {
       setActiveRunningAgentId('card_benefits_agent');
+      setActiveDynamicCardId('card_benefits_agent');
       setAgentStates(prev => ({
         ...prev,
         card_benefits_agent: {
@@ -569,6 +573,7 @@ export const App: React.FC = () => {
     else if (actionType === 'refinance_open_finance' || actionType === 'simulate_open_finance') {
       setIsOpenFinanceRefiDone(true);
       setActiveRunningAgentId('open_finance_optimizer');
+      setActiveDynamicCardId('open_finance_optimizer');
       setActiveScenario('open_finance');
       setAgentStates(prev => ({
         ...prev,
