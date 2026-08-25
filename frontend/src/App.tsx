@@ -162,7 +162,43 @@ export const App: React.FC = () => {
     const tNotif = translations[currentLang].notifications;
     const nowTime = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + ' BRT';
 
-    if (actionType === 'sweep_cdb' || actionType === 'view_cash_flow') {
+    if (actionType === 'get_account_info' || actionType === 'view_statements' || actionType === 'view_limits') {
+      triggerNotification(
+        currentLang === 'en' ? "Account Overview Retrieved" : "Posição Consolidada Obtida",
+        currentLang === 'en' ? "Checking R$ 48,950.20 • CDB DI R$ 85,000.00 • Mastercard Black R$ 72.5k" : "Conta Corrente R$ 48.950,20 • CDB DI R$ 85.000,00 • Mastercard Black R$ 72,5k"
+      );
+
+      const newAction: SecurityActionItem = {
+        id: "act_" + Date.now(),
+        time: nowTime,
+        type: "cdb_sweep",
+        title: currentLang === 'en' ? "Account Information Synchronized" : "Informações de Conta Sincronizadas",
+        description: currentLang === 'en' ? "Verified checking balance (R$ 48,950.20), CDB DI investments (R$ 85k), and D+4 scheduled debits." : "Validados saldos em conta corrente (R$ 48.950,20), CDB DI (R$ 85k) e débitos agendados D+4.",
+        status: "Confirmed",
+        details: "Unified Position • Ag. 7749 CC 00912-8"
+      };
+      setActionItems(prev => [newAction, ...prev]);
+
+      const newLog: TelemetryLog = {
+        id: "log_" + Date.now(),
+        timestamp: new Date().toLocaleTimeString(),
+        agentId: "account_info_agent",
+        agentName: "Account Information & Statements Agent",
+        action: "FETCH_CONSOLIDATED_ACCOUNTS_AND_STATEMENTS",
+        status: "success",
+        payload: {
+          account_id: "ITAU-7749-00912",
+          customer: "Roberto Silva",
+          checking_balance_brl: 48950.20,
+          cdb_di_balance_brl: 85000.00,
+          mastercard_black_available_limit_brl: 72569.50,
+          scheduled_debits_next_thursday_brl: 38000.00,
+          status: "SYNCHRONIZED"
+        }
+      };
+      setTelemetryLogs(prev => [newLog, ...prev]);
+    }
+    else if (actionType === 'sweep_cdb' || actionType === 'view_cash_flow') {
       setIsCdbSweepScheduled(true);
       triggerNotification(tNotif.cdbSweepTitle, tNotif.cdbSweepSubtitle);
       
@@ -181,7 +217,7 @@ export const App: React.FC = () => {
         id: "log_" + Date.now(),
         timestamp: new Date().toLocaleTimeString(),
         agentId: "cash_flow_forecast_agent",
-        agentName: "Cash Flow & Overdraft Preemption Agent",
+        agentName: "Cash Flow & Yield Forecasting Agent",
         action: "EXECUTE_OPTIMAL_CDB_SWEEP",
         status: "success",
         payload: {
@@ -212,7 +248,7 @@ export const App: React.FC = () => {
         id: "log_" + Date.now(),
         timestamp: new Date().toLocaleTimeString(),
         agentId: "travel_shield_agent",
-        agentName: "Travel Shield & International Card Guardian",
+        agentName: "Travel Notice & International Card Shield",
         action: "ACTIVATE_TRAVEL_ROAMING_SHIELD",
         status: "success",
         payload: {
@@ -243,7 +279,7 @@ export const App: React.FC = () => {
         id: "log_" + Date.now(),
         timestamp: new Date().toLocaleTimeString(),
         agentId: "open_finance_optimizer",
-        agentName: "Open Finance & Debt Portability Optimizer",
+        agentName: "Open Finance & Debt Refinancing Optimizer",
         action: "DISPATCH_INTERBANK_PAYOFF_CIP",
         status: "success",
         payload: {
@@ -254,21 +290,6 @@ export const App: React.FC = () => {
         }
       };
       setTelemetryLogs(prev => [newLog, ...prev]);
-    }
-    else if (actionType === 'block_pix') {
-      setIsPixBlocked(true);
-      triggerNotification(tNotif.pixBlockedTitle, tNotif.pixBlockedSubtitle);
-
-      const newAction: SecurityActionItem = {
-        id: "act_" + Date.now(),
-        time: nowTime,
-        type: "med_claim",
-        title: currentLang === 'en' ? "Pix Blocked & Refunded via MED" : "Pix Bloqueado & Estornado via MED",
-        description: currentLang === 'en' ? "R$ 4,200.00 retained in checking account under Central Bank Resolution 147 directives." : "R$ 4.200,00 preservados em conta corrente sob diretrizes da Resolução BACEN 147.",
-        status: "Safeguarded",
-        details: "MED Claim #2026-ITAU-9914"
-      };
-      setActionItems(prev => [newAction, ...prev]);
     }
     else if (actionType === 'freeze_card') {
       setProfile(prev => ({

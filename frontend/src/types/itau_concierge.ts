@@ -1,9 +1,9 @@
-export type ScenarioId = 'cash_flow' | 'travel_shield' | 'open_finance' | 'pix_fraud';
+export type ScenarioId = 'account_info' | 'cash_flow' | 'travel_shield' | 'open_finance';
 
 export interface SubAgent {
   id: string;
   name: string;
-  type: 'fraud' | 'med' | 'cards' | 'limits' | 'geolocation' | 'cash_flow' | 'travel' | 'open_finance';
+  type: 'account_info' | 'cash_flow' | 'travel' | 'open_finance';
   description: string;
   capabilities: string[];
   status: 'idle' | 'processing' | 'completed' | 'failed';

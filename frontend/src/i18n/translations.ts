@@ -5,7 +5,7 @@ export type Language = 'pt' | 'en';
 export interface LocalizedSubAgentItem {
   id: string;
   name: string;
-  type: 'fraud' | 'med' | 'cards' | 'limits' | 'geolocation' | 'cash_flow' | 'travel' | 'open_finance';
+  type: 'account_info' | 'cash_flow' | 'travel' | 'open_finance';
   description: string;
   capabilities: string[];
   defaultResult: Record<string, any>;
@@ -32,9 +32,78 @@ export const translations = {
     },
     scenarios: [
       {
+        id: 'account_info' as ScenarioId,
+        title: "1. Informações de Conta & Extrato",
+        shortLabel: "1. Info Conta",
+        tag: "ACCOUNT_INFO_STATEMENTS",
+        agentId: "account_info_agent",
+        alert: {
+          badge: "Consulta de Posição Consolidada",
+          title: "Posição Global: R$ 404.400,20",
+          description: "Saldo em conta corrente (R$ 48.950,20), CDB DI 100% CDI (R$ 85.000,00) e Mastercard Black com limite disponível de R$ 72.569,50.",
+          primaryActionLabel: "Ver Extrato & Lançamentos Futuros",
+          primaryActionType: "view_statements",
+          secondaryActionLabel: "Consultar Limites Disponíveis",
+          secondaryActionType: "view_limits"
+        },
+        telemetryPayload: {
+          account_id: "ITAU-7749-00912",
+          customer_name: "Roberto Silva",
+          segment: "Itaú Personnalité",
+          checking_balance_brl: 48950.20,
+          cdb_di_balance_brl: 85000.00,
+          investments_total_brl: 320450.00,
+          mastercard_black_available_limit: 72569.50,
+          scheduled_debits_next_thursday_brl: 38000.00,
+          status: "ACCOUNT_OVERVIEW_ACTIVE"
+        },
+        graphNodes: [
+          {
+            id: "customer",
+            name: "Roberto Silva (Personnalité)",
+            group: "Perfil do Titular",
+            layer: "Input",
+            color: "#FF6423",
+            details: "Conta Corrente Ag. 7749 CC 00912-8 • R$ 48.950,20"
+          },
+          {
+            id: "asset_cdb",
+            name: "CDB DI 100% CDI",
+            group: "Ativo de Liquidez",
+            layer: "Input",
+            color: "#10B981",
+            details: "R$ 85.000,00 • Liquidez diária com rentabilidade diária"
+          },
+          {
+            id: "card_black",
+            name: "Mastercard Black (8841)",
+            group: "Meio de Pagamento",
+            layer: "Input",
+            color: "#3B82F6",
+            details: "Limite R$ 85.000,00 • Fatura D+4 R$ 34.150,00"
+          },
+          {
+            id: "info_agent",
+            name: "Account Information Agent",
+            group: "Processamento IA",
+            layer: "Decision",
+            color: "#070707",
+            details: "Consolida posições, limites e lançamentos passados/futuros em tempo real"
+          },
+          {
+            id: "info_output",
+            name: "Visão Financeira Unificada",
+            group: "Ação de Salvaguarda",
+            layer: "Output",
+            color: "#059669",
+            details: "Extratos consolidados e cronograma de compensações entregues ao titular"
+          }
+        ]
+      },
+      {
         id: 'cash_flow' as ScenarioId,
-        title: "1. Previsão de Saldo & Resgate CDB",
-        shortLabel: "1. Previsão Saldo",
+        title: "2. Previsão de Saldo & Otimização de Yield",
+        shortLabel: "2. Previsão Saldo",
         tag: "CASH_FLOW_FORECAST",
         agentId: "cash_flow_forecast_agent",
         alert: {
@@ -102,8 +171,8 @@ export const translations = {
       },
       {
         id: 'travel_shield' as ScenarioId,
-        title: "2. Aviso Viagem & Mastercard Black",
-        shortLabel: "2. Aviso Viagem",
+        title: "3. Aviso Viagem & Proteção Internacional",
+        shortLabel: "3. Aviso Viagem",
         tag: "TRAVEL_SHIELDING",
         agentId: "travel_shield_agent",
         alert: {
@@ -159,146 +228,79 @@ export const translations = {
           },
           {
             id: "travel_output",
-            name: "Cartão Liberado & Seguro Ativo",
+            name: "Modo Viagem Habilitado & Seguro Válido",
             group: "Ação de Salvaguarda",
             layer: "Output",
             color: "#059669",
-            details: "Zero recusas no exterior • Apólice médica internacional emitida para o titular e cônjuge"
+            details: "Compras liberadas na Europa sem risco de bloqueio falso-positivo"
           }
         ]
       },
       {
         id: 'open_finance' as ScenarioId,
-        title: "3. Refinanciamento Open Finance",
-        shortLabel: "3. Open Finance",
-        tag: "OPEN_FINANCE_REFI",
+        title: "4. Open Finance & Portabilidade de Dívida",
+        shortLabel: "4. Open Finance",
+        tag: "OPEN_FINANCE_OPTIMIZER",
         agentId: "open_finance_optimizer",
         alert: {
-          badge: "Oportunidade Open Finance",
-          title: "Economia de R$ 14.280 em Dívida Externa",
-          description: "Detectamos saldo devedor de R$ 18.000 no Banco Concorrente (11,2% a.m.). Refinancie pelo Itaú Sob Medida por 1,69% a.m.",
-          primaryActionLabel: "Emitir CCB & Portar Dívida",
+          badge: "Oportunidade Open Finance Identificada",
+          title: "Economia Projetada: R$ 14.280,00",
+          description: "Saldo rotativo de R$ 18.000,00 no banco concorrente a 11,2% a.m. pode ser refinanciado no Itaú Sob Medida por 1,69% a.m.",
+          primaryActionLabel: "Refinanciar & Emitir CCB (Economizar R$ 14k)",
           primaryActionType: "refinance_open_finance",
-          secondaryActionLabel: "Simular Parcelas (R$ 560/mês)",
+          secondaryActionLabel: "Simular Parcelamento",
           secondaryActionType: "simulate_open_finance"
         },
         telemetryPayload: {
-          competitor_bank: "Banco Concorrente A",
-          external_debt_balance_brl: 18000.00,
-          competitor_rate_mo: 11.2,
-          itau_sob_medida_rate_mo: 1.69,
-          monthly_savings_brl: 680.40,
-          total_interest_saved_brl: 14280.00,
-          ccb_status: "CCB_EMITTED_LEI_10931",
-          settlement_rail: "CIP_STR_INTERBANK_PAYOFF"
+          competitor_debt_balance_brl: 18000.00,
+          competitor_interest_rate_monthly: "11.20%",
+          itau_sob_medida_rate_monthly: "1.69%",
+          monthly_interest_savings_brl: 680.40,
+          total_interest_avoided_brl: 14280.00,
+          instrument_type: "CCB_DIGITAL_LEI_10931",
+          interbank_rail: "CIP_STR_PORTABILITY",
+          status: "REFINANCE_PROPOSAL_DISPATCHED"
         },
         graphNodes: [
           {
-            id: "customer",
-            name: "Roberto Silva (Personnalité)",
-            group: "Perfil do Titular",
+            id: "open_finance_data",
+            name: "Dados Open Finance (Consentimento Ativo)",
+            group: "Open Finance",
             layer: "Input",
             color: "#FF6423",
-            details: "Consentimento Open Finance FAPI • Score 980 • Margem de Crédito Aprovada"
+            details: "Saldo devedor R$ 18.000,00 em banco concorrente • Taxa rotativa 11,2% a.m."
           },
           {
-            id: "open_finance_event",
-            name: "Dívida Externa: R$ 18.000 (11,2% a.m.)",
-            group: "Dívida Concorrente",
+            id: "itau_rating",
+            name: "Rating Personnalité (Score 980)",
+            group: "Crédito Itaú",
             layer: "Input",
             color: "#3B82F6",
-            details: "Rotativo de cartão no Banco A • Custo anual CET > 240% • Parcela R$ 1.240/mês"
+            details: "Linha Itaú Sob Medida pré-aprovada com taxa diferenciada de 1,69% a.m."
           },
           {
-            id: "bacen_of_policy",
-            name: "Resolução Conjunta nº 1 (Open Finance)",
-            group: "Regulação BACEN",
+            id: "lei_ccb",
+            name: "Marco Legal CCB (Lei 10.931)",
+            group: "Regulação Financeira",
             layer: "Policy",
             color: "#003399",
-            details: "Portabilidade de crédito interbancária regulada com emissão de CCB eletrônica"
+            details: "Cédula de Crédito Bancário emitida eletronicamente com liquidação interbancária direta"
           },
           {
             id: "refi_agent",
-            name: "Motor Underwriting & Portabilidade",
+            name: "Otimizador de Dívida Open Finance",
             group: "Processamento IA",
             layer: "Decision",
             color: "#070707",
-            details: "Aplica taxa Personnalité 1,69% a.m., reduzindo parcela para R$ 560/mês e gerando CCB"
+            details: "Calcula spread de 9,51% a.m. e gera proposta de portabilidade com liquidação STR"
           },
           {
             id: "refi_output",
-            name: "Dívida Paga via CIP & R$ 14.280 Salvos",
+            name: "Dívida Consolidada (Economia R$ 14.280)",
             group: "Ação de Salvaguarda",
             layer: "Output",
             color: "#059669",
-            details: "Liquidação automática do concorrente • DTI do cliente reduzido de 42% para 26%"
-          }
-        ]
-      },
-      {
-        id: 'pix_fraud' as ScenarioId,
-        title: "4. Interceptação Pix & MED 147",
-        shortLabel: "4. Pix Fraude (MED)",
-        tag: "PIX_FRAUD_MED",
-        agentId: "itau_med_dispute",
-        alert: {
-          badge: "Bloqueio Cautelar Pix",
-          title: "Tentativa de Pix Suspeito Bloqueada (R$ 4.200)",
-          description: "Transferência Pix de R$ 4.200,00 para 'Eletro Tech SP' retida preventivamente por anomalia de IP (proxy exterior) e chave nova.",
-          primaryActionLabel: "Bloquear & Estornar via MED",
-          primaryActionType: "block_pix",
-          secondaryActionLabel: "Autorizar Transação",
-          secondaryActionType: "approve_pix"
-        },
-        telemetryPayload: {
-          action: "PRECAUTIONARY_HOLD_SPI",
-          amount_brl: 4200.00,
-          recipient: "Eletro Tech SP Ltda",
-          origin_ip: "185.220.101.5 (VPN Node)",
-          trusted_device: "iPhone 16 Pro (Match)",
-          bacen_rule: "Resolucao 147 (MED)",
-          reversal_time: "< 10 seconds"
-        },
-        graphNodes: [
-          {
-            id: "customer",
-            name: "Roberto Silva (Personnalité)",
-            group: "Perfil do Titular",
-            layer: "Input",
-            color: "#FF6423",
-            details: "Score: 980 • Dispositivo Confiável: iPhone 16 Pro • Biometria Registrada"
-          },
-          {
-            id: "anomaly_event",
-            name: "Tentativa Pix R$ 4.200,00",
-            group: "Evento Suspeito",
-            layer: "Input",
-            color: "#E11D48",
-            details: "Destinatário 'Eletro Tech SP' sem histórico prévio • IP VPN internacional"
-          },
-          {
-            id: "bacen_med_policy",
-            name: "Regulação BACEN MED (Res. 147)",
-            group: "Diretriz Regulatória",
-            layer: "Policy",
-            color: "#003399",
-            details: "Mecanismo Especial de Devolução obrigatório para contenção cautelar imediata"
-          },
-          {
-            id: "ai_guard_engine",
-            name: "Motor de Decisão Itaú Concierge",
-            group: "Processamento IA",
-            layer: "Decision",
-            color: "#070707",
-            details: "Pontuação de Risco: 94/100 • Bloqueio Preventivo em 180ms"
-          },
-          {
-            id: "action_output",
-            name: "Ativos Retidos & Token Virtual Seguro",
-            group: "Ação de Salvaguarda",
-            layer: "Output",
-            color: "#059669",
-            details: "Saldo preservado na conta corrente • Notificação entregue no smartphone"
+            details: "CCB assinada digitalmente com redução imediata de parcela e liquidação no concorrente"
           }
         ]
       }
@@ -315,11 +317,25 @@ export const translations = {
       selectPrompt: "Selecione um sub-agente para inspecionar a telemetria.",
       list: [
         {
+          id: "account_info_agent",
+          name: "Account Information & Statements Agent",
+          type: "account_info",
+          description: "Responde dúvidas sobre saldos, extratos consolidados, limites de cartões e lançamentos agendados em tempo real.",
+          capabilities: ["Consulta Posição Global", "Extrato & Lançamentos Futuros", "Limites & Faturas"],
+          defaultResult: {
+            checking_balance: 48950.20,
+            cdb_di_balance: 85000.00,
+            mastercard_black_limit_available: 72569.50,
+            scheduled_debits_next_thursday: 38000.00,
+            status: "OVERVIEW_READY"
+          }
+        },
+        {
           id: "cash_flow_forecast_agent",
-          name: "Cash Flow & Overdraft Preemption Agent",
+          name: "Cash Flow & Yield Forecasting Agent",
           type: "cash_flow",
-          description: "Projeta déficits de liquidez D+30 e calcula momento ótimo de resgate de CDB DI para evitar juros LIS.",
-          capabilities: ["Previsão Séries Temporais", "Resgate Automático CDB", "Zero Juros LIS"],
+          description: "Projeta fluxos de caixa, simula compras hipotéticas e calcula a distribuição ótima entre Conta Corrente e CDB DI.",
+          capabilities: ["Previsão Séries Temporais", "Simulação de Cenários Hipotéticos", "Zero Juros LIS"],
           defaultResult: {
             account: "ITAU-7749-00912",
             forecast_window: "D+30",
@@ -330,9 +346,9 @@ export const translations = {
         },
         {
           id: "travel_shield_agent",
-          name: "Travel & International Concierge Guardian",
+          name: "Travel Notice & International Card Shield",
           type: "travel",
-          description: "Habilita avisos de viagem inteligentes, eleva limites POS internacionais e valida seguro Mastercard Black.",
+          description: "Acionado quando o cliente menciona viagens futuras. Registra aviso internacional, eleva limites POS e valida seguros.",
           capabilities: ["Aviso Viagem Automático", "Limite R$ 50k", "Supressão Recusas"],
           defaultResult: {
             travel_mode: "EUROPE_READY",
@@ -343,53 +359,15 @@ export const translations = {
         },
         {
           id: "open_finance_optimizer",
-          name: "Open Finance & Debt Portability Optimizer",
+          name: "Open Finance & Debt Refinancing Optimizer",
           type: "open_finance",
-          description: "Monitora dívidas caras em concorrentes, simula propostas Itaú Sob Medida e emite CCBs eletrônicas.",
+          description: "Analisa dívidas externas conectadas, calcula arbitragem de juros e emite CCBs digitais para refinanciamento.",
           capabilities: ["Varredura Open Finance FAPI", "Emissão CCB Lei 10.931", "Liquidação CIP/STR"],
           defaultResult: {
             open_finance_consent: "ACTIVE",
             refi_opportunity_detected: true,
             monthly_savings: 680.40,
             interest_saved: 14280.00
-          }
-        },
-        {
-          id: "itau_fraud_monitor",
-          name: "Itaú Concierge Fraud Monitor",
-          type: "fraud",
-          description: "Analisa telemetria de rede e geolocalização para contenção imediata de fraudes Pix.",
-          capabilities: ["Detecção < 200ms", "Contenção Cautelar", "Validação IP"],
-          defaultResult: {
-            action: "PRECAUTIONARY_HOLD",
-            amount_brl: 4200.00,
-            recipient: "Eletro Tech SP Ltda",
-            origin_ip: "185.220.101.5 (VPN Node)",
-            trusted_device: "iPhone 16 Pro (Match)"
-          }
-        },
-        {
-          id: "itau_med_dispute",
-          name: "BACEN MED & Reversal Desk",
-          type: "med",
-          description: "Coordena protocolos MED sob a Resolução 147 do Banco Central para devolução cautelar.",
-          capabilities: ["Protocolo MED 147", "Bloqueio Pix", "Devolução 72h"],
-          defaultResult: {
-            service: "BACEN_MED_REVERSAL",
-            status: "STANDBY",
-            mandate: "BACEN Resolução 147"
-          }
-        },
-        {
-          id: "itau_card_token_servicing",
-          name: "Card & Token Guardian",
-          type: "cards",
-          description: "Gerencia bloqueio instantâneo de cartões e rotação de tokens digitais Apple Pay e Google Pay.",
-          capabilities: ["Congelamento Instantâneo", "Rotação CVV", "Bloqueio Recorrência"],
-          defaultResult: {
-            service: "TOKEN_VAULT_PROTECTION",
-            virtual_cards_active: 1,
-            physical_cards_active: 1
           }
         }
       ] as LocalizedSubAgentItem[]
@@ -405,121 +383,94 @@ export const translations = {
         {
           id: "act_01",
           time: "14:52 BRT",
-          type: "pix_hold",
-          title: "Retenção Cautelar Pix — R$ 4.200,00",
-          description: "Valor retido preventivamente sob diretrizes do Mecanismo Especial de Devolução (MED).",
+          type: "cdb_sweep",
+          title: "Previsão de Liquidez & Yield — Saldo Monitorado",
+          description: "R$ 85.000,00 alocados em CDB DI 100% CDI com resgate automatizado programado para compensação de débitos.",
           status: "Safeguarded",
-          details: "Protocolo MED #2026-ITAU-9914"
+          details: "Zero LIS Overdraft • 100% CDI Rentabilidade"
         },
         {
           id: "act_02",
-          time: "14:50 BRT",
-          type: "geo_verify",
-          title: "Dispositivo Confiável Autenticado",
-          description: "iPhone 16 Pro validado com Face ID na agência digital de São Paulo.",
+          time: "11:15 BRT",
+          type: "travel_mode",
+          title: "Proteção Internacional Mastercard Black — Prontidão",
+          description: "Apólice de Seguro Saúde Viagem ativa e detecção proativa de viagens para Europa habilitada.",
           status: "Confirmed",
-          details: "Biometria 100% Compatível"
+          details: "Mastercard Global Service • R$ 50k Limite POS"
         }
       ] as SecurityActionItem[]
     },
     phone: {
       statusTime: "14:52",
-      balanceTitle: "Saldo em conta corrente",
-      investments: "Investimentos",
-      allSafe: "Conta, cartões e pagamentos protegidos com Itaú Concierge.",
+      balanceTitle: "Saldo disponível",
+      investmentsTitle: "Investimentos & CDB DI",
       quickPix: "Pix",
       quickPay: "Pagar",
       quickReceive: "Receber",
       quickCards: "Cartões",
-      cardLimit: "Limite disponível: R$ 72.569,50",
-      freeze: "Congelar Cartão",
-      unfreeze: "Descongelar",
-      frozenBadge: "CONGELADO",
+      recentStatements: "Últimos Lançamentos",
       activeBadge: "ATIVO",
-      travelBadge: "MODO VIAGEM ATIVO: LISBOA & MADRID",
-      recentStatements: "Extrato Recente",
+      frozenBadge: "CONGELADO",
+      unfreeze: "Descongelar",
+      freeze: "Bloquear",
       navHome: "Início",
       navStatements: "Extrato",
       navPix: "Pix",
       navCards: "Cartões",
       transactions: [
-        {
-          id: "tx_01",
-          date: "Hoje, 14:32",
-          description: "Pix Enviado — Marina Camargo",
-          category: "pix_out",
-          amount_brl: -150.00,
-          status: "completed"
-        },
-        {
-          id: "tx_02",
-          date: "Hoje, 11:15",
-          description: "Restaurante Fasano Jardins",
-          category: "dining",
-          amount_brl: -640.00,
-          status: "completed"
-        },
-        {
-          id: "tx_03",
-          date: "Ontem",
-          description: "Pix Recebido — Dividendo FII HGLG11",
-          category: "investment",
-          amount_brl: 1820.00,
-          status: "completed"
-        }
+        { id: "tx_01", date: "Hoje, 14:32", description: "Pix Enviado — Marina Camargo", amount_brl: -150.00 },
+        { id: "tx_02", date: "Hoje, 11:15", description: "Restaurante Fasano Jardins", amount_brl: -640.00 },
+        { id: "tx_03", date: "Ontem", description: "Pix Recebido — Dividendo FII HGLG11", amount_brl: 1820.00 }
+      ]
+    },
+    modal: {
+      title: "Itaú Concierge Live",
+      subtitle: "Assistente Multimodal de Operações Financeiras & Segurança Proativa",
+      initialGreeting: "Olá Roberto. Sou o Itaú Concierge. Como posso ajudar com suas contas, previsão de liquidez ou planos de viagem hoje?",
+      micHelp: "Fale diretamente sobre saldo, compras de passagens aéreas ou refinanciamento.",
+      endCall: "Encerrar Chamada",
+      speaking: "Itaú Concierge Falando...",
+      listening: "Ouvindo...",
+      processing: "Analisando telemetria financeira...",
+      suggestionsTitle: "Perguntas de Demonstração Rápidas",
+      suggestions: [
+        "Vou comprar 2 passagens para Lisboa por R$ 24.000. Meus débitos da próxima semana vão compensar?",
+        "Qual é a previsão de saldo para quinta-feira e como evitar juros de cheque especial (LIS)?",
+        "Ative o aviso de viagem para Portugal e Espanha e eleve o limite do meu Mastercard Black.",
+        "Como posso economizar refinanciando a dívida externa pelo Open Finance?"
       ]
     },
     notifications: {
-      pixBlockedTitle: "Pix Bloqueado & Estornado",
-      pixBlockedSubtitle: "R$ 4.200,00 preservados em conta corrente via MED.",
-      cardFrozenTitle: "Cartão Congelado",
-      cardFrozenSubtitle: "Tokens digitais de pagamento foram temporariamente suspensos.",
-      cardUnfrozenTitle: "Cartão Desbloqueado",
-      cardUnfrozenSubtitle: "Cartão liberado para uso seguro.",
-      cdbSweepTitle: "Resgate CDB Agendado",
-      cdbSweepSubtitle: "R$ 15.000 agendados para quinta-feira 06:00 BRT (Zero Juros LIS).",
-      travelModeTitle: "Modo Viagem Ativado",
-      travelModeSubtitle: "Mastercard Black liberado para Portugal e Espanha. Limite R$ 50.000.",
+      cdbSweepTitle: "Resgate CDB DI Programado",
+      cdbSweepSubtitle: "R$ 15.000,00 agendados para 25/08 às 06:00 BRT (Zero Juros LIS).",
+      travelModeTitle: "Aviso de Viagem Ativado",
+      travelModeSubtitle: "Modo Viagem ativo para Portugal e Espanha. Limite elevado para R$ 50.000.",
       openFinanceTitle: "Portabilidade CCB Executada",
-      openFinanceSubtitle: "R$ 18.000 liquidados no concorrente. Economia de R$ 14.280 confirmada.",
+      openFinanceSubtitle: "Saldo externo de R$ 18.000 liquidado a 1,69% a.m. Economia de R$ 14.280.",
+      pixBlockedTitle: "Pix Bloqueado Preventivamente",
+      pixBlockedSubtitle: "R$ 4.200 retidos em conta corrente sob diretrizes BACEN MED 147.",
+      cardFrozenTitle: "Cartão Temporariamente Bloqueado",
+      cardFrozenSubtitle: "Mastercard Black congelado. Token Apple Pay rotacionado.",
+      cardUnfrozenTitle: "Cartão Reativado",
+      cardUnfrozenSubtitle: "Mastercard Black reativado com biometria facial.",
       agentTriggeredTitle: "Sub-Agente Executado",
-      agentTriggeredSubtitle: "Telemetria atualizada para ",
+      agentTriggeredSubtitle: "Telemetria recebida do sub-agente:",
       demoResetTitle: "Demonstração Reiniciada",
-      demoResetSubtitle: "Todos os estados voltaram ao padrão.",
+      demoResetSubtitle: "Estados da conta corrente, cartões e telemetria redefinidos para o início.",
       sessionSavedTitle: "Sessão Salva",
-      sessionSavedSubtitle: "Itinerário salvo no backend.",
-    },
-    transcript: {
-      title: "Registro de Transcrição & Execução de Ferramentas",
-      subtitle: "Fluxo em tempo real de chamadas de ferramentas (Tool Calls) e áudio bidirecional",
-      empty: "Inicie uma conversa por voz ou execute ações no app para gerar logs de telemetria.",
-    },
-    modal: {
-      title: "Itaú Concierge",
-      subtitle: "Atendimento por Voz & Concierge Financeiro",
-      incidentContext: "Contexto Ativo:",
-      initialGreeting: "Olá Roberto. Sou o Itaú Concierge. Como posso ajudar com seus pagamentos, saldo projetado ou planejamento de viagem hoje?",
-      analyzing: "Itaú Concierge está analisando as informações...",
-      quickPrompt1: "Verifique meu saldo e pagamentos previstos para a viagem.",
-      quickPrompt2: "Ative o aviso de viagem para Europa no meu Mastercard Black.",
-      placeholder: "Digite ou fale com o Itaú Concierge...",
-      send: "Enviar",
-    },
-    footer: {
-      brand: "Banco Itaú Unibanco S.A.",
-      tagline: "Protegido por Itaú Concierge & Gemini Enterprise Agent Platform",
+      sessionSavedSubtitle: "Logs de telemetria e ações arquivados com sucesso."
     }
   },
   en: {
     header: {
       brandTitle: "Banco Itaú",
-      brandSub: "Real-Time Sub-Agent Orchestration & Itaú Concierge Cockpit",
+      brandSub: "Multi-Agent Orchestration & Real-Time Itaú Concierge",
       saveSession: "Save Session",
       resetSession: "Reset Demo",
       callAi: "Call Itaú Concierge",
       hangUp: "End Call",
       customer: "Roberto Silva",
-      account: "Branch 7749 • Acct 00912-8",
+      account: "Br. 7749 • Acct 00912-8",
       scenarioSelectorTitle: "Active Scenario:",
     },
     tabs: {
@@ -530,18 +481,87 @@ export const translations = {
     },
     scenarios: [
       {
+        id: 'account_info' as ScenarioId,
+        title: "1. Account Information & Statements",
+        shortLabel: "1. Account Info",
+        tag: "ACCOUNT_INFO_STATEMENTS",
+        agentId: "account_info_agent",
+        alert: {
+          badge: "Consolidated Position Inquiry",
+          title: "Total Wealth Balance: R$ 404,400.20",
+          description: "Checking account balance (R$ 48,950.20), Daily Liquidity CDB DI (R$ 85,000.00), and Mastercard Black with available limit of R$ 72,569.50.",
+          primaryActionLabel: "View Statements & Scheduled Debits",
+          primaryActionType: "view_statements",
+          secondaryActionLabel: "Check Available Limits",
+          secondaryActionType: "view_limits"
+        },
+        telemetryPayload: {
+          account_id: "ITAU-7749-00912",
+          customer_name: "Roberto Silva",
+          segment: "Itaú Personnalité",
+          checking_balance_brl: 48950.20,
+          cdb_di_balance_brl: 85000.00,
+          investments_total_brl: 320450.00,
+          mastercard_black_available_limit: 72569.50,
+          scheduled_debits_next_thursday_brl: 38000.00,
+          status: "ACCOUNT_OVERVIEW_ACTIVE"
+        },
+        graphNodes: [
+          {
+            id: "customer",
+            name: "Roberto Silva (Personnalité)",
+            group: "Cardholder Profile",
+            layer: "Input",
+            color: "#FF6423",
+            details: "Checking Acct 00912-8 • R$ 48,950.20"
+          },
+          {
+            id: "asset_cdb",
+            name: "CDB DI 100% CDI",
+            group: "Liquidity Asset",
+            layer: "Input",
+            color: "#10B981",
+            details: "R$ 85,000.00 • Daily liquidity with daily CDI compounding"
+          },
+          {
+            id: "card_black",
+            name: "Mastercard Black (8841)",
+            group: "Payment Instrument",
+            layer: "Input",
+            color: "#3B82F6",
+            details: "Limit R$ 85,000.00 • Scheduled invoice R$ 34,150.00"
+          },
+          {
+            id: "info_agent",
+            name: "Account Information Agent",
+            group: "AI Processing",
+            layer: "Decision",
+            color: "#070707",
+            details: "Consolidates positions, limits, and past/future transactions in real time"
+          },
+          {
+            id: "info_output",
+            name: "Unified Financial View",
+            group: "Safeguard Action",
+            layer: "Output",
+            color: "#059669",
+            details: "Consolidated statement and scheduled settlement timeline delivered to cardholder"
+          }
+        ]
+      },
+      {
         id: 'cash_flow' as ScenarioId,
-        title: "1. Cash Flow Forecast & CDB Sweep",
-        shortLabel: "1. Cash Flow",
+        title: "2. Cash Flow & Yield Forecasting",
+        shortLabel: "2. Cash Flow Forecast",
         tag: "CASH_FLOW_FORECAST",
         agentId: "cash_flow_forecast_agent",
         alert: {
-          badge: "Cash Flow Forecast D+4",
+          badge: "D+4 Balance Forecast",
           title: "Projected Shortfall: -R$ 13,050.00",
-          description: "Scheduled credit card bill & condo Pix next Thursday (Aug 25) will exceed checking balance after purchasing flight tickets.",
+          description: "Condo fee and Mastercard Black bill next Thursday (25/08) will exceed checking balance after purchasing airline tickets.",
           primaryActionLabel: "Schedule CDB Sweep (R$ 15k)",
           primaryActionType: "sweep_cdb",
-          secondaryActionLabel: "View Cash Breakdown",
+          secondaryActionLabel: "View Flow Analysis",
           secondaryActionType: "view_cash_flow"
         },
         telemetryPayload: {
@@ -566,27 +586,27 @@ export const translations = {
           },
           {
             id: "shortfall_event",
-            name: "Upcoming Debits: R$ 38,000.00",
-            group: "Scheduled Event",
+            name: "D+4 Scheduled Debits: R$ 38,000.00",
+            group: "Future Event",
             layer: "Input",
             color: "#E11D48",
             details: "Condo Pix (R$ 3,850) + Mastercard Black Bill (R$ 34,150) = Shortfall -R$ 13,050"
           },
           {
             id: "cmn_policy",
-            name: "CMN 4.765 Directives (Anti-Overdraft)",
-            group: "Regulatory Policy",
+            name: "CMN Resolution 4.765 (Anti-Overdraft)",
+            group: "BACEN Policy",
             layer: "Policy",
             color: "#003399",
-            details: "Preemptive overdraft interest prevention with explicit cardholder opt-in"
+            details: "Proactive prevention of overdraft (LIS) interest with explicit customer authorization"
           },
           {
             id: "cash_agent",
-            name: "Cash Flow & Yield Concierge",
-            group: "AI Decision",
+            name: "Cash Flow & Yield Engine",
+            group: "AI Processing",
             layer: "Decision",
             color: "#070707",
-            details: "Maintains CDB daily compounding until Aug 25 06:00 BRT, scheduling sweep"
+            details: "Models daily CDB yield until 25/08 at 06:00 BRT and schedules optimal sweep"
           },
           {
             id: "sweep_output",
@@ -594,21 +614,21 @@ export const translations = {
             group: "Safeguard Action",
             layer: "Output",
             color: "#059669",
-            details: "Yield maximized to settlement hour • R$ 184.60 saved in overdraft fees"
+            details: "Yield maximized until settlement minute • R$ 184.60 in overdraft interest saved"
           }
         ]
       },
       {
         id: 'travel_shield' as ScenarioId,
-        title: "2. Travel Notice & Mastercard Black",
-        shortLabel: "2. Travel Notice",
+        title: "3. Travel Notice & International Shield",
+        shortLabel: "3. Travel Shield",
         tag: "TRAVEL_SHIELDING",
         agentId: "travel_shield_agent",
         alert: {
           badge: "International Travel Detected",
           title: "Travel Notice: Lisbon & Madrid",
-          description: "TAP Air Portugal tickets identified. Activate international POS clearance & complimentary Mastercard Black travel medical insurance.",
-          primaryActionLabel: "Activate Travel Mode & R$ 50k Limit",
+          description: "TAP Air Portugal tickets identified. Activate international authorization and Mastercard Black travel insurance.",
+          primaryActionLabel: "Activate Travel Shield & R$ 50k Limit",
           primaryActionType: "activate_travel_mode",
           secondaryActionLabel: "View Insurance Policy",
           secondaryActionType: "view_travel_insurance"
@@ -616,7 +636,7 @@ export const translations = {
         telemetryPayload: {
           card_last4: "8841",
           destinations: ["Portugal (LIS)", "Spain (MAD)"],
-          travel_dates: "Aug 20 - Sep 05",
+          travel_dates: "20/08 - 05/09",
           international_pos_limit_brl: 50000.00,
           flight_ticket: "TAP Air Portugal TP088",
           travel_insurance_policy: "MASTERCARD_BLACK_MED_GLOBAL_ACTIVE",
@@ -629,174 +649,107 @@ export const translations = {
             group: "Cardholder Profile",
             layer: "Input",
             color: "#FF6423",
-            details: "Mastercard Black • TAP Portugal Flight • Lisbon & Madrid Destination"
+            details: "Mastercard Black • TAP Portugal Ticket • Destination Lisbon & Madrid"
           },
           {
             id: "roaming_event",
-            name: "Upcoming Overseas POS Charges",
+            name: "Expected International Transactions",
             group: "Travel Event",
             layer: "Input",
             color: "#F59E0B",
-            details: "Predicted EUR charges • Risk of false-positive foreign terminal declines"
+            details: "Projected spend in Euros (EUR) • Risk of overseas false positive declines"
           },
           {
             id: "card_policy",
-            name: "Payment Network Security Rules",
-            group: "Card Network Policy",
+            name: "Card Network Security Directive",
+            group: "Card Regulation",
             layer: "Policy",
             color: "#003399",
-            details: "Automated geofencing & international POS authorization without manual forms"
+            details: "Geographic POS/ATM authorization without requiring manual web forms"
           },
           {
             id: "travel_agent",
             name: "Travel Concierge Engine",
-            group: "AI Decision",
+            group: "AI Processing",
             layer: "Decision",
             color: "#070707",
-            details: "Raises daily spend limit to R$ 50,000 and registers active travel health policy"
+            details: "Raises daily POS limit to R$ 50,000 and verifies Mastercard Black medical insurance"
           },
           {
             id: "travel_output",
-            name: "Cards Cleared & Insurance Active",
+            name: "Travel Mode Enabled & Insurance Verified",
             group: "Safeguard Action",
             layer: "Output",
             color: "#059669",
-            details: "Zero foreign merchant declines • Comprehensive international health coverage"
+            details: "European transactions pre-approved with zero false-positive decline risk"
           }
         ]
       },
       {
         id: 'open_finance' as ScenarioId,
-        title: "3. Open Finance Debt Refinance",
-        shortLabel: "3. Open Finance",
-        tag: "OPEN_FINANCE_REFI",
+        title: "4. Open Finance & Debt Portability",
+        shortLabel: "4. Open Finance",
+        tag: "OPEN_FINANCE_OPTIMIZER",
         agentId: "open_finance_optimizer",
         alert: {
-          badge: "Open Finance Opportunity",
-          title: "R$ 14,280 Savings on External Debt",
-          description: "Detected R$ 18,000 revolving balance at competitor bank (11.2%/mo). Refinance via Itaú Sob Medida at 1.69%/mo.",
-          primaryActionLabel: "Issue CCB & Refinance Debt",
+          badge: "Open Finance Opportunity Identified",
+          title: "Projected Savings: R$ 14,280.00",
+          description: "R$ 18,000.00 revolving balance at competitor bank at 11.2%/mo can be refinanced under Itaú Sob Medida for 1.69%/mo.",
+          primaryActionLabel: "Refinance & Issue CCB (Save R$ 14k)",
           primaryActionType: "refinance_open_finance",
-          secondaryActionLabel: "Simulate Installments (R$ 560/mo)",
+          secondaryActionLabel: "Simulate Installments",
           secondaryActionType: "simulate_open_finance"
         },
         telemetryPayload: {
-          competitor_bank: "Competitor Bank A",
-          external_debt_balance_brl: 18000.00,
-          competitor_rate_mo: 11.2,
-          itau_sob_medida_rate_mo: 1.69,
-          monthly_savings_brl: 680.40,
-          total_interest_saved_brl: 14280.00,
-          ccb_status: "CCB_EMITTED_LEI_10931",
-          settlement_rail: "CIP_STR_INTERBANK_PAYOFF"
+          competitor_debt_balance_brl: 18000.00,
+          competitor_interest_rate_monthly: "11.20%",
+          itau_sob_medida_rate_monthly: "1.69%",
+          monthly_interest_savings_brl: 680.40,
+          total_interest_avoided_brl: 14280.00,
+          instrument_type: "CCB_DIGITAL_LEI_10931",
+          interbank_rail: "CIP_STR_PORTABILITY",
+          status: "REFINANCE_PROPOSAL_DISPATCHED"
         },
         graphNodes: [
           {
-            id: "customer",
-            name: "Roberto Silva (Personnalité)",
-            group: "Cardholder Profile",
+            id: "open_finance_data",
+            name: "Open Finance Data (Active Consent)",
+            group: "Open Finance",
             layer: "Input",
             color: "#FF6423",
-            details: "Open Finance FAPI Consent • Score 980 • Pre-Approved Relationship Line"
+            details: "Outstanding balance R$ 18,000.00 at competitor • Revolving rate 11.2%/mo"
           },
           {
-            id: "open_finance_event",
-            name: "External Debt: R$ 18,000 (11.2%/mo)",
-            group: "Competitor Debt",
+            id: "itau_rating",
+            name: "Personnalité Rating (Score 980)",
+            group: "Itaú Credit",
             layer: "Input",
             color: "#3B82F6",
-            details: "Revolving card at Bank A • APR > 240% • Monthly payment R$ 1,240/mo"
+            details: "Pre-approved Itaú Sob Medida line with preferential rate of 1.69%/mo"
           },
           {
-            id: "bacen_of_policy",
-            name: "Joint Resolution No. 1 (Open Finance)",
-            group: "BACEN Regulation",
+            id: "lei_ccb",
+            name: "CCB Legal Framework (Law 10,931)",
+            group: "Financial Regulation",
             layer: "Policy",
             color: "#003399",
-            details: "Standardized interbank debt portability with electronic CCB issuance"
+            details: "Electronic Bank Credit Note issued with direct interbank debt settlement"
           },
           {
             id: "refi_agent",
-            name: "Underwriting & Portability Concierge",
-            group: "AI Decision",
+            name: "Open Finance Debt Optimizer",
+            group: "AI Processing",
             layer: "Decision",
             color: "#070707",
-            details: "Applies Personnalité 1.69%/mo rate, lowering payment to R$ 560/mo and generating CCB"
+            details: "Calculates 9.51%/mo spread reduction and dispatches CIP/STR payoff proposal"
           },
           {
             id: "refi_output",
-            name: "Debt Paid via CIP & R$ 14,280 Saved",
+            name: "Debt Consolidated (R$ 14,280 Saved)",
             group: "Safeguard Action",
             layer: "Output",
             color: "#059669",
-            details: "Competitor loan settled in full • Cardholder DTI reduced from 42% to 26%"
-          }
-        ]
-      },
-      {
-        id: 'pix_fraud' as ScenarioId,
-        title: "4. Pix Interception & MED 147",
-        shortLabel: "4. Pix Fraud (MED)",
-        tag: "PIX_FRAUD_MED",
-        agentId: "itau_med_dispute",
-        alert: {
-          badge: "Precautionary Pix Hold",
-          title: "Suspected Pix Transfer Blocked (R$ 4,200)",
-          description: "Pix transfer of R$ 4,200.00 to 'Eletro Tech SP' held due to foreign proxy IP and unverified recipient key.",
-          primaryActionLabel: "Block & Refund via MED",
-          primaryActionType: "block_pix",
-          secondaryActionLabel: "Authorize Transfer",
-          secondaryActionType: "approve_pix"
-        },
-        telemetryPayload: {
-          action: "PRECAUTIONARY_HOLD_SPI",
-          amount_brl: 4200.00,
-          recipient: "Eletro Tech SP Ltda",
-          origin_ip: "185.220.101.5 (VPN Node)",
-          trusted_device: "iPhone 16 Pro (Match)",
-          bacen_rule: "Resolution 147 (MED)",
-          reversal_time: "< 10 seconds"
-        },
-        graphNodes: [
-          {
-            id: "customer",
-            name: "Roberto Silva (Personnalité)",
-            group: "Cardholder Profile",
-            layer: "Input",
-            color: "#FF6423",
-            details: "Score: 980 • Trusted Device: iPhone 16 Pro • Enrolled Biometrics"
-          },
-          {
-            id: "anomaly_event",
-            name: "Pix Attempt R$ 4,200.00",
-            group: "Suspicious Event",
-            layer: "Input",
-            color: "#E11D48",
-            details: "Recipient 'Eletro Tech SP' has zero history • Overseas VPN trace"
-          },
-          {
-            id: "bacen_med_policy",
-            name: "BACEN MED Rule (Res. 147)",
-            group: "Regulatory Policy",
-            layer: "Policy",
-            color: "#003399",
-            details: "Special Return Mechanism (MED) mandated for immediate precautionary retention"
-          },
-          {
-            id: "ai_guard_engine",
-            name: "Itaú Concierge Decision Engine",
-            group: "AI Decision",
-            layer: "Decision",
-            color: "#070707",
-            details: "Risk Score: 94/100 • Precautionary block in 180ms"
-          },
-          {
-            id: "action_output",
-            name: "Funds Safeguarded & Token Frozen",
-            group: "Safeguard Action",
-            layer: "Output",
-            color: "#059669",
-            details: "Capital preserved in checking account • Notification delivered to smartphone"
+            details: "Digitally signed CCB with immediate installment drop and external debt cancellation"
           }
         ]
       }
@@ -813,11 +766,25 @@ export const translations = {
       selectPrompt: "Select a sub-agent to inspect telemetry.",
       list: [
         {
+          id: "account_info_agent",
+          name: "Account Information & Statements Agent",
+          type: "account_info",
+          description: "Answers customer queries about checking balances, investments, card limits, and scheduled debits in real time.",
+          capabilities: ["Consolidated Wealth Overview", "Statements & Future Debits", "Card Limits & Invoices"],
+          defaultResult: {
+            checking_balance: 48950.20,
+            cdb_di_balance: 85000.00,
+            mastercard_black_limit_available: 72569.50,
+            scheduled_debits_next_thursday: 38000.00,
+            status: "OVERVIEW_READY"
+          }
+        },
+        {
           id: "cash_flow_forecast_agent",
-          name: "Cash Flow & Overdraft Preemption Agent",
+          name: "Cash Flow & Yield Forecasting Agent",
           type: "cash_flow",
-          description: "Forecasts D+30 liquidity shortfalls and schedules optimal CDB DI sweeps to avoid overdraft interest.",
-          capabilities: ["Time-Series Forecasting", "Automated CDB Sweep", "Zero Overdraft Interest"],
+          description: "Forecasts cash flows, models hypothetical purchases, and optimizes balance allocation between Checking and CDB DI.",
+          capabilities: ["Time-Series Forecasting", "Hypothetical Scenario Modeling", "Zero Overdraft Interest"],
           defaultResult: {
             account: "ITAU-7749-00912",
             forecast_window: "D+30",
@@ -828,9 +795,9 @@ export const translations = {
         },
         {
           id: "travel_shield_agent",
-          name: "Travel & International Concierge Guardian",
+          name: "Travel Notice & International Card Shield",
           type: "travel",
-          description: "Enables smart travel notices, elevates international POS limits, and validates Mastercard Black travel insurance.",
+          description: "Triggered when upcoming travel is mentioned. Registers international travel notices, raises POS limits, and validates insurance.",
           capabilities: ["Automated Travel Notice", "R$ 50k Limit Elevation", "Zero Foreign Declines"],
           defaultResult: {
             travel_mode: "EUROPE_READY",
@@ -841,53 +808,15 @@ export const translations = {
         },
         {
           id: "open_finance_optimizer",
-          name: "Open Finance & Debt Portability Optimizer",
+          name: "Open Finance & Debt Refinancing Optimizer",
           type: "open_finance",
-          description: "Monitors high-interest competitor debt, constructs Itaú Sob Medida refinance offers, and issues electronic CCBs.",
+          description: "Analyzes connected external debts, calculates interest rate arbitrage, and issues digital CCBs for debt consolidation.",
           capabilities: ["Open Finance FAPI Scan", "Electronic CCB Issuance", "CIP/STR Payoff"],
           defaultResult: {
             open_finance_consent: "ACTIVE",
             refi_opportunity_detected: true,
             monthly_savings: 680.40,
             interest_saved: 14280.00
-          }
-        },
-        {
-          id: "itau_fraud_monitor",
-          name: "Itaú Concierge Fraud Monitor",
-          type: "fraud",
-          description: "Analyzes network telemetry, geolocations, and payments for instant Pix fraud mitigation.",
-          capabilities: ["Detection < 200ms", "Precautionary Hold", "IP Validation"],
-          defaultResult: {
-            action: "PRECAUTIONARY_HOLD",
-            amount_brl: 4200.00,
-            recipient: "Eletro Tech SP Ltda",
-            origin_ip: "185.220.101.5 (VPN Node)",
-            trusted_device: "iPhone 16 Pro (Match)"
-          }
-        },
-        {
-          id: "itau_med_dispute",
-          name: "BACEN MED & Reversal Desk",
-          type: "med",
-          description: "Coordinates MED dispute claims under Central Bank Resolution 147 for asset recovery.",
-          capabilities: ["MED Protocol 147", "Pix Key Block", "72h Refund Window"],
-          defaultResult: {
-            service: "BACEN_MED_REVERSAL",
-            status: "STANDBY",
-            mandate: "BACEN Resolution 147"
-          }
-        },
-        {
-          id: "itau_card_token_servicing",
-          name: "Card & Token Guardian",
-          type: "cards",
-          description: "Manages instant card freezes and rotates Apple Pay and Google Pay digital tokens.",
-          capabilities: ["Instant Card Freeze", "CVV Rotation", "Recurring Charge Block"],
-          defaultResult: {
-            service: "TOKEN_VAULT_PROTECTION",
-            virtual_cards_active: 1,
-            physical_cards_active: 1
           }
         }
       ] as LocalizedSubAgentItem[]
@@ -903,109 +832,82 @@ export const translations = {
         {
           id: "act_01",
           time: "14:52 BRT",
-          type: "pix_hold",
-          title: "Precautionary Pix Hold — R$ 4,200.00",
-          description: "Funds held under Central Bank Special Return Mechanism (MED) directives.",
+          type: "cdb_sweep",
+          title: "Liquidity & Yield Forecasting — Monitored Balances",
+          description: "R$ 85,000.00 invested in 100% CDI with automated sweep scheduled to prevent overdraft fees.",
           status: "Safeguarded",
-          details: "MED Protocol #2026-ITAU-9914"
+          details: "Zero LIS Overdraft • 100% CDI Daily Yield"
         },
         {
           id: "act_02",
-          time: "14:50 BRT",
-          type: "geo_verify",
-          title: "Trusted Device Authenticated",
-          description: "iPhone 16 Pro validated via Face ID at digital banking session.",
+          time: "11:15 BRT",
+          type: "travel_mode",
+          title: "Mastercard Black International Protection — Standby",
+          description: "Travel Medical Insurance active and proactive European travel detection enabled.",
           status: "Confirmed",
-          details: "100% Biometric Match"
+          details: "Mastercard Global Service • R$ 50k POS Limit"
         }
       ] as SecurityActionItem[]
     },
     phone: {
       statusTime: "14:52",
-      balanceTitle: "Checking Account Balance",
-      investments: "Investments",
-      allSafe: "Account, cards, and payments protected with Itaú Concierge.",
+      balanceTitle: "Available Balance",
+      investmentsTitle: "Investments & CDB DI",
       quickPix: "Pix",
       quickPay: "Pay",
       quickReceive: "Receive",
       quickCards: "Cards",
-      cardLimit: "Available credit limit: R$ 72,569.50",
-      freeze: "Freeze Card",
-      unfreeze: "Unfreeze",
-      frozenBadge: "FROZEN",
-      activeBadge: "ACTIVE",
-      travelBadge: "TRAVEL MODE ACTIVE: LISBON & MADRID",
       recentStatements: "Recent Statements",
+      activeBadge: "ACTIVE",
+      frozenBadge: "FROZEN",
+      unfreeze: "Unfreeze",
+      freeze: "Freeze",
       navHome: "Home",
-      navStatements: "Activity",
+      navStatements: "Statements",
       navPix: "Pix",
       navCards: "Cards",
       transactions: [
-        {
-          id: "tx_01",
-          date: "Today, 14:32",
-          description: "Pix Sent — Marina Camargo",
-          category: "pix_out",
-          amount_brl: -150.00,
-          status: "completed"
-        },
-        {
-          id: "tx_02",
-          date: "Today, 11:15",
-          description: "Fasano Jardins Restaurant",
-          category: "dining",
-          amount_brl: -640.00,
-          status: "completed"
-        },
-        {
-          id: "tx_03",
-          date: "Yesterday",
-          description: "Pix Received — REIT Dividend HGLG11",
-          category: "investment",
-          amount_brl: 1820.00,
-          status: "completed"
-        }
+        { id: "tx_01", date: "Today, 14:32", description: "Pix Sent — Marina Camargo", amount_brl: -150.00 },
+        { id: "tx_02", date: "Today, 11:15", description: "Restaurante Fasano Jardins", amount_brl: -640.00 },
+        { id: "tx_03", date: "Yesterday", description: "Pix Received — FII Dividend HGLG11", amount_brl: 1820.00 }
+      ]
+    },
+    modal: {
+      title: "Itaú Concierge Live",
+      subtitle: "Multimodal Proactive Banking & Security Assistant",
+      initialGreeting: "Hello Roberto. I am Itaú Concierge. How can I assist with your accounts, liquidity forecast, or travel plans today?",
+      micHelp: "Speak directly about balances, flight ticket purchases, or debt refinancing.",
+      endCall: "End Call",
+      speaking: "Itaú Concierge Speaking...",
+      listening: "Listening...",
+      processing: "Analyzing financial telemetry...",
+      suggestionsTitle: "Quick Demo Inquiries",
+      suggestions: [
+        "I am buying 2 tickets to Lisbon for R$ 24,000. Will my scheduled payments clear next week?",
+        "What is my balance forecast for Thursday and how do I avoid LIS overdraft fees?",
+        "Activate travel notice for Portugal and Spain and raise my Mastercard Black limit.",
+        "How can I save money by refinancing my external loan through Open Finance?"
       ]
     },
     notifications: {
-      pixBlockedTitle: "Pix Blocked & Refunded",
-      pixBlockedSubtitle: "R$ 4,200.00 preserved in checking account via MED.",
-      cardFrozenTitle: "Card Frozen",
-      cardFrozenSubtitle: "Digital payment tokens temporarily suspended.",
-      cardUnfrozenTitle: "Card Unfrozen",
-      cardUnfrozenSubtitle: "Card reactivated for secure usage.",
-      cdbSweepTitle: "CDB Sweep Scheduled",
-      cdbSweepSubtitle: "R$ 15,000 scheduled for Thursday 06:00 BRT (Zero Overdraft Interest).",
-      travelModeTitle: "Travel Mode Activated",
-      travelModeSubtitle: "Mastercard Black cleared for Portugal & Spain. Limit raised to R$ 50,000.",
-      openFinanceTitle: "CCB Portability Executed",
-      openFinanceSubtitle: "R$ 18,000 settled at competitor. R$ 14,280 total savings confirmed.",
-      agentTriggeredTitle: "Sub-Agent Executed",
-      agentTriggeredSubtitle: "Telemetry updated for ",
+      cdbSweepTitle: "CDB DI Sweep Scheduled",
+      cdbSweepSubtitle: "R$ 15,000.00 scheduled for 25/08 at 06:00 BRT (Zero Overdraft Fees).",
+      travelModeTitle: "Travel Shield Activated",
+      travelModeSubtitle: "Travel mode active for Portugal & Spain. Daily limit elevated to R$ 50,000.",
+      openFinanceTitle: "Portability CCB Executed",
+      openFinanceSubtitle: "External balance of R$ 18,000 settled at 1.69%/mo. R$ 14,280 saved.",
+      pixBlockedTitle: "Precautionary Pix Hold",
+      pixBlockedSubtitle: "R$ 4,200 retained in checking account under BACEN MED 147 rules.",
+      cardFrozenTitle: "Card Temporarily Frozen",
+      cardFrozenSubtitle: "Mastercard Black frozen. Apple Pay digital token rotated.",
+      cardUnfrozenTitle: "Card Reactivated",
+      cardUnfrozenSubtitle: "Mastercard Black reactivated with facial biometrics.",
+      agentTriggeredTitle: "Sub-Agent Triggered",
+      agentTriggeredSubtitle: "Telemetry received from sub-agent:",
       demoResetTitle: "Demo Reset",
-      demoResetSubtitle: "All states restored to default.",
+      demoResetSubtitle: "Checking balances, card limits, and telemetry restored to baseline.",
       sessionSavedTitle: "Session Saved",
-      sessionSavedSubtitle: "Itinerary saved to backend.",
-    },
-    transcript: {
-      title: "Transcript & Tool Execution Telemetry",
-      subtitle: "Real-time stream of Gemini Live tool calls, sub-agent telemetry, and voice events",
-      empty: "Start a voice conversation or perform actions in the mobile app to stream telemetry.",
-    },
-    modal: {
-      title: "Itaú Concierge",
-      subtitle: "Voice & Wealth Advisory Assistant",
-      incidentContext: "Active Context:",
-      initialGreeting: "Hello Roberto. I am Itaú Concierge. How can I assist with your payments, cash flow forecast, or travel plans today?",
-      analyzing: "Itaú Concierge is analyzing financial data...",
-      quickPrompt1: "Check my balance and projected payments for my upcoming trip.",
-      quickPrompt2: "Activate international travel mode for Europe on my Mastercard Black.",
-      placeholder: "Type or speak to Itaú Concierge...",
-      send: "Send",
-    },
-    footer: {
-      brand: "Banco Itaú Unibanco S.A.",
-      tagline: "Protected by Itaú Concierge & Gemini Enterprise Agent Platform",
+      sessionSavedSubtitle: "Telemetry logs and safeguard actions archived successfully."
     }
   }
 };

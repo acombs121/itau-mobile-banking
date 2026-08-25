@@ -59,20 +59,17 @@ export const VoiceBankingModal: React.FC<VoiceBankingModalProps> = ({
           ...prev,
           {
             role: 'assistant',
-            text: currentLang === 'en'
-              ? "I have analyzed your request with Itaú Concierge. Your accounts and transactions are fully safeguarded."
-              : "Analisei sua solicitação com o Itaú Concierge. Suas contas e transações estão devidamente protegidas."
+            text: currentLang === 'en' ? 'Connection error with Itaú Concierge.' : 'Erro de conexão com o Itaú Concierge.'
           }
         ]);
       }
-    } catch {
+    } catch (err) {
+      console.error(err);
       setMessages(prev => [
         ...prev,
         {
           role: 'assistant',
-          text: currentLang === 'en'
-            ? "I've checked your scheduled payments and activated travel shielding on your Mastercard Black."
-            : "Verifiquei seus pagamentos programados e ativei a proteção de viagem no seu cartão Mastercard Black."
+          text: currentLang === 'en' ? 'Service temporarily unavailable.' : 'Serviço temporariamente indisponível.'
         }
       ]);
     } finally {
@@ -80,50 +77,63 @@ export const VoiceBankingModal: React.FC<VoiceBankingModalProps> = ({
     }
   };
 
-  const handleQuickAction = (text: string, actionType: string) => {
-    setInputText(text);
-    if (alertContext) {
-      onActionClick(actionType, alertContext.id);
-    }
+  const handleQuickAction = (promptText: string, actionType: string) => {
+    setInputText(promptText);
+    onActionClick(actionType, alertContext?.id || 'action_quick');
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fadeIn">
-      <div className="w-full max-w-lg bg-[#141417] border border-white/10 rounded-[14px] shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
+      <div className="w-full max-w-lg bg-[#121215] border border-white/10 rounded-[14px] shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
         
         {/* Header */}
         <div className="px-5 py-4 border-b border-white/10 flex items-center justify-between bg-[#18181C]">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-[4px] bg-brand-orange text-white flex items-center justify-center font-extrabold text-xs">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-[4px] bg-brand-orange text-white flex items-center justify-center font-bold text-sm">
               itau
             </div>
             <div>
-              <h2 className="text-sm font-bold text-white flex items-center gap-1.5">
-                {t.title}
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-              </h2>
-              <p className="text-[11px] text-white/50">{t.subtitle}</p>
+              <div className="flex items-center gap-1.5 font-bold text-sm text-white">
+                <span>{t.title}</span>
+                <ShieldCheck className="w-4 h-4 text-emerald-400" />
+              </div>
+              <p className="text-xs text-white/50">{t.subtitle}</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-[4px] border border-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/5 transition-colors"
+            className="w-8 h-8 rounded-[4px] border border-white/10 text-white/60 hover:text-white hover:bg-white/5 flex items-center justify-center transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Live Audio Status Bar */}
-        <div className="px-5 py-2.5 bg-black/40 border-b border-white/[0.06] flex items-center justify-between text-xs font-mono">
-          <div className="flex items-center gap-2 text-brand-orange font-medium">
-            <Volume2 className="w-3.5 h-3.5 animate-pulse" />
-            <span>GEMINI LIVE MULTIMODAL ACTIVE</span>
+        {/* Live Audio Visualizer Mock */}
+        <div className="py-4 px-6 bg-gradient-to-b from-[#18181C] to-[#121215] border-b border-white/5 flex items-center justify-between">
+          <div className="flex items-center gap-1.5 h-6">
+            {[40, 70, 30, 90, 50, 80, 20, 60, 95, 45, 75, 35].map((h, i) => (
+              <div
+                key={i}
+                style={{ height: `${h}%` }}
+                className={`w-1 rounded-full ${
+                  isListening
+                    ? 'bg-emerald-400 animate-pulse'
+                    : isProcessing
+                    ? 'bg-amber-400 animate-pulse'
+                    : 'bg-brand-orange shadow-[0_0_8px_#FF6423]'
+                }`}
+              />
+            ))}
           </div>
-          <span className="text-white/40">16kHz PCM</span>
+
+          <div className="flex items-center gap-2 text-xs font-mono text-white/60">
+            <Volume2 className="w-4 h-4 text-brand-orange animate-pulse" />
+            <span>{isListening ? t.listening : isProcessing ? t.processing : t.speaking}</span>
+          </div>
         </div>
 
-        {/* Message Stream */}
-        <div className="flex-1 p-5 overflow-y-auto space-y-3.5 min-h-[220px]">
+        {/* Chat Message Stream */}
+        <div className="flex-1 p-4 overflow-y-auto space-y-3 min-h-[220px]">
           {messages.map((m, idx) => (
             <div
               key={idx}
@@ -144,26 +154,25 @@ export const VoiceBankingModal: React.FC<VoiceBankingModalProps> = ({
           {isProcessing && (
             <div className="flex items-center gap-2 text-xs text-brand-orange">
               <div className="w-1.5 h-1.5 rounded-full bg-brand-orange animate-ping" />
-              <span>{t.analyzing}</span>
+              <span>{t.processing}</span>
             </div>
           )}
         </div>
 
         {/* Quick Suggestion Prompts */}
-        <div className="px-4 py-2 bg-black/30 border-t border-white/[0.06] flex flex-wrap gap-2">
-          <button
-            onClick={() => handleQuickAction(t.quickPrompt1, 'block_pix')}
-            className="text-[11px] px-2.5 py-1 rounded-[4px] border border-white/10 bg-white/[0.02] hover:bg-white/[0.06] text-white/80 transition-colors"
-          >
-            {t.quickPrompt1}
-          </button>
-          <button
-            onClick={() => handleQuickAction(t.quickPrompt2, 'approve_pix')}
-            className="text-[11px] px-2.5 py-1 rounded-[4px] border border-white/10 bg-white/[0.02] hover:bg-white/[0.06] text-white/80 transition-colors"
-          >
-            {t.quickPrompt2}
-          </button>
-        </div>
+        {t.suggestions && (
+          <div className="px-4 py-2 bg-black/30 border-t border-white/[0.06] flex flex-wrap gap-2">
+            {t.suggestions.slice(0, 2).map((s, idx) => (
+              <button
+                key={idx}
+                onClick={() => handleQuickAction(s, 'quick_action')}
+                className="text-[11px] px-2.5 py-1 rounded-[4px] border border-white/10 bg-white/[0.02] hover:bg-white/[0.06] text-white/80 transition-colors truncate max-w-full"
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Input Bar */}
         <div className="p-4 bg-[#18181C] border-t border-white/10 flex items-center gap-2.5">
@@ -183,7 +192,7 @@ export const VoiceBankingModal: React.FC<VoiceBankingModalProps> = ({
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            placeholder={t.placeholder}
+            placeholder={t.micHelp}
             className="flex-1 bg-black/40 border border-white/10 rounded-[4px] px-3 py-2 text-xs sm:text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-brand-orange"
           />
 

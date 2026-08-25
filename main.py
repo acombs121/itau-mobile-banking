@@ -251,13 +251,23 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
     await websocket.accept()
     logger.info(f"Client connected to Gemini Live WebSocket (lang: {lang})")
 
-    # Define tools for Live session
+    # Define tools for Live session matching the 4 specialized agents
     live_tools = [
         types.Tool(
             function_declarations=[
                 types.FunctionDeclaration(
+                    name="get_account_info",
+                    description="Retrieves real-time account balances, investment holdings (CDB DI), Mastercard Black credit limit, and scheduled upcoming debits (prior and scheduled). Triggered by Account Information Agent.",
+                    parameters=types.Schema(
+                        type=types.Type.OBJECT,
+                        properties={
+                            "query_type": types.Schema(type=types.Type.STRING, description="Type of query, e.g. 'all', 'checking', 'cdb_investments', 'scheduled_debits', 'card_limits'")
+                        }
+                    )
+                ),
+                types.FunctionDeclaration(
                     name="sweep_cdb",
-                    description="Schedules an automatic liquidity rebalance from CDB DI into checking account on a specific date to prevent overdraft (LIS) interest.",
+                    description="Runs hypothetical cash flow simulation and schedules an automatic liquidity rebalance from CDB DI into checking account on a specific date to prevent overdraft (LIS) interest. Triggered by Cash Flow & Yield Forecasting Agent.",
                     parameters=types.Schema(
                         type=types.Type.OBJECT,
                         properties={
@@ -269,7 +279,7 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
                 ),
                 types.FunctionDeclaration(
                     name="activate_travel_mode",
-                    description="Activates international travel notice for specific countries, raises international POS spend limit, and verifies Mastercard Black travel insurance.",
+                    description="Triggered when conversation turns to upcoming travel. Activates international travel notice for specific countries, raises international POS spend limit to R$ 50,000, and verifies Mastercard Black travel insurance. Triggered by Travel Notice & International Card Shield Agent.",
                     parameters=types.Schema(
                         type=types.Type.OBJECT,
                         properties={
@@ -281,7 +291,7 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
                 ),
                 types.FunctionDeclaration(
                     name="refinance_open_finance",
-                    description="Issues an electronic CCB under Lei 10.931 and executes interbank debt consolidation/portability to settle high-interest competitor credit.",
+                    description="Issues an electronic CCB under Lei 10.931 and executes interbank debt consolidation/portability to settle high-interest competitor credit (saving R$ 14,280). Triggered by Open Finance & Debt Refinancing Optimizer.",
                     parameters=types.Schema(
                         type=types.Type.OBJECT,
                         properties={
@@ -300,17 +310,22 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
     Language: {'English' if lang == 'en' else 'Portuguese (pt-BR)'}.
 
     Customer Financial Context:
+    - Customer: Roberto Silva (Itaú Personnalité)
     - Checking Balance: R$ 48.950,20
     - Daily Liquidity CDB DI (100% CDI): R$ 85.000,00
     - Mastercard Black (last 4: 8841): Available Limit R$ 72.569,50
     - Scheduled Debits next Thursday: R$ 38.000,00 (Condo Pix R$ 3.850 + Mastercard Black Bill R$ 34.150).
     - Open Finance External Debt: R$ 18.000,00 at 11.2%/mo. Pre-approved Itaú Sob Medida: 1.69%/mo (Total saved: R$ 14.280,00).
 
+    You coordinate 4 specialized sub-agents:
+    1. Account Information Agent (`get_account_info`): When asked about balances, statements, past or scheduled transactions, call `get_account_info` and give a concise summary.
+    2. Cash Flow & Yield Forecasting Agent (`sweep_cdb`): When asked about large purchases (e.g. R$ 24k–27k flight tickets to Lisbon) or account balance optimization (how much in checking vs CDB DI), simulate the cash flow, calculate that checking will have a shortfall of R$ 13.050 on D+4 Thursday due to scheduled debits, and offer to schedule a sweep of R$ 15.000 from CDB DI on Thursday morning (06:00 BRT). Call `sweep_cdb`.
+    3. Travel Notice & Card Shield Agent (`activate_travel_mode`): When conversation turns to upcoming travel (trips, Portugal, Spain, Europe), automatically call `activate_travel_mode`, confirm travel notice is active, daily limit is elevated to R$ 50.000, and Mastercard Black travel insurance is verified.
+    4. Open Finance Optimizer (`refinance_open_finance`): When asked about debt, loans, or savings, explain the R$ 18.000 competitor revolving balance at 11.2%/mo, offer to issue the electronic CCB at 1.69%/mo saving R$ 14.280, and call `refinance_open_finance`.
+
     Spoken Persona Directives:
-    1. Speak concisely, clearly, with high-touch executive banking poise. Avoid formatting symbols like markdown asterisks in spoken numbers.
-    2. SCENARIO 1 (Flight Tickets / Balance Forecast): If the customer asks about purchasing tickets (e.g. R$ 24.000 to Lisbon) or upcoming debits, calculate that checking will be short by R$ 13.050 next Thursday. Proactively offer to schedule an automatic sweep of R$ 15.000 from CDB DI on Thursday morning (06:00 BRT). If accepted, call the tool `sweep_cdb`.
-    3. SCENARIO 2 (Travel Notice / Europe / Spain / Portugal / Cards): If the customer mentions traveling to Portugal/Spain/Europe or asking about card safety, call `activate_travel_mode` and confirm that travel notice is active, daily limit is raised to R$ 50.000, and Mastercard Black travel health insurance is verified.
-    4. SCENARIO 3 (Open Finance Debt Refinance): If the customer asks about debt optimization or savings, explain the R$ 18.000 competitor balance at 11.2%/mo, offer to issue the electronic CCB at 1.69%/mo saving R$ 14.280, and call `refinance_open_finance`.
+    - Speak concisely, clearly, with high-touch executive banking poise. Avoid formatting symbols like markdown asterisks in spoken output.
+    - Always call the corresponding tool so the multi-agent telemetry panel updates in real time.
     """
 
     live_config = types.LiveConnectConfig(

@@ -337,6 +337,10 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
                 <span className="text-brand-orange font-bold">GEMINI REASONING TRACE</span>
               </div>
               <pre className={`text-xs font-mono overflow-x-auto leading-relaxed ${isDark ? 'text-white/70' : 'text-slate-700'}`}>
+{activeScenario === 'account_info' && `MATCH (c:Cardholder { id: "ROBERTO_SILVA_7749" })-[:HOLDS_ACCOUNT]->(acc:CheckingAccount { balance: 48950.20 })
+MATCH (c)-[:HOLDS_INVESTMENT]->(cdb:Asset { type: "CDB_DI", balance: 85000.00 })
+MATCH (c)-[:HOLDS_CARD]->(card:MastercardBlack { available_limit: 72569.50 })
+RETURN acc.balance, cdb.balance, card.available_limit, "SYNC_CONSOLIDATED_POSITION";`}
 {activeScenario === 'cash_flow' && `MATCH (c:Cardholder { id: "ROBERTO_SILVA_7749" })-[:HAS_SCHEDULED_DEBITS]->(d:ScheduledPayments)
 WHERE d.due_date = "2026-08-25" AND d.projected_checking_balance < 0
 MATCH (c)-[:HOLDS_ASSET]->(a:Asset { type: "CDB_DI_LIQUIDEZ_DIARIA" })
@@ -347,10 +351,6 @@ RETURN card.id, trip.dates, "ELEVATE_POS_LIMIT_50K", "ACTIVATE_TRAVEL_HEALTH_POL
 {activeScenario === 'open_finance' && `MATCH (c:Cardholder { id: "ROBERTO_SILVA_7749" })-[:OPEN_FINANCE_DEBT]->(ext:ExternalLoan { apr: 240.5 })
 MATCH (p:RefinancePolicy { tier: "Itaú Personnalité", rate_mo: 1.69 })
 RETURN ext.balance_brl, p.monthly_savings_brl, "ISSUE_DIGITAL_CCB_LEI_10931";`}
-{activeScenario === 'pix_fraud' && `MATCH (c:Cardholder { id: "ROBERTO_SILVA_7749" })-[:INITIATED_TX]->(tx:PixTransaction { amount: 4200.00 })
-WHERE tx.risk_score > 85 AND tx.ip_anomaly = true
-MATCH (p:ProtectionPolicy { name: "BACEN_MED_147" })
-RETURN tx.amount, tx.recipient, p.precautionary_action;`}
               </pre>
             </div>
           </div>
@@ -361,7 +361,7 @@ RETURN tx.amount, tx.recipient, p.precautionary_action;`}
           <div className="space-y-2.5 font-mono text-xs">
             {telemetryLogs.length === 0 ? (
               <div className={`p-8 text-center ${isDark ? 'text-white/40' : 'text-slate-400'}`}>
-                {t.transcript.empty}
+                {currentLang === 'en' ? 'No telemetry logs captured yet. Trigger an agent or interact with Itaú Concierge.' : 'Nenhum log de telemetria capturado ainda. Dispare um agente ou interaja com o Itaú Concierge.'}
               </div>
             ) : (
               telemetryLogs.map((log) => (
