@@ -98,7 +98,6 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
           <div className="lg:col-span-6 flex flex-col justify-between gap-2.5 sm:gap-3 h-full min-h-0 overflow-y-auto pr-0.5">
             {localizedSubAgents.map((agent) => {
               const isRunning = agent.status === 'processing';
-              const isCompleted = agent.status === 'completed';
               const isSelected = selectedAgentDetail?.id === agent.id;
 
               return (
@@ -123,9 +122,7 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
                         className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
                           isRunning
                             ? 'bg-brand-orange animate-ping'
-                            : isCompleted
-                            ? 'bg-emerald-500 shadow-[0_0_8px_#10B981]'
-                            : isDark ? 'bg-white/30' : 'bg-slate-300'
+                            : isDark ? 'bg-white/20' : 'bg-slate-300'
                         }`}
                       />
                       <h3 className={`text-xs sm:text-[13.5px] lg:text-[14px] font-semibold leading-snug truncate ${isDark ? 'text-white/95' : 'text-slate-900'}`}>
@@ -133,22 +130,14 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
                       </h3>
                     </div>
 
-                    <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
-                      {isRunning ? (
+                    {isRunning && (
+                      <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
                         <span className="text-[10px] sm:text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-brand-orange text-white animate-pulse flex items-center gap-1 shadow-sm">
                           <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
-                          {currentLang === 'en' ? 'RUNNING' : 'EXECUTANDO'}
+                          {currentLang === 'en' ? 'Active' : 'Ativo'}
                         </span>
-                      ) : isCompleted ? (
-                        <span className="text-[10px] sm:text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                          {currentLang === 'en' ? 'COMPLETED' : 'CONCLUÍDO'}
-                        </span>
-                      ) : (
-                        <span className={`text-xs font-mono font-medium ${isDark ? 'text-white/40' : 'text-slate-400'}`}>
-                          {t.subagents.statusIdle}
-                        </span>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
 
                   <p className={`text-xs sm:text-[12.5px] lg:text-[13px] leading-relaxed ${isDark ? 'text-white/70' : 'text-slate-600'}`}>
