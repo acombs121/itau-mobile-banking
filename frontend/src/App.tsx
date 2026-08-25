@@ -699,6 +699,8 @@ export const App: React.FC = () => {
               isCdbSweepScheduled={isCdbSweepScheduled}
               isOpenFinanceRefiDone={isOpenFinanceRefiDone}
               isPixBlocked={isPixBlocked}
+              activeRunningAgentId={activeRunningAgentId}
+              agentStates={agentStates}
               onUserQuery={handleUserQuery}
               onTurnComplete={handleTurnComplete}
             />
