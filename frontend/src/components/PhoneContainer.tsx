@@ -31,7 +31,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
   isVoiceCallActive,
   onToggleVoiceCall,
   onActionClick,
-  isTravelModeActive = false,
+  isTravelModeActive: _isTravelModeActive = false,
   isCdbSweepScheduled: _isCdbSweepScheduled = false,
   isOpenFinanceRefiDone: _isOpenFinanceRefiDone = false,
   onUserQuery,
@@ -42,7 +42,6 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
 
   const t = translations[currentLang];
   const isDark = theme === 'dark';
-  const localizedTransactions = t.phone.transactions || profile.recent_transactions;
 
   // Connect directly to Gemini Multimodal Live WebSocket
   const {
@@ -151,22 +150,17 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
           </div>
 
           {/* Minimalist In-App Top Bar */}
-          <div className={`px-4 pt-2.5 pb-2.5 border-b flex items-center justify-between flex-shrink-0 ${isDark ? 'border-white/[0.06]' : 'border-slate-100 bg-slate-50/50'}`}>
-            <div className="flex items-center gap-2 min-w-0">
-              <div className="bg-brand-orange text-white font-bold text-xs px-2 py-0.5 rounded-[3px] flex-shrink-0">
-                itau
-              </div>
-              <span className={`text-xs sm:text-sm font-semibold truncate ${isDark ? 'text-white/95' : 'text-slate-900'}`}>
-                {profile.customer_name}
-              </span>
-            </div>
+          <div className={`px-5 pt-3 pb-2.5 border-b flex items-center justify-between flex-shrink-0 ${isDark ? 'border-white/[0.06]' : 'border-slate-100 bg-slate-50/50'}`}>
+            <span className={`text-xs sm:text-sm font-semibold truncate ${isDark ? 'text-white/95' : 'text-slate-900'}`}>
+              {profile.customer_name}
+            </span>
           </div>
 
-          {/* Scrollable Banking App Feed */}
-          <div className={`flex-1 p-3.5 overflow-y-auto min-h-0 space-y-3 custom-scrollbar ${isDark ? 'bg-transparent' : 'bg-slate-50/50'}`}>
+          {/* Dynamic Canvas Feed with Quick Actions and 70% Transparent Center Logo */}
+          <div className={`flex-1 p-3.5 flex flex-col justify-between overflow-hidden min-h-0 ${isDark ? 'bg-transparent' : 'bg-slate-50/50'}`}>
             
             {/* Quick Actions 4-Grid */}
-            <div className={`grid grid-cols-4 gap-1.5 text-center text-[11px] font-medium ${isDark ? 'text-white/80' : 'text-slate-700'}`}>
+            <div className={`grid grid-cols-4 gap-1.5 text-center text-[11px] font-medium flex-shrink-0 ${isDark ? 'text-white/80' : 'text-slate-700'}`}>
               <div className={`flex flex-col items-center gap-1 py-1.5 rounded-[8px] transition-colors cursor-pointer ${isDark ? 'hover:bg-white/[0.05]' : 'hover:bg-white shadow-sm'}`}>
                 <div className={`w-8 h-8 rounded-full border flex items-center justify-center ${isDark ? 'border-white/15 text-white' : 'border-slate-200 bg-white text-slate-800'}`}>
                   <QrCode className="w-3.5 h-3.5 text-brand-orange" />
@@ -193,66 +187,11 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
               </div>
             </div>
 
-            {/* Card Snapshot */}
-            <div className={`border rounded-[10px] p-3 transition-colors ${
-              isDark
-                ? 'border-white/[0.08] bg-white/[0.02]'
-                : 'border-slate-200 bg-white shadow-sm'
-            }`}>
-              <div className="flex justify-between items-center text-xs mb-1">
-                <span className={`font-semibold text-xs ${isDark ? 'text-white/95' : 'text-slate-900'}`}>{profile.cards[0]?.name}</span>
-                <span className={`text-[10px] font-mono font-bold ${
-                  profile.cards[0]?.status === 'frozen' ? 'text-rose-400' : 'text-emerald-400'
-                }`}>
-                  {profile.cards[0]?.status === 'frozen' ? t.phone.frozenBadge : t.phone.activeBadge}
-                </span>
+            {/* Dynamic Center Canvas: 70% Transparent Itaú Logo Watermark */}
+            <div className="flex-1 flex items-center justify-center min-h-0 select-none pointer-events-none py-6">
+              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-[28px] bg-brand-orange text-white flex items-center justify-center font-bold text-4xl sm:text-5xl opacity-30 shadow-2xl tracking-tighter">
+                itau
               </div>
-              
-              <div className="flex items-center justify-between mb-1.5">
-                <div className={`text-[11px] font-mono ${isDark ? 'text-white/50' : 'text-slate-500'}`}>
-                  •••• {profile.cards[0]?.last4}
-                </div>
-                {isTravelModeActive && (
-                  <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                    ✈️ {currentLang === 'en' ? 'EUROPE TRAVEL MODE' : 'MODO VIAGEM ATIVO'}
-                  </span>
-                )}
-              </div>
-
-              <div className={`flex items-center justify-between text-xs pt-1.5 border-t ${isDark ? 'border-white/[0.06]' : 'border-slate-100'}`}>
-                <span className={isDark ? 'text-white/60' : 'text-slate-600'}>
-                  {isTravelModeActive ? 'Limite: R$ 50.000,00' : 'R$ 72.569,50'}
-                </span>
-                <button
-                  onClick={() => onActionClick(profile.cards[0]?.status === 'frozen' ? 'unfreeze_card' : 'freeze_card', profile.cards[0]?.id)}
-                  className="text-xs font-bold text-brand-orange hover:underline"
-                >
-                  {profile.cards[0]?.status === 'frozen' ? t.phone.unfreeze : t.phone.freeze}
-                </button>
-              </div>
-            </div>
-
-            {/* Recent Transactions */}
-            <div className="space-y-1.5 pt-0.5">
-              <div className={`text-[10px] font-bold uppercase tracking-wider px-1 ${isDark ? 'text-white/40' : 'text-slate-500'}`}>
-                {t.phone.recentStatements}
-              </div>
-              {localizedTransactions.map((tx) => (
-                <div
-                  key={tx.id}
-                  className={`py-1.5 px-1 flex items-center justify-between text-xs border-b last:border-0 ${
-                    isDark ? 'border-white/[0.04]' : 'border-slate-200/60'
-                  }`}
-                >
-                  <div>
-                    <div className={`font-medium text-[11px] leading-snug ${isDark ? 'text-white/90' : 'text-slate-900'}`}>{tx.description}</div>
-                    <div className={`text-[9px] mt-0.5 ${isDark ? 'text-white/40' : 'text-slate-400'}`}>{tx.date}</div>
-                  </div>
-                  <div className={`font-mono text-xs font-semibold ${tx.amount_brl < 0 ? (isDark ? 'text-white/90' : 'text-slate-900') : 'text-emerald-500'}`}>
-                    {tx.amount_brl < 0 ? `- R$ ${Math.abs(tx.amount_brl).toFixed(2)}` : `+ R$ ${tx.amount_brl.toFixed(2)}`}
-                  </div>
-                </div>
-              ))}
             </div>
 
           </div>
