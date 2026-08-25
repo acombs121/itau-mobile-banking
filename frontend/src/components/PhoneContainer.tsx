@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, EyeOff, QrCode, ArrowUpRight, ArrowDownLeft, CreditCard, Mic, MicOff, PhoneOff, Plane, Sparkles, TrendingUp, Volume2, ShieldCheck, Radio } from 'lucide-react';
+import { Eye, EyeOff, QrCode, ArrowUpRight, ArrowDownLeft, CreditCard, Mic, MicOff, PhoneOff, Plane, Sparkles, TrendingUp, ShieldCheck, Radio } from 'lucide-react';
 import { BankingProfile } from '../types/banking';
 import { IOSNotification, ScenarioId } from '../types/itau_concierge';
 import { Language, translations } from '../i18n/translations';
@@ -55,7 +55,6 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
     disconnect,
     startMicrophone,
     stopMicrophone,
-    sendTextQuery,
   } = useGeminiLive({
     lang: currentLang,
     onToolCall: (toolName) => {
@@ -279,70 +278,6 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
           {/* Scrollable Banking App Feed */}
           <div className={`flex-1 p-3.5 overflow-y-auto min-h-0 space-y-3 custom-scrollbar ${isDark ? 'bg-transparent' : 'bg-slate-50/50'}`}>
             
-            {/* Quick Testing Scenario Suggestions when Voice is Active */}
-            {isVoiceCallActive && (
-              <div className="p-2 rounded-[8px] bg-[#121217] border border-white/[0.08] space-y-1.5 animate-fadeIn">
-                <div className="text-[10px] font-mono text-white/50 flex items-center justify-between">
-                  <span>{currentLang === 'en' ? 'VOICE PROMPTS (1-TAP OR SPEAK):' : 'PROMPTS DE VOZ (FALE OU TOQUE):'}</span>
-                  {isSpeaking && (
-                    <span className="text-brand-orange flex items-center gap-1 font-bold">
-                      <Volume2 className="w-2.5 h-2.5 animate-pulse" />
-                      <span>{currentLang === 'en' ? 'Speaking...' : 'Falando...'}</span>
-                    </span>
-                  )}
-                  {isListening && !isSpeaking && (
-                    <span className="text-emerald-400 flex items-center gap-1 font-bold">
-                      <Mic className="w-2.5 h-2.5 animate-bounce" />
-                      <span>{currentLang === 'en' ? 'Listening...' : 'Ouvindo...'}</span>
-                    </span>
-                  )}
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <button
-                    onClick={() => sendTextQuery(
-                      currentLang === 'en'
-                        ? "I want to check my account balances and scheduled debits."
-                        : "Quero consultar meus saldos e lançamentos agendados."
-                    )}
-                    className="text-[10.5px] px-2 py-1 rounded bg-white/5 hover:bg-white/10 text-white/80 border border-white/10 text-left truncate transition-colors"
-                  >
-                    💰 {currentLang === 'en' ? 'Check Balances & Limits' : 'Consultar Saldos & Limites'}
-                  </button>
-                  <button
-                    onClick={() => sendTextQuery(
-                      currentLang === 'en'
-                        ? "I am about to buy 2 flight tickets to Lisbon for R$ 24,000. Will my payments clear next week?"
-                        : "Vou comprar 2 passagens para Lisboa por R$ 24.000. Meus débitos da próxima semana vão compensar?"
-                    )}
-                    className="text-[10.5px] px-2 py-1 rounded bg-white/5 hover:bg-white/10 text-white/80 border border-white/10 text-left truncate transition-colors"
-                  >
-                    ✈️ {currentLang === 'en' ? 'Tickets (R$ 24k) & Balance forecast' : 'Passagens (R$ 24k) & Previsão Saldo'}
-                  </button>
-                  <button
-                    onClick={() => sendTextQuery(
-                      currentLang === 'en'
-                        ? "Activate travel mode for Portugal and Spain on my Mastercard Black."
-                        : "Ative o aviso de viagem para Portugal e Espanha no meu Mastercard Black."
-                    )}
-                    className="text-[10.5px] px-2 py-1 rounded bg-white/5 hover:bg-white/10 text-white/80 border border-white/10 text-left truncate transition-colors"
-                  >
-                    🛡️ {currentLang === 'en' ? 'Travel mode (Portugal & Spain)' : 'Modo Viagem (Portugal e Espanha)'}
-                  </button>
-                  <button
-                    onClick={() => sendTextQuery(
-                      currentLang === 'en'
-                        ? "How can I refinance my external debt through Open Finance?"
-                        : "Como posso refinanciar minha dívida externa pelo Open Finance?"
-                    )}
-                    className="text-[10.5px] px-2 py-1 rounded bg-white/5 hover:bg-white/10 text-white/80 border border-white/10 text-left truncate transition-colors"
-                  >
-                    💳 {currentLang === 'en' ? 'Open Finance Refinance (Save R$ 14k)' : 'Refinanciamento Open Finance (Salvar R$ 14k)'}
-                  </button>
-                </div>
-              </div>
-            )}
-
             {/* Contextual Scenario Proactive Alert Banner */}
             {!isAlertResolved && (
               <div className={`rounded-[10px] p-3 border transition-all ${
