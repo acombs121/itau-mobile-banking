@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Play } from 'lucide-react';
 import { SubAgent, SecurityActionItem, TelemetryLog, ScenarioId } from '../types/itau_concierge';
 import { Language, translations } from '../i18n/translations';
 
@@ -10,7 +9,7 @@ interface AgentOrchestratorPanelProps {
   currentLang: Language;
   theme: 'dark' | 'light';
   activeScenario: ScenarioId;
-  onTriggerAgent: (agentId: string) => void;
+  onTriggerAgent?: (agentId: string) => void;
   isProcessingAgent?: string | null;
   activeRunningAgentId?: string | null;
   agentStates?: Record<string, { status: 'idle' | 'running' | 'completed'; lastRun?: string; liveResult?: Record<string, any> }>;
@@ -20,7 +19,7 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
   currentLang,
   theme,
   activeScenario,
-  onTriggerAgent,
+  onTriggerAgent: _onTriggerAgent,
   isProcessingAgent = null,
   activeRunningAgentId = null,
   agentStates = {}
@@ -158,30 +157,9 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
                     </div>
                   </div>
 
-                  <p className={`text-xs leading-relaxed mb-2.5 ${isDark ? 'text-white/70' : 'text-slate-600'}`}>
+                  <p className={`text-xs leading-relaxed ${isDark ? 'text-white/70' : 'text-slate-600'}`}>
                     {agent.description}
                   </p>
-
-                  <div className={`flex items-center justify-between pt-1.5 border-t text-xs ${isDark ? 'border-white/[0.04]' : 'border-slate-100'}`}>
-                    <span
-                      className={`font-medium ${isSelected || isRunning ? 'text-brand-orange font-semibold' : isDark ? 'text-white/50' : 'text-slate-500'}`}
-                    >
-                      {t.subagents.jsonLabel}
-                    </span>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onTriggerAgent(agent.id);
-                      }}
-                      disabled={isRunning}
-                      className={`flex items-center gap-1.5 font-medium transition-colors ${
-                        isDark ? 'text-white/90 hover:text-brand-orange' : 'text-slate-800 hover:text-brand-orange'
-                      }`}
-                    >
-                      <Play className="w-3 h-3" />
-                      <span>{t.subagents.triggerManual}</span>
-                    </button>
-                  </div>
                 </div>
               );
             })}
