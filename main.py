@@ -312,13 +312,21 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
     Customer Financial Context:
     - Customer: Roberto Silva (Itaú Personnalité)
     - Checking Balance: R$ 48.950,20
-    - Daily Liquidity CDB DI (100% CDI): R$ 85.000,00
+    - Savings & Investment / Daily Liquidity CDB DI (100% CDI): R$ 85.000,00
     - Mastercard Black (last 4: 8841): Available Limit R$ 72.569,50
     - Scheduled Debits next Thursday: R$ 38.000,00 (Condo Pix R$ 3.850 + Mastercard Black Bill R$ 34.150).
     - Open Finance External Debt: R$ 18.000,00 at 11.2%/mo. Pre-approved Itaú Sob Medida: 1.69%/mo (Total saved: R$ 14.280,00).
 
+    CRITICAL BALANCE QUERY PROTOCOL (MANDATORY):
+    - When the user asks for their balance in general (e.g. "what is my balance?", "check my balance", "i want to check my balances", "qual é o meu saldo?", "consultar saldo"):
+      1. YOU MUST NOT STATE ANY BALANCE NUMBERS OR FIGURES YET.
+      2. YOU MUST FIRST ASK A CLARIFYING QUESTION:
+         - If in English: "Certainly, Roberto. Are you looking for the balance of your checking account, your savings and CDB investments, or your Mastercard Black card?"
+         - If in Portuguese: "Com certeza, Roberto. Você está procurando o saldo da sua conta corrente, da sua poupança e investimentos CDB, ou do seu cartão Mastercard Black?"
+      3. ONLY AFTER the user specifies which one they want (for example, saying "checking", "savings", "card", "all of them", etc.), you call the `get_account_info` tool and state the exact requested balance number!
+
     You coordinate 4 specialized sub-agents:
-    1. Account Information Agent (`get_account_info`): When asked about balances, statements, past or scheduled transactions, call `get_account_info` and give a concise summary.
+    1. Account Information Agent (`get_account_info`): When user answers which balance they want or asks about specific statements/scheduled debits, call `get_account_info` and provide the exact requested position.
     2. Cash Flow & Yield Forecasting Agent (`sweep_cdb`): When asked about large purchases (e.g. R$ 24k–27k flight tickets to Lisbon) or account balance optimization (how much in checking vs CDB DI), simulate the cash flow, calculate that checking will have a shortfall of R$ 13.050 on D+4 Thursday due to scheduled debits, and offer to schedule a sweep of R$ 15.000 from CDB DI on Thursday morning (06:00 BRT). Call `sweep_cdb`.
     3. Travel Notice & Card Shield Agent (`activate_travel_mode`): When conversation turns to upcoming travel (trips, Portugal, Spain, Europe), automatically call `activate_travel_mode`, confirm travel notice is active, daily limit is elevated to R$ 50.000, and Mastercard Black travel insurance is verified.
     4. Open Finance Optimizer (`refinance_open_finance`): When asked about debt, loans, or savings, explain the R$ 18.000 competitor revolving balance at 11.2%/mo, offer to issue the electronic CCB at 1.69%/mo saving R$ 14.280, and call `refinance_open_finance`.
@@ -470,10 +478,11 @@ async def chat_endpoint(payload: ChatRequest, user: Dict[str, Any] = Depends(get
 
     Rules:
     1. Respond with executive precision, warm and professional tone, zero markdown asterisks in spoken numbers where possible.
-    2. SCENARIO 1 (Flight Tickets / Balance Forecast): If the user asks about buying tickets (e.g. R$ 24.000 to Lisbon) or asks if next week's bills will clear, calculate that checking will have a shortfall of R$ 13.050 next Thursday. Proactively suggest scheduling an automated sweep of R$ 15.000 from the Daily Liquidity CDB on Thursday morning so funds keep earning full CDI until the exact moment of payment.
-    3. SCENARIO 2 (Travel / Europe / Spain / Portugal / Mastercard): If the user mentions traveling to Portugal/Spain/Europe or asking about card safety, confirm you have activated Travel Shielding, raised the international POS limit to R$ 50.000, and verified complimentary Mastercard Black travel health insurance.
-    4. SCENARIO 3 (Open Finance / Debt Refinance / Savings): If the user asks about saving money or refinancing debt, explain the R$ 18.000 competitor balance at 11.2%/mo and offer to issue the electronic CCB under Lei 10.931 at 1.69%/mo, saving R$ 14.280 overall.
-    5. SCENARIO 4 (Pix Fraud / Block / Hold): If the user asks about the R$ 4.200 Pix attempt to 'Eletro Tech SP', explain the overseas VPN anomaly and confirm the precautionary hold under BACEN Resolution 147 (MED).
+    2. BALANCE QUERIES: If the user asks generally for their balance ("check my balance", "what is my balance", "saldo"), DO NOT provide numbers yet. Ask whether they are looking for the checking account, savings/CDB investment, or Mastercard Black limit. Once they specify, provide that exact balance.
+    3. SCENARIO 1 (Flight Tickets / Balance Forecast): If the user asks about buying tickets (e.g. R$ 24.000 to Lisbon) or asks if next week's bills will clear, calculate that checking will have a shortfall of R$ 13.050 next Thursday. Proactively suggest scheduling an automated sweep of R$ 15.000 from the Daily Liquidity CDB on Thursday morning so funds keep earning full CDI until the exact moment of payment.
+    4. SCENARIO 2 (Travel / Europe / Spain / Portugal / Mastercard): If the user mentions traveling to Portugal/Spain/Europe or asking about card safety, confirm you have activated Travel Shielding, raised the international POS limit to R$ 50.000, and verified complimentary Mastercard Black travel health insurance.
+    5. SCENARIO 3 (Open Finance / Debt Refinance / Savings): If the user asks about saving money or refinancing debt, explain the R$ 18.000 competitor balance at 11.2%/mo and offer to issue the electronic CCB under Lei 10.931 at 1.69%/mo, saving R$ 14.280 overall.
+    6. SCENARIO 4 (Pix Fraud / Block / Hold): If the user asks about the R$ 4.200 Pix attempt to 'Eletro Tech SP', explain the overseas VPN anomaly and confirm the precautionary hold under BACEN Resolution 147 (MED).
     """
 
     if gemini_client:
@@ -491,11 +500,20 @@ async def chat_endpoint(payload: ChatRequest, user: Dict[str, Any] = Depends(get
             logger.error(f"Gemini generation error in /api/chat: {e}")
 
     # High-fidelity deterministic fallbacks tailored to the user's intent
-    if "passag" in user_msg or "ticket" in user_msg or "saldo" in user_msg or "balance" in user_msg or "voo" in user_msg or "flight" in user_msg:
+    if "passag" in user_msg or "ticket" in user_msg or "voo" in user_msg or "flight" in user_msg:
         if lang == "en":
-            reply = "Hello Roberto. You currently have R$ 48,950 available in checking. However, if you purchase the tickets today, your scheduled credit card bill and condominium Pix next Thursday will result in a shortfall of R$ 13,050, entering high-interest overdraft. I see you have R$ 85,000 in your Daily Liquidity CDB. Would you like me to schedule an automatic transfer of R$ 15,000 on Thursday morning so your funds keep earning full CDI until the exact moment they are needed?"
+            reply = "Hello Roberto. If you purchase the flight tickets today (R$ 24,000), your scheduled debits next Thursday will result in a shortfall of R$ 13,050. I see you have R$ 85,000 in your Daily Liquidity CDB. Would you like me to schedule an automatic transfer of R$ 15,000 on Thursday morning?"
         else:
-            reply = "Olá Roberto. Você tem R$ 48.950,20 disponíveis em conta corrente. Contudo, ao comprar as passagens hoje, os débitos agendados de condomínio e cartão na próxima quinta-feira resultarão em um déficit de R$ 13.050,00, entrando no cheque especial (LIS). Identifiquei R$ 85.000,00 no seu CDB DI Liquidez Diária. Deseja que eu agende um resgate automático de R$ 15.000,00 para quinta-feira de manhã para manter seu rendimento até o minuto exato do débito?"
+            reply = "Olá Roberto. Ao comprar as passagens hoje (R$ 24.000,00), seus débitos agendados na próxima quinta-feira resultarão em um déficit de R$ 13.050,00. Identifiquei R$ 85.000,00 no seu CDB DI. Deseja agendar um resgate automático de R$ 15.000,00 para quinta-feira?"
+    elif "saldo" in user_msg or "balance" in user_msg:
+        if "corrente" in user_msg or "checking" in user_msg:
+            reply = "Your checking account balance is R$ 48,950.20." if lang == "en" else "O saldo da sua conta corrente é de R$ 48.950,20."
+        elif "invest" in user_msg or "cdb" in user_msg or "poupan" in user_msg or "saving" in user_msg:
+            reply = "Your savings and Daily Liquidity CDB balance is R$ 85,000.00." if lang == "en" else "Seu saldo em investimentos CDB DI com liquidez diária é de R$ 85.000,00."
+        elif "card" in user_msg or "cart" in user_msg or "black" in user_msg:
+            reply = "Your available limit on the Mastercard Black is R$ 72,569.50." if lang == "en" else "Seu limite disponível no Mastercard Black é de R$ 72.569,50."
+        else:
+            reply = "Certainly, Roberto. Are you looking for the balance of your checking account, your savings and CDB investments, or your Mastercard Black card?" if lang == "en" else "Com certeza, Roberto. Você está procurando o saldo da sua conta corrente, da sua poupança e investimentos CDB, ou do seu cartão Mastercard Black?"
     elif "viagem" in user_msg or "travel" in user_msg or "portugal" in user_msg or "espanha" in user_msg or "spain" in user_msg or "lisboa" in user_msg or "madrid" in user_msg:
         if lang == "en":
             reply = "All set, Roberto! I have activated Travel Shielding for Portugal and Spain on your Mastercard Black ending in 8841. I also increased your international daily spend limit to R$ 50,000 and verified that your complimentary Mastercard Black travel medical insurance is fully active for you and your companion. You're ready to travel with zero merchant friction."
