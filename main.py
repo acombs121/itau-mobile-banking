@@ -279,14 +279,26 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
                 ),
                 types.FunctionDeclaration(
                     name="activate_travel_mode",
-                    description="Triggered when conversation turns to upcoming travel. Activates international travel notice for specific countries, raises international POS spend limit to R$ 50,000, and verifies Mastercard Black travel insurance. Triggered by Travel Notice & International Card Shield Agent.",
+                    description="Triggered when conversation turns to upcoming travel. Focuses on fraud prevention: 1) registers active travel notice for Portugal and Spain across Visa/Mastercard network authorizers, 2) elevates daily international POS limit to R$ 50,000, 3) pre-suppresses false-positive fraud declines at foreign airport and hotel terminals. Triggered by Travel Notice & International Card Shield Agent.",
                     parameters=types.Schema(
                         type=types.Type.OBJECT,
                         properties={
                             "destinations": types.Schema(type=types.Type.ARRAY, items=types.Schema(type=types.Type.STRING), description="List of destination countries/cities"),
-                            "raise_limit_to": types.Schema(type=types.Type.NUMBER, description="Elevated daily POS spend limit, e.g. 50000.00")
+                            "raise_limit_to": types.Schema(type=types.Type.NUMBER, description="Elevated daily POS spend limit, e.g. 50000.00"),
+                            "fraud_suppression": types.Schema(type=types.Type.STRING, description="Enabled")
                         },
                         required=["destinations"]
+                    )
+                ),
+                types.FunctionDeclaration(
+                    name="get_card_benefits",
+                    description="Retrieves premium Mastercard Black benefits & travel coverage (Worldwide €30k Schengen Medical Insurance, LoungeKey VIP Lounges, Trip/Baggage Delay protection, Masterseguro Auto). Triggered by Mastercard Black Benefits & Coverage Agent.",
+                    parameters=types.Schema(
+                        type=types.Type.OBJECT,
+                        properties={
+                            "card_tier": types.Schema(type=types.Type.STRING, description="Card tier e.g. 'Mastercard Black'"),
+                            "benefits_requested": types.Schema(type=types.Type.STRING, description="e.g. 'travel_insurance_lounges'")
+                        }
                     )
                 ),
                 types.FunctionDeclaration(
@@ -325,11 +337,27 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
          - If in Portuguese: "Com certeza, Roberto. Você está procurando o saldo da sua conta corrente, da sua poupança e investimentos CDB, ou do seu cartão Mastercard Black?"
       3. ONLY AFTER the user specifies which one they want (for example, saying "checking", "savings", "card", "all of them", etc.), you call the `get_account_info` tool and state the exact requested balance number!
 
-    You coordinate 4 specialized sub-agents:
+    You coordinate 5 specialized sub-agents:
     1. Account Information Agent (`get_account_info`): When user answers which balance they want or asks about specific statements/scheduled debits, call `get_account_info` and provide the exact requested position.
     2. Cash Flow & Yield Forecasting Agent (`sweep_cdb`): When asked about large purchases (e.g. R$ 24k–27k flight tickets to Lisbon) or account balance optimization (how much in checking vs CDB DI), simulate the cash flow, calculate that checking will have a shortfall of R$ 13.050 on D+4 Thursday due to scheduled debits, and offer to schedule a sweep of R$ 15.000 from CDB DI on Thursday morning (06:00 BRT). Call `sweep_cdb`.
-    3. Travel Notice & Card Shield Agent (`activate_travel_mode`): When conversation turns to upcoming travel (trips, Portugal, Spain, Europe), automatically call `activate_travel_mode`, confirm travel notice is active, daily limit is elevated to R$ 50.000, and Mastercard Black travel insurance is verified.
-    4. Open Finance Optimizer (`refinance_open_finance`): When asked about debt, loans, or savings, explain the R$ 18.000 competitor revolving balance at 11.2%/mo, offer to issue the electronic CCB at 1.69%/mo saving R$ 14.280, and call `refinance_open_finance`.
+    3. Travel Notice & International Card Shield Agent (`activate_travel_mode`):
+       - Triggered when conversation turns to upcoming travel (trips, flight tickets, Portugal, Spain, Europe).
+       - Focuses on fraud prevention and card reliability:
+         1) Registers active travel notice for Portugal and Spain across Visa and Mastercard network authorizers.
+         2) Elevates daily international POS limit to R$ 50,000.00.
+         3) Pre-suppresses false-positive fraud declines at foreign airport, airline, and hotel terminals.
+       - Always call `activate_travel_mode`.
+       - AT THE END OF THIS TURN, YOU MUST ASK THE USER:
+         - If in English: "Would you like me to review the travel insurance and airport lounge benefits included with your Mastercard Black?"
+         - If in Portuguese: "Gostaria que eu apresentasse os benefícios de seguro viagem e salas VIP inclusos no seu Mastercard Black?"
+    4. Mastercard Black Benefits & Coverage Agent (`get_card_benefits`):
+       - Triggered when the user confirms the travel benefits question (e.g. saying "yes", "sure", "please", "sim", "quero", "quais são os benefícios") OR when asked directly about card benefits, travel insurance, or VIP lounges.
+       - Call `get_card_benefits`.
+       - Explain the key travel benefits:
+         1) Worldwide Emergency Medical Insurance: €30,000 Schengen Compliant (up to $150,000 USD coverage).
+         2) Airport VIP Lounges: Mastercard Airport Experiences / LoungeKey (unlimited access at GRU Terminal 3 Lounge + 4 complimentary international passes).
+         3) Trip Protection: Baggage loss & flight delay reimbursement up to $3,000 USD, plus worldwide car rental coverage.
+    5. Open Finance Optimizer (`refinance_open_finance`): When asked about debt, loans, or savings, explain the R$ 18.000 competitor revolving balance at 11.2%/mo, offer to issue the electronic CCB at 1.69%/mo saving R$ 14.280, and call `refinance_open_finance`.
 
     Spoken Persona Directives:
     - Speak concisely, clearly, with high-touch executive banking poise. Avoid formatting symbols like markdown asterisks in spoken output.

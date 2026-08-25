@@ -1,9 +1,9 @@
-export type ScenarioId = 'account_info' | 'cash_flow' | 'travel_shield' | 'open_finance';
+export type ScenarioId = 'account_info' | 'cash_flow' | 'travel_shield' | 'card_benefits' | 'open_finance';
 
 export interface SubAgent {
   id: string;
   name: string;
-  type: 'account_info' | 'cash_flow' | 'travel' | 'open_finance';
+  type: 'account_info' | 'cash_flow' | 'travel' | 'card_benefits' | 'open_finance';
   description: string;
   capabilities: string[];
   status: 'idle' | 'processing' | 'completed' | 'failed';
@@ -14,7 +14,7 @@ export interface SubAgent {
 export interface SecurityActionItem {
   id: string;
   time: string;
-  type: 'pix_hold' | 'geo_verify' | 'card_freeze' | 'med_claim' | 'limit_adjust' | 'cdb_sweep' | 'travel_mode' | 'open_finance_ccb';
+  type: 'pix_hold' | 'geo_verify' | 'card_freeze' | 'med_claim' | 'limit_adjust' | 'cdb_sweep' | 'travel_mode' | 'card_benefits' | 'open_finance_ccb';
   title: string;
   description: string;
   status: 'Confirmed' | 'Pending' | 'Active' | 'Safeguarded';

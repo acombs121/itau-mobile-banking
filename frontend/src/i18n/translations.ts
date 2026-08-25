@@ -348,13 +348,41 @@ export const translations = {
           id: "travel_shield_agent",
           name: "Travel Notice & International Card Shield",
           type: "travel",
-          description: "Acionado quando o cliente menciona viagens futuras. Registra aviso internacional, eleva limites POS e valida seguros.",
-          capabilities: ["Aviso Viagem Automático", "Limite R$ 50k", "Supressão Recusas"],
+          description: "Registra aviso de viagem ativo para Portugal e Espanha, eleva limite internacional diário para R$ 50.000 e suprime falsos positivos em terminais no exterior.",
+          capabilities: ["Aviso Viagem Bandeira", "Limite POS R$ 50k", "Supressão Falsos Bloqueios"],
           defaultResult: {
-            travel_mode: "EUROPE_READY",
+            travel_notice: "ACTIVE",
             destinations: ["Portugal", "Espanha"],
-            international_pos_limit: 50000.00,
-            insurance: "MASTERCARD_BLACK_MED_GLOBAL"
+            network_authorizers: ["MASTERCARD_GLOBAL", "VISA_NET"],
+            international_pos_limit_brl: 50000.00,
+            fraud_suppression_airports_hotels: "ENABLED",
+            status: "PROTECTED_ROAMING"
+          }
+        },
+        {
+          id: "card_benefits_agent",
+          name: "Mastercard Black Benefits & Coverage Agent",
+          type: "card_benefits",
+          description: "Apresenta coberturas e benefícios do Mastercard Black: seguro médico internacional (€30k Schengen), salas VIP LoungeKey e proteção de bagagem.",
+          capabilities: ["Seguro Médico Schengen €30k", "Salas VIP LoungeKey", "Atraso/Perda Bagagem", "Masterseguro Auto"],
+          defaultResult: {
+            card_tier: "Itaú Personnalité Mastercard Black",
+            travel_medical_insurance: {
+              schengen_compliant: true,
+              max_coverage_usd: 150000.00,
+              emergency_medical_coverage_eur: 30000.00
+            },
+            airport_lounge_access: {
+              program: "Mastercard Airport Experiences (LoungeKey)",
+              gru_vip_lounge: "UNLIMITED_COMPLIMENTARY",
+              international_passes: "4 COMPLIMENTARY/YEAR"
+            },
+            trip_protection: {
+              trip_cancellation_delay_usd: 3000.00,
+              baggage_loss_delay_usd: 1500.00
+            },
+            car_rental_coverage: "Masterseguro de Automóveis (CDW/LDW Global)",
+            concierge: "Mastercard Concierge 24/7"
           }
         },
         {
@@ -797,13 +825,41 @@ export const translations = {
           id: "travel_shield_agent",
           name: "Travel Notice & International Card Shield",
           type: "travel",
-          description: "Triggered when upcoming travel is mentioned. Registers international travel notices, raises POS limits, and validates insurance.",
-          capabilities: ["Automated Travel Notice", "R$ 50k Limit Elevation", "Zero Foreign Declines"],
+          description: "Registers active travel notice for Portugal & Spain across card networks, raises POS limit to R$ 50k, and suppresses false-positive foreign declines.",
+          capabilities: ["Network Travel Notice", "POS Limit R$ 50k", "False-Positive Suppression"],
           defaultResult: {
-            travel_mode: "EUROPE_READY",
+            travel_notice: "ACTIVE",
             destinations: ["Portugal", "Spain"],
-            international_pos_limit: 50000.00,
-            insurance: "MASTERCARD_BLACK_MED_GLOBAL"
+            network_authorizers: ["MASTERCARD_GLOBAL", "VISA_NET"],
+            international_pos_limit_brl: 50000.00,
+            fraud_suppression_airports_hotels: "ENABLED",
+            status: "PROTECTED_ROAMING"
+          }
+        },
+        {
+          id: "card_benefits_agent",
+          name: "Mastercard Black Benefits & Coverage Agent",
+          type: "card_benefits",
+          description: "Explains premium Mastercard Black benefits: worldwide travel medical insurance (€30k Schengen), LoungeKey VIP access, and trip protection.",
+          capabilities: ["Schengen Medical €30k", "LoungeKey VIP Lounges", "Baggage / Delay Insurance", "Mastercard Concierge"],
+          defaultResult: {
+            card_tier: "Itaú Personnalité Mastercard Black",
+            travel_medical_insurance: {
+              schengen_compliant: true,
+              max_coverage_usd: 150000.00,
+              emergency_medical_coverage_eur: 30000.00
+            },
+            airport_lounge_access: {
+              program: "Mastercard Airport Experiences (LoungeKey)",
+              gru_vip_lounge: "UNLIMITED_COMPLIMENTARY",
+              international_passes: "4 COMPLIMENTARY/YEAR"
+            },
+            trip_protection: {
+              trip_cancellation_delay_usd: 3000.00,
+              baggage_loss_delay_usd: 1500.00
+            },
+            car_rental_coverage: "Masterseguro de Automóveis (CDW/LDW Global)",
+            concierge: "Mastercard Concierge 24/7"
           }
         },
         {

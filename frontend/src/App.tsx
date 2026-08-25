@@ -73,11 +73,12 @@ export const App: React.FC = () => {
   const [activeScenario, setActiveScenario] = useState<ScenarioId>('cash_flow');
   const [activeRunningAgentId, setActiveRunningAgentId] = useState<string | null>(null);
 
-  // Dynamic Sub-Agent Lifecycle States
+  // Dynamic Sub-Agent Lifecycle States for 5 Specialized Agents
   const [agentStates, setAgentStates] = useState<Record<string, { status: 'idle' | 'running' | 'completed'; lastRun?: string; liveResult?: Record<string, any> }>>({
     account_info_agent: { status: 'idle' },
     cash_flow_forecast_agent: { status: 'completed', lastRun: '14:52:10 BRT' },
     travel_shield_agent: { status: 'idle' },
+    card_benefits_agent: { status: 'idle' },
     open_finance_optimizer: { status: 'idle' }
   });
 
@@ -145,7 +146,25 @@ export const App: React.FC = () => {
     const q = query.toLowerCase();
     const nowTime = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' BRT';
 
-    if (q.includes('balance') || q.includes('saldo') || q.includes('extrato') || q.includes('statement') || q.includes('fatura') || q.includes('limit') || q.includes('limite') || q.includes('conta') || q.includes('checking')) {
+    if (q.includes('benefit') || q.includes('benefício') || q.includes('lounge') || q.includes('sala vip') || q.includes('insurance') || q.includes('seguro') || q.includes('coverage') || q.includes('cobertura') || q.includes('schengen') || q.includes('baggage') || q.includes('bagagem') || q.includes('delay') || q.includes('atraso')) {
+      setActiveRunningAgentId('card_benefits_agent');
+      setAgentStates(prev => ({
+        ...prev,
+        card_benefits_agent: {
+          status: 'running',
+          lastRun: nowTime,
+          liveResult: {
+            card_tier: "Itaú Personnalité Mastercard Black",
+            medical_insurance_schengen_eur: 30000.00,
+            emergency_medical_usd: 150000.00,
+            vip_lounges: "LoungeKey (GRU Unlimited + 4 Int Passes)",
+            trip_cancellation_usd: 3000.00,
+            status: "RETRIEVING_COVERAGE_POLICY"
+          }
+        }
+      }));
+    }
+    else if (q.includes('balance') || q.includes('saldo') || q.includes('extrato') || q.includes('statement') || q.includes('fatura') || q.includes('limit') || q.includes('limite') || q.includes('conta') || q.includes('checking')) {
       setActiveRunningAgentId('account_info_agent');
       setActiveScenario('account_info');
       setAgentStates(prev => ({
@@ -193,11 +212,12 @@ export const App: React.FC = () => {
           status: 'running',
           lastRun: nowTime,
           liveResult: {
-            travel_mode: "CONFIGURING",
+            travel_notice: "REGISTERING",
             destinations: ["Portugal", "Spain"],
-            pos_limit_requested: 50000.00,
-            insurance: "MASTERCARD_BLACK_MED_GLOBAL",
-            status: "ENGAGING_TRAVEL_SHIELD"
+            network_authorizers: ["MASTERCARD_GLOBAL", "VISA_NET"],
+            pos_limit_brl: 50000.00,
+            fraud_suppression: "ENABLING",
+            status: "ENGAGING_FRAUD_SHIELD"
           }
         }
       }));
@@ -371,7 +391,7 @@ export const App: React.FC = () => {
       };
       setTelemetryLogs(prev => [newLog, ...prev]);
     }
-    else if (actionType === 'activate_travel_mode' || actionType === 'view_travel_insurance') {
+    else if (actionType === 'activate_travel_mode') {
       setIsTravelModeActive(true);
       setActiveRunningAgentId('travel_shield_agent');
       setActiveScenario('travel_shield');
@@ -381,26 +401,30 @@ export const App: React.FC = () => {
           status: 'completed',
           lastRun: nowTime,
           liveResult: {
+            travel_notice: "ACTIVE",
             destinations: ["Portugal", "Spain"],
             dates: "20/08 - 05/09",
+            network_authorizers: ["MASTERCARD_GLOBAL", "VISA_NET"],
             international_pos_limit_brl: 50000.00,
-            fraud_engine_mode: "SUPPRESS_FALSE_DECLINES",
-            travel_insurance_policy: "MASTERCARD_BLACK_MED_GLOBAL_ACTIVE",
-            status: "EUROPE_READY"
+            fraud_suppression_airports_hotels: "ENABLED",
+            status: "FRAUD_SHIELD_ACTIVE"
           }
         }
       }));
 
-      triggerNotification(tNotif.travelModeTitle, tNotif.travelModeSubtitle);
+      triggerNotification(
+        currentLang === 'en' ? "Travel Notice Registered" : "Aviso de Viagem Registrado",
+        currentLang === 'en' ? "Portugal & Spain active across Mastercard networks. POS limit R$ 50,000." : "Portugal e Espanha ativos na rede Mastercard. Limite POS R$ 50.000."
+      );
 
       const newAction: SecurityActionItem = {
         id: "act_" + Date.now(),
         time: nowTime,
         type: "travel_mode",
-        title: currentLang === 'en' ? "Travel Shield Activated: Portugal & Spain" : "Aviso de Viagem Ativado: Portugal e Espanha",
-        description: currentLang === 'en' ? "Mastercard Black international spend limit raised to R$ 50,000. Travel health insurance verified." : "Limite internacional do Mastercard Black elevado para R$ 50.000. Seguro saúde internacional validado.",
+        title: currentLang === 'en' ? "Travel Notice: Portugal & Spain (Fraud Shield)" : "Aviso de Viagem: Portugal e Espanha (Escudo Antifraude)",
+        description: currentLang === 'en' ? "Registered with Visa/Mastercard authorizers. Elevated POS limit to R$ 50,000 and pre-suppressed airport/hotel false declines." : "Registrado nas bandeiras. Limite POS elevado para R$ 50.000 e supressão de recusas em aeroportos/hotéis.",
         status: "Confirmed",
-        details: "Policy: MASTERCARD_BLACK_MED_GLOBAL"
+        details: "Network Rail: MASTERCARD_GLOBAL • Limits Elevated"
       };
       setActionItems(prev => [newAction, ...prev]);
 
@@ -409,13 +433,75 @@ export const App: React.FC = () => {
         timestamp: new Date().toLocaleTimeString(),
         agentId: "travel_shield_agent",
         agentName: "Travel Notice & International Card Shield",
-        action: "ACTIVATE_TRAVEL_ROAMING_SHIELD",
+        action: "REGISTER_NETWORK_TRAVEL_NOTICE",
         status: "success",
         payload: {
           destinations: ["Portugal", "Spain"],
           dates: "20/08 - 05/09",
           international_pos_limit_brl: 50000.00,
           fraud_engine_mode: "SUPPRESS_FALSE_DECLINES"
+        }
+      };
+      setTelemetryLogs(prev => [newLog, ...prev]);
+    }
+    else if (actionType === 'get_card_benefits' || actionType === 'view_travel_insurance') {
+      setActiveRunningAgentId('card_benefits_agent');
+      setAgentStates(prev => ({
+        ...prev,
+        card_benefits_agent: {
+          status: 'completed',
+          lastRun: nowTime,
+          liveResult: {
+            card_tier: "Itaú Personnalité Mastercard Black",
+            travel_medical_insurance: {
+              schengen_compliant: true,
+              max_coverage_usd: 150000.00,
+              emergency_medical_coverage_eur: 30000.00
+            },
+            airport_lounge_access: {
+              program: "Mastercard Airport Experiences (LoungeKey)",
+              gru_vip_lounge: "UNLIMITED_COMPLIMENTARY",
+              international_passes: "4 COMPLIMENTARY/YEAR"
+            },
+            trip_protection: {
+              trip_cancellation_delay_usd: 3000.00,
+              baggage_loss_delay_usd: 1500.00
+            },
+            car_rental_coverage: "Masterseguro de Automóveis (CDW/LDW Global)",
+            concierge: "Mastercard Concierge 24/7",
+            status: "BENEFITS_ACTIVE"
+          }
+        }
+      }));
+
+      triggerNotification(
+        currentLang === 'en' ? "Mastercard Black Benefits Verified" : "Benefícios Mastercard Black Validados",
+        currentLang === 'en' ? "Worldwide €30k Schengen Medical • LoungeKey VIP Lounges • Trip Protection" : "Seguro Médico Schengen €30k • Salas VIP LoungeKey • Proteção de Bagagem"
+      );
+
+      const newAction: SecurityActionItem = {
+        id: "act_" + Date.now(),
+        time: nowTime,
+        type: "card_benefits",
+        title: currentLang === 'en' ? "Mastercard Black Travel Protection & LoungeKey" : "Proteção Viagem Mastercard Black & LoungeKey",
+        description: currentLang === 'en' ? "Schengen Medical Insurance (€30,000), LoungeKey VIP lounge access (GRU unlimited), and trip delay coverage confirmed." : "Seguro Viagem Schengen (€30.000), acesso a Salas VIP LoungeKey (GRU ilimitado) e cobertura de atraso confirmados.",
+        status: "Confirmed",
+        details: "Policy: MASTERCARD_BLACK_MED_GLOBAL • LoungeKey Active"
+      };
+      setActionItems(prev => [newAction, ...prev]);
+
+      const newLog: TelemetryLog = {
+        id: "log_" + Date.now(),
+        timestamp: new Date().toLocaleTimeString(),
+        agentId: "card_benefits_agent",
+        agentName: "Mastercard Black Benefits & Coverage Agent",
+        action: "FETCH_MASTERCARD_BLACK_BENEFITS",
+        status: "success",
+        payload: {
+          card_tier: "Itaú Personnalité Mastercard Black",
+          schengen_medical_eur: 30000.00,
+          loungekey_gru: "UNLIMITED",
+          loungekey_int_passes: 4
         }
       };
       setTelemetryLogs(prev => [newLog, ...prev]);
@@ -543,6 +629,7 @@ export const App: React.FC = () => {
       account_info_agent: { status: 'idle' },
       cash_flow_forecast_agent: { status: 'completed' },
       travel_shield_agent: { status: 'idle' },
+      card_benefits_agent: { status: 'idle' },
       open_finance_optimizer: { status: 'idle' }
     });
     setActionItems(translations[currentLang].actionPlan.initialItems);
