@@ -81,9 +81,6 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
           <span className={`text-sm font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
             {t.tabs.agents}
           </span>
-          <span className="text-xs text-white/40 font-mono hidden sm:inline">
-            • 4 {currentLang === 'en' ? 'Specialized Autonomous Agents' : 'Agentes Autônomos Especializados'}
-          </span>
         </div>
 
         <div className={`flex items-center gap-2 text-xs font-mono ${
