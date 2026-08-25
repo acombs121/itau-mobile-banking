@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, EyeOff, QrCode, ArrowUpRight, ArrowDownLeft, CreditCard, Mic, MicOff, PhoneOff, Plane, Sparkles, TrendingUp, ShieldCheck, Radio } from 'lucide-react';
+import { Eye, EyeOff, QrCode, ArrowUpRight, ArrowDownLeft, CreditCard, Mic, MicOff, Plane, Sparkles, TrendingUp, ShieldCheck } from 'lucide-react';
 import { BankingProfile } from '../types/banking';
 import { IOSNotification, ScenarioId } from '../types/itau_concierge';
 import { Language, translations } from '../i18n/translations';
@@ -39,7 +39,6 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
 }) => {
   const [showBalance, setShowBalance] = useState(true);
   const [activeNavTab, setActiveNavTab] = useState<'home' | 'extrato' | 'pix' | 'cartoes'>('home');
-  const [callDuration, setCallDuration] = useState(0);
 
   const t = translations[currentLang];
   const isDark = theme === 'dark';
@@ -71,7 +70,6 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
   // Handle call toggle & auto-start microphone
   useEffect(() => {
     if (isVoiceCallActive) {
-      setCallDuration(0);
       connect();
       // Auto-start microphone when call is activated
       startMicrophone();
@@ -81,23 +79,6 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isVoiceCallActive]);
-
-  // Duration timer
-  useEffect(() => {
-    let timer: any;
-    if (isVoiceCallActive) {
-      timer = setInterval(() => {
-        setCallDuration(prev => prev + 1);
-      }, 1000);
-    }
-    return () => clearInterval(timer);
-  }, [isVoiceCallActive]);
-
-  const formatTime = (secs: number) => {
-    const m = Math.floor(secs / 60).toString().padStart(2, '0');
-    const s = (secs % 60).toString().padStart(2, '0');
-    return `${m}:${s}`;
-  };
 
   // Determine if current scenario alert has been resolved
   const isAlertResolved = 
@@ -176,28 +157,25 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
             </div>
           </div>
 
-          {/* ========================================================================= */}
-          {/* TOP AMBIENT LIVE VOICE WAVEFORM BAR (Active when mic is running)          */}
-          {/* ========================================================================= */}
-          {isVoiceCallActive && (
-            <div className="px-4 py-2 bg-[#121217] border-b border-white/[0.08] flex items-center justify-between animate-fadeIn flex-shrink-0">
-              <div className="flex items-center gap-2">
-                <div className="w-5 h-5 rounded-[3px] bg-brand-orange text-white flex items-center justify-center font-bold text-[9px]">
-                  itau
-                </div>
-                <div className="text-[11px] font-mono text-brand-orange flex items-center gap-1">
-                  <Radio className="w-2.5 h-2.5 text-emerald-400 animate-pulse" />
-                  <span>GEMINI LIVE • {formatTime(callDuration)}</span>
-                </div>
+          {/* Minimalist In-App Top Bar */}
+          <div className={`px-4 pt-2.5 pb-2.5 border-b flex items-center justify-between flex-shrink-0 ${isDark ? 'border-white/[0.06]' : 'border-slate-100 bg-slate-50/50'}`}>
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="bg-brand-orange text-white font-bold text-xs px-2 py-0.5 rounded-[3px] flex-shrink-0">
+                itau
               </div>
+              <span className={`text-xs sm:text-sm font-semibold truncate ${isDark ? 'text-white/95' : 'text-slate-900'}`}>
+                {profile.customer_name}
+              </span>
+            </div>
 
-              {/* Glowing Waveform Live Audio Visualizer */}
-              <div className="flex items-center gap-1 h-5 px-2 bg-black/40 rounded-full border border-white/10">
+            {/* Live Audio Waveform (Embedded cleanly between Roberto Silva and the Mic Button) */}
+            {isVoiceCallActive && (
+              <div className="flex items-center gap-1 h-6 px-2.5 bg-black/40 rounded-full border border-white/10 mx-2 animate-fadeIn flex-shrink-0">
                 {audioLevels.slice(0, 7).map((level, i) => (
                   <div
                     key={i}
                     style={{
-                      height: `${Math.max(20, level)}%`,
+                      height: `${Math.max(22, level)}%`,
                       transition: 'height 0.1s ease-in-out'
                     }}
                     className={`w-1 rounded-full ${
@@ -210,41 +188,12 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                   />
                 ))}
               </div>
-
-              <div className="flex items-center gap-1.5">
-                <button
-                  onClick={isListening ? stopMicrophone : startMicrophone}
-                  className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors ${
-                    isListening ? 'bg-emerald-500 text-white' : 'bg-white/10 text-white/60'
-                  }`}
-                  title={isListening ? "Mute mic" : "Unmute mic"}
-                >
-                  {isListening ? <Mic className="w-3 h-3" /> : <MicOff className="w-3 h-3" />}
-                </button>
-                <button
-                  onClick={onToggleVoiceCall}
-                  className="w-6 h-6 rounded-full bg-rose-600/20 text-rose-400 hover:bg-rose-600 hover:text-white border border-rose-500/30 flex items-center justify-center transition-colors"
-                  title="Close Live Voice"
-                >
-                  <PhoneOff className="w-3 h-3" />
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Minimalist In-App Top Bar */}
-          <div className={`px-4 pt-2.5 pb-2.5 border-b flex items-center justify-between flex-shrink-0 ${isDark ? 'border-white/[0.06]' : 'border-slate-100 bg-slate-50/50'}`}>
-            <div className="flex items-center gap-2">
-              <div className="bg-brand-orange text-white font-bold text-xs px-2 py-0.5 rounded-[3px]">
-                itau
-              </div>
-              <span className={`text-xs sm:text-sm font-semibold ${isDark ? 'text-white/95' : 'text-slate-900'}`}>{profile.customer_name}</span>
-            </div>
+            )}
             
             {/* Top Right Orange Mic Button */}
             <button
               onClick={onToggleVoiceCall}
-              className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+              className={`w-8 h-8 rounded-full flex items-center justify-center transition-all flex-shrink-0 ${
                 isVoiceCallActive
                   ? isSpeaking
                     ? 'bg-brand-orange text-white ring-4 ring-brand-orange/40 shadow-[0_0_15px_#FF6423] animate-pulse'
