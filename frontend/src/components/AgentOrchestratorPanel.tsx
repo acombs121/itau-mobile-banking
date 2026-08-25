@@ -105,7 +105,7 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
                 <div
                   key={agent.id}
                   onClick={() => setSelectedAgentId(agent.id)}
-                  className={`flex-1 flex flex-col justify-center rounded-[12px] px-4.5 py-3 sm:py-3.5 border transition-all cursor-pointer relative ${
+                  className={`flex-1 flex flex-col justify-center rounded-[12px] pl-6 sm:pl-7 pr-4.5 py-3 sm:py-3.5 border transition-all cursor-pointer relative ${
                     isRunning
                       ? 'bg-brand-orange/[0.12] border-brand-orange ring-2 ring-brand-orange shadow-[0_0_20px_rgba(255,100,35,0.35)]'
                       : isSelected
