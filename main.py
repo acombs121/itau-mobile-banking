@@ -446,10 +446,56 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
                                             tool_name = fc.name
                                             tool_args = fc.args or {}
                                             logger.info(f"Gemini Live Tool Call: {tool_name} with args: {tool_args}")
+                                            
+                                            # Construct real backend payload for this tool
+                                            if tool_name == 'get_account_info':
+                                                tool_result_payload = {
+                                                    "customer": "Roberto Silva",
+                                                    "checking_balance": "48.950,20 reais",
+                                                    "cdb_di_investments": "85.000,00 reais (100% CDI Liquidez Diaria)",
+                                                    "mastercard_black_available_limit": "72.569,50 reais",
+                                                    "mastercard_black_total_limit": "85.000,00 reais",
+                                                    "scheduled_debits_next_thursday": "38.000,00 reais (fatura 34.150 reais + condominio 3.850 reais)"
+                                                }
+                                            elif tool_name == 'get_card_benefits':
+                                                tool_result_payload = {
+                                                    "card_name": "Itaú Personnalité Mastercard Black",
+                                                    "vip_lounges": "Acesso ilimitado à Sala VIP Mastercard Black no Terminal 3 de Guarulhos + 4 passes LoungeKey na Europa",
+                                                    "medical_insurance": "30.000 euros de cobertura médica internacional Schengen (USD 150.000)",
+                                                    "car_rental": "Masterseguro de Automóveis CDW/LDW incluso",
+                                                    "concierge": "Mastercard Concierge 24 horas"
+                                                }
+                                            elif tool_name == 'activate_travel_mode':
+                                                tool_result_payload = {
+                                                    "status": "ATIVO",
+                                                    "destinations": ["Portugal", "Espanha"],
+                                                    "daily_international_pos_limit": "50.000,00 reais",
+                                                    "fraud_suppression": "Bloqueios indevidos em terminais estrangeiros desativados com sucesso"
+                                                }
+                                            elif tool_name == 'sweep_cdb':
+                                                tool_result_payload = {
+                                                    "status": "AGENDADO",
+                                                    "sweep_amount": "15.000,00 reais",
+                                                    "scheduled_time": "Quinta-feira 06:00 BRT",
+                                                    "source": "CDB DI Liquidez Diaria",
+                                                    "lis_overdraft_saved": "184,60 reais"
+                                                }
+                                            elif tool_name == 'refinance_open_finance':
+                                                tool_result_payload = {
+                                                    "status": "CCB_EMITIDA",
+                                                    "competitor_debt_settled": "18.000,00 reais a 11,2% a.m.",
+                                                    "itau_sob_medida_rate": "1,69% a.m.",
+                                                    "total_savings": "14.280,00 reais (680,40 reais por mes)"
+                                                }
+                                            else:
+                                                tool_result_payload = {"status": "success", "result": f"Executed {tool_name} successfully"}
+
+                                            # Send tool call event to frontend phone UI
                                             await websocket.send_json({
                                                 "tool_call": {
                                                     "name": tool_name,
-                                                    "args": tool_args
+                                                    "args": tool_args,
+                                                    "payload": tool_result_payload
                                                 }
                                             })
                                             # Send tool response confirmation back to Gemini Live
@@ -458,7 +504,7 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
                                                     types.FunctionResponse(
                                                         name=tool_name,
                                                         id=fc.id,
-                                                        response={"status": "success", "result": f"Executed {tool_name} successfully"}
+                                                        response=tool_result_payload
                                                     )
                                                 ]
                                             )
