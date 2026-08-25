@@ -100,7 +100,6 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
               const isRunning = agent.status === 'processing';
               const isCompleted = agent.status === 'completed';
               const isSelected = selectedAgentDetail?.id === agent.id;
-              const isScenarioAgent = agent.id === activeScenarioDef.agentId;
 
               return (
                 <div
@@ -135,11 +134,6 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
                     </div>
 
                     <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
-                      {isScenarioAgent && !isRunning && (
-                        <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-white/10 text-white/70 border border-white/15">
-                          SCENARIO
-                        </span>
-                      )}
                       {isRunning ? (
                         <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-brand-orange text-white animate-pulse flex items-center gap-1 shadow-sm">
                           <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
