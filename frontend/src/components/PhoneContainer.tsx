@@ -226,7 +226,9 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                   </div>
                   <button 
                     onClick={() => setActiveCardId(null)}
-                    className="w-5 h-5 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-colors"
+                    className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${
+                      isDark ? 'text-white/40 hover:text-white hover:bg-white/10' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
+                    }`}
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -308,13 +310,15 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#10B981]"></span>
-                    <span className="text-[10.5px] font-mono font-bold tracking-wide uppercase text-emerald-400">
+                    <span className="text-[10.5px] font-mono font-bold tracking-wide uppercase text-emerald-500">
                       {currentLang === 'en' ? 'CHECKING ACCOUNT' : 'CONTA CORRENTE'}
                     </span>
                   </div>
                   <button 
                     onClick={() => setActiveCardId(null)}
-                    className="w-5 h-5 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-colors"
+                    className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${
+                      isDark ? 'text-white/40 hover:text-white hover:bg-white/10' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
+                    }`}
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -322,21 +326,21 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
 
                 <div className="space-y-2.5">
                   <div className={`p-3 rounded-[10px] ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
-                    <span className="text-[10px] text-white/50 block">{currentLang === 'en' ? 'Available Balance' : 'Saldo Disponível'}</span>
-                    <span className="text-xl font-bold font-mono text-white">R$ 48.950,20</span>
+                    <span className={`text-[10px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Available Balance' : 'Saldo Disponível'}</span>
+                    <span className={`text-xl font-bold font-mono ${isDark ? 'text-white' : 'text-slate-900'}`}>R$ 48.950,20</span>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div className={`p-2 rounded-[8px] ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}>
-                      <span className="text-[9px] text-white/40 block">{currentLang === 'en' ? 'Overdraft (LIS)' : 'Limite LIS'}</span>
-                      <span className="font-mono font-semibold text-[11px] text-white/80">R$ 10.000,00</span>
+                      <span className={`text-[9px] block ${isDark ? 'text-white/40' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Overdraft (LIS)' : 'Limite LIS'}</span>
+                      <span className={`font-mono font-semibold text-[11px] ${isDark ? 'text-white/80' : 'text-slate-700'}`}>R$ 10.000,00</span>
                     </div>
                     <button 
                       onClick={() => setActiveCardId('scheduled_payments')}
                       className={`p-2 rounded-[8px] text-left transition-all hover:ring-1 hover:ring-brand-orange/40 cursor-pointer ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-[9px] text-white/40 block">{currentLang === 'en' ? 'Debits Next Thu' : 'Débitos Quinta'}</span>
+                        <span className={`text-[9px] block ${isDark ? 'text-white/40' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Debits Next Thu' : 'Débitos Quinta'}</span>
                         <ChevronRight className="w-2.5 h-2.5 text-brand-orange/70" />
                       </div>
                       <span className="font-mono font-semibold text-[11px] text-brand-orange">R$ 38.000,00</span>
@@ -358,7 +362,9 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                   </div>
                   <button 
                     onClick={() => setActiveCardId(null)}
-                    className="w-5 h-5 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-colors"
+                    className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${
+                      isDark ? 'text-white/40 hover:text-white hover:bg-white/10' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
+                    }`}
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -368,7 +374,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                   {/* Total Header Summary */}
                   <div className={`p-2.5 rounded-[10px] flex items-center justify-between ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
                     <div>
-                      <span className="text-[9.5px] text-white/50 block uppercase font-semibold">{currentLang === 'en' ? 'Total Scheduled for Thursday' : 'Total Agendado para Quinta'}</span>
+                      <span className={`text-[9.5px] block uppercase font-semibold ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Total Scheduled for Thursday' : 'Total Agendado para Quinta'}</span>
                       <span className="text-base font-bold font-mono text-brand-orange">R$ 38.000,00</span>
                     </div>
                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-brand-orange/20 text-brand-orange font-semibold">2 {currentLang === 'en' ? 'Debits' : 'Débitos'}</span>
@@ -383,11 +389,11 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                           <CreditCard className="w-3.5 h-3.5 text-brand-orange" />
                         </div>
                         <div className="min-w-0">
-                          <span className="font-semibold text-white/90 block truncate">{currentLang === 'en' ? 'Mastercard Black Bill' : 'Fatura Mastercard Black'}</span>
-                          <span className="text-[10px] text-white/50 block">{currentLang === 'en' ? 'Auto-debit • Aug 25' : 'Débito Automático • 25/08'}</span>
+                          <span className={`font-semibold block truncate ${isDark ? 'text-white/90' : 'text-slate-900'}`}>{currentLang === 'en' ? 'Mastercard Black Bill' : 'Fatura Mastercard Black'}</span>
+                          <span className={`text-[10px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Auto-debit • Aug 25' : 'Débito Automático • 25/08'}</span>
                         </div>
                       </div>
-                      <span className="font-mono font-bold text-white text-right ml-2 flex-shrink-0">R$ 34.150,00</span>
+                      <span className={`font-mono font-bold text-right ml-2 flex-shrink-0 ${isDark ? 'text-white' : 'text-slate-900'}`}>R$ 34.150,00</span>
                     </div>
 
                     {/* Item 2: Condomínio Edifício Jardins */}
@@ -397,18 +403,18 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                           <Building2 className="w-3.5 h-3.5 text-blue-400" />
                         </div>
                         <div className="min-w-0">
-                          <span className="font-semibold text-white/90 block truncate">Condomínio Ed. Jardins</span>
-                          <span className="text-[10px] text-white/50 block">{currentLang === 'en' ? 'Scheduled Boleto • Aug 25' : 'Boleto Agendado • 25/08'}</span>
+                          <span className={`font-semibold block truncate ${isDark ? 'text-white/90' : 'text-slate-900'}`}>Condomínio Ed. Jardins</span>
+                          <span className={`text-[10px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Scheduled Boleto • Aug 25' : 'Boleto Agendado • 25/08'}</span>
                         </div>
                       </div>
-                      <span className="font-mono font-bold text-white text-right ml-2 flex-shrink-0">R$ 3.850,00</span>
+                      <span className={`font-mono font-bold text-right ml-2 flex-shrink-0 ${isDark ? 'text-white' : 'text-slate-900'}`}>R$ 3.850,00</span>
                     </div>
                   </div>
 
                   {/* Coverage Verification Status */}
                   <div className={`p-2 rounded-[8px] flex items-center justify-between text-[10.5px] mt-1 ${isDark ? 'bg-emerald-500/10 text-emerald-300' : 'bg-emerald-50 text-emerald-800'}`}>
                     <div className="flex items-center gap-1.5">
-                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                      <Check className="w-3.5 h-3.5 text-emerald-500" />
                       <span>{currentLang === 'en' ? 'Checking Balance Covers 100%' : 'Saldo em Conta Cobre 100%'}</span>
                     </div>
                     <span className="font-mono font-semibold">R$ 48.950,20</span>
@@ -423,13 +429,15 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#10B981]"></span>
-                    <span className="text-[10.5px] font-mono font-bold tracking-wide uppercase text-emerald-400">
+                    <span className="text-[10.5px] font-mono font-bold tracking-wide uppercase text-emerald-500">
                       {currentLang === 'en' ? 'CDB DI INVESTMENTS' : 'INVESTIMENTOS CDB DI'}
                     </span>
                   </div>
                   <button 
                     onClick={() => setActiveCardId(null)}
-                    className="w-5 h-5 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-colors"
+                    className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${
+                      isDark ? 'text-white/40 hover:text-white hover:bg-white/10' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
+                    }`}
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -437,16 +445,16 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
 
                 <div className="space-y-2.5">
                   <div className={`p-3 rounded-[10px] ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
-                    <span className="text-[10px] text-white/50 block">{currentLang === 'en' ? 'Daily Liquidity Balance' : 'Saldo com Liquidez Diária'}</span>
-                    <span className="text-xl font-bold font-mono text-emerald-400">R$ 85.000,00</span>
+                    <span className={`text-[10px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Daily Liquidity Balance' : 'Saldo com Liquidez Diária'}</span>
+                    <span className={`text-xl font-bold font-mono ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>R$ 85.000,00</span>
                   </div>
 
                   <div className={`p-2.5 rounded-[8px] ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}>
-                    <div className="flex items-center gap-1.5 text-xs font-semibold text-white/90">
-                      <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+                    <div className={`flex items-center gap-1.5 text-xs font-semibold ${isDark ? 'text-white/90' : 'text-slate-900'}`}>
+                      <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
                       <span>{currentLang === 'en' ? 'Yield Rate: 100% of CDI' : 'Rentabilidade: 100% do CDI'}</span>
                     </div>
-                    <div className="text-[10px] text-white/50 mt-0.5 ml-5">{currentLang === 'en' ? 'Immediate withdrawal 24/7 without penalties.' : 'Resgate imediato 24/7 com liquidez diária.'}</div>
+                    <div className={`text-[10px] mt-0.5 ml-5 ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Immediate withdrawal 24/7 without penalties.' : 'Resgate imediato 24/7 com liquidez diária.'}</div>
                   </div>
                 </div>
               </div>
@@ -458,13 +466,15 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <CreditCard className="w-3.5 h-3.5 text-brand-orange" />
-                    <span className="text-[10.5px] font-mono font-bold tracking-wide uppercase text-white/90">
+                    <span className={`text-[10.5px] font-mono font-bold tracking-wide uppercase ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
                       Mastercard Black (•••• 8841)
                     </span>
                   </div>
                   <button 
                     onClick={() => setActiveCardId(null)}
-                    className="w-5 h-5 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-colors"
+                    className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${
+                      isDark ? 'text-white/40 hover:text-white hover:bg-white/10' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
+                    }`}
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -472,17 +482,17 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
 
                 <div className="space-y-2.5">
                   <div className={`p-3 rounded-[10px] ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
-                    <span className="text-[10px] text-white/50 block">{currentLang === 'en' ? 'Available Limit' : 'Limite Disponível'}</span>
-                    <span className="text-xl font-bold font-mono text-white">R$ 72.569,50</span>
+                    <span className={`text-[10px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Available Limit' : 'Limite Disponível'}</span>
+                    <span className={`text-xl font-bold font-mono ${isDark ? 'text-white' : 'text-slate-900'}`}>R$ 72.569,50</span>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div className={`p-2 rounded-[8px] ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}>
-                      <span className="text-[9px] text-white/40 block">{currentLang === 'en' ? 'Total Card Limit' : 'Limite Total'}</span>
-                      <span className="font-mono font-semibold text-[11px] text-white/80">R$ 85.000,00</span>
+                      <span className={`text-[9px] block ${isDark ? 'text-white/40' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Total Card Limit' : 'Limite Total'}</span>
+                      <span className={`font-mono font-semibold text-[11px] ${isDark ? 'text-white/80' : 'text-slate-700'}`}>R$ 85.000,00</span>
                     </div>
                     <div className={`p-2 rounded-[8px] ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}>
-                      <span className="text-[9px] text-white/40 block">{currentLang === 'en' ? 'Current Bill Due Thu' : 'Fatura Venc. Quinta'}</span>
+                      <span className={`text-[9px] block ${isDark ? 'text-white/40' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Current Bill Due Thu' : 'Fatura Venc. Quinta'}</span>
                       <span className="font-mono font-semibold text-[11px] text-brand-orange">R$ 34.150,00</span>
                     </div>
                   </div>
@@ -496,13 +506,15 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#10B981]"></span>
-                    <span className="text-[10px] font-mono font-bold tracking-wide uppercase text-emerald-400">
+                    <span className="text-[10px] font-mono font-bold tracking-wide uppercase text-emerald-500">
                       {currentLang === 'en' ? 'CONSOLIDATED POSITION' : 'POSIÇÃO CONSOLIDADA'}
                     </span>
                   </div>
                   <button 
                     onClick={() => setActiveCardId(null)}
-                    className="w-5 h-5 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-colors"
+                    className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${
+                      isDark ? 'text-white/40 hover:text-white hover:bg-white/10' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
+                    }`}
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -510,18 +522,18 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
 
                 <div className="space-y-2 text-xs">
                   <div className={`p-2 rounded-[8px] flex justify-between items-center ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
-                    <span className="text-white/60">{currentLang === 'en' ? 'Checking' : 'Conta Corrente'}</span>
-                    <span className="font-bold font-mono text-white">R$ 48.950,20</span>
+                    <span className={isDark ? 'text-white/60' : 'text-slate-600'}>{currentLang === 'en' ? 'Checking' : 'Conta Corrente'}</span>
+                    <span className={`font-bold font-mono ${isDark ? 'text-white' : 'text-slate-900'}`}>R$ 48.950,20</span>
                   </div>
 
                   <div className={`p-2 rounded-[8px] flex justify-between items-center ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
-                    <span className="text-white/60">CDB DI (100% CDI)</span>
-                    <span className="font-bold font-mono text-emerald-400">R$ 85.000,00</span>
+                    <span className={isDark ? 'text-white/60' : 'text-slate-600'}>CDB DI (100% CDI)</span>
+                    <span className={`font-bold font-mono ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>R$ 85.000,00</span>
                   </div>
 
                   <div className={`p-2 rounded-[8px] flex justify-between items-center ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
-                    <span className="text-white/60">Mastercard Black</span>
-                    <span className="font-bold font-mono text-white/90">R$ 72.569,50</span>
+                    <span className={isDark ? 'text-white/60' : 'text-slate-600'}>Mastercard Black</span>
+                    <span className={`font-bold font-mono ${isDark ? 'text-white/90' : 'text-slate-800'}`}>R$ 72.569,50</span>
                   </div>
                 </div>
               </div>
@@ -539,7 +551,9 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                   </div>
                   <button 
                     onClick={() => setActiveCardId(null)}
-                    className="w-5 h-5 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-colors"
+                    className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${
+                      isDark ? 'text-white/40 hover:text-white hover:bg-white/10' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
+                    }`}
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -553,8 +567,8 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                   </div>
 
                   <div className={`p-2 rounded-[8px] ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
-                    <span className="text-[10px] text-white/50 block">{currentLang === 'en' ? 'Yield Strategy' : 'Estratégia de Rendimento'}</span>
-                    <span className="font-semibold text-emerald-400">R$ 85k {currentLang === 'en' ? 'earning 100% CDI until 06:00 BRT' : 'rendendo 100% CDI até 06:00'}</span>
+                    <span className={`text-[10px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Yield Strategy' : 'Estratégia de Rendimento'}</span>
+                    <span className={`font-semibold ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>R$ 85k {currentLang === 'en' ? 'earning 100% CDI until 06:00 BRT' : 'rendendo 100% CDI até 06:00'}</span>
                   </div>
 
                   <button
@@ -584,7 +598,9 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                   </div>
                   <button 
                     onClick={() => setActiveCardId(null)}
-                    className="w-5 h-5 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-colors"
+                    className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${
+                      isDark ? 'text-white/40 hover:text-white hover:bg-white/10' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
+                    }`}
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -592,21 +608,21 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
 
                 <div className="space-y-2 text-xs">
                   <div className={`p-2.5 rounded-[10px] ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
-                    <span className="text-[10px] text-white/50 block">{currentLang === 'en' ? 'Destinations' : 'Destinos'}</span>
+                    <span className={`text-[10px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Destinations' : 'Destinos'}</span>
                     <div className="flex items-center gap-1.5 mt-1">
                       <MapPin className="w-3.5 h-3.5 text-brand-orange flex-shrink-0" />
-                      <span className="font-semibold text-white">Portugal (LIS) • Espanha (MAD)</span>
+                      <span className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>Portugal (LIS) • Espanha (MAD)</span>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2">
                     <div className={`p-2 rounded-[8px] ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}>
-                      <span className="text-[9px] text-white/40 block">{currentLang === 'en' ? 'POS Spend Limit' : 'Limite POS'}</span>
+                      <span className={`text-[9px] block ${isDark ? 'text-white/40' : 'text-slate-500'}`}>{currentLang === 'en' ? 'POS Spend Limit' : 'Limite POS'}</span>
                       <span className="font-mono font-bold text-brand-orange">R$ 50.000,00</span>
                     </div>
                     <div className={`p-2 rounded-[8px] ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}>
-                      <span className="text-[9px] text-white/40 block">{currentLang === 'en' ? 'Declines' : 'Recusas'}</span>
-                      <span className="font-semibold text-emerald-400">{currentLang === 'en' ? 'Pre-Suppressed' : 'Suprimidas'}</span>
+                      <span className={`text-[9px] block ${isDark ? 'text-white/40' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Declines' : 'Recusas'}</span>
+                      <span className={`font-semibold ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>{currentLang === 'en' ? 'Pre-Suppressed' : 'Suprimidas'}</span>
                     </div>
                   </div>
 
@@ -631,13 +647,15 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                 <div className="flex items-center justify-between mb-2.5">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
-                    <span className="text-[10px] font-mono font-bold tracking-wide uppercase text-blue-400">
+                    <span className="text-[10px] font-mono font-bold tracking-wide uppercase text-blue-500">
                       {currentLang === 'en' ? 'MASTERCARD BLACK BENEFITS' : 'BENEFÍCIOS MASTERCARD BLACK'}
                     </span>
                   </div>
                   <button 
                     onClick={() => setActiveCardId(null)}
-                    className="w-5 h-5 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-colors"
+                    className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${
+                      isDark ? 'text-white/40 hover:text-white hover:bg-white/10' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
+                    }`}
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -645,26 +663,26 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
 
                 <div className="space-y-2 text-xs">
                   <div className={`p-2.5 rounded-[8px] flex items-start gap-2.5 ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
-                    <ShieldPlus className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
+                    <ShieldPlus className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
                     <div>
-                      <div className="font-semibold text-blue-300">{currentLang === 'en' ? 'Schengen Medical Insurance' : 'Seguro Médico Schengen'}</div>
-                      <div className="text-[10px] text-white/60">€30.000 / USD $150.000 {currentLang === 'en' ? 'coverage included' : 'cobertura inclusa'}</div>
+                      <div className={`font-semibold ${isDark ? 'text-blue-300' : 'text-blue-700'}`}>{currentLang === 'en' ? 'Schengen Medical Insurance' : 'Seguro Médico Schengen'}</div>
+                      <div className={`text-[10px] ${isDark ? 'text-white/60' : 'text-slate-500'}`}>€30.000 / USD $150.000 {currentLang === 'en' ? 'coverage included' : 'cobertura inclusa'}</div>
                     </div>
                   </div>
 
                   <div className={`p-2.5 rounded-[8px] flex items-start gap-2.5 ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
-                    <Plane className="w-4 h-4 text-white/90 mt-0.5 flex-shrink-0" />
+                    <Plane className={`w-4 h-4 mt-0.5 flex-shrink-0 ${isDark ? 'text-white/90' : 'text-slate-700'}`} />
                     <div>
-                      <div className="font-semibold text-white">{currentLang === 'en' ? 'VIP Airport Lounges' : 'Salas VIP Aeroportos'}</div>
-                      <div className="text-[10px] text-white/60">{currentLang === 'en' ? 'GRU T3 Unlimited + 4 LoungeKey passes' : 'GRU T3 Ilimitado + 4 passes LoungeKey'}</div>
+                      <div className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>{currentLang === 'en' ? 'VIP Airport Lounges' : 'Salas VIP Aeroportos'}</div>
+                      <div className={`text-[10px] ${isDark ? 'text-white/60' : 'text-slate-500'}`}>{currentLang === 'en' ? 'GRU T3 Unlimited + 4 LoungeKey passes' : 'GRU T3 Ilimitado + 4 passes LoungeKey'}</div>
                     </div>
                   </div>
 
                   <div className={`p-2.5 rounded-[8px] flex items-start gap-2.5 ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
-                    <Car className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
+                    <Car className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
                     <div>
-                      <div className="font-semibold text-emerald-400">{currentLang === 'en' ? 'Masterseguro Auto (CDW/LDW)' : 'Masterseguro de Automóveis'}</div>
-                      <div className="text-[10px] text-white/60">{currentLang === 'en' ? 'Rental car damage protection + 24/7 Concierge' : 'Cobertura de locação + Concierge 24h'}</div>
+                      <div className={`font-semibold ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>{currentLang === 'en' ? 'Masterseguro Auto (CDW/LDW)' : 'Masterseguro de Automóveis'}</div>
+                      <div className={`text-[10px] ${isDark ? 'text-white/60' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Rental car damage protection + 24/7 Concierge' : 'Cobertura de locação + Concierge 24h'}</div>
                     </div>
                   </div>
                 </div>
@@ -677,13 +695,15 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                 <div className="flex items-center justify-between mb-2.5">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    <span className="text-[10px] font-mono font-bold tracking-wide uppercase text-emerald-400">
+                    <span className="text-[10px] font-mono font-bold tracking-wide uppercase text-emerald-500">
                       {currentLang === 'en' ? 'OPEN FINANCE ARBITRAGE' : 'OPORTUNIDADE OPEN FINANCE'}
                     </span>
                   </div>
                   <button 
                     onClick={() => setActiveCardId(null)}
-                    className="w-5 h-5 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-colors"
+                    className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${
+                      isDark ? 'text-white/40 hover:text-white hover:bg-white/10' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
+                    }`}
                   >
                     <X className="w-3 h-3" />
                   </button>
