@@ -1,5 +1,5 @@
 import React from 'react';
-import { RotateCcw, Save, Sun, Moon, Layers } from 'lucide-react';
+import { RotateCcw, Save, Sun, Moon } from 'lucide-react';
 import { Language, translations } from '../i18n/translations';
 import { ScenarioId } from '../types/itau_concierge';
 
@@ -11,8 +11,8 @@ interface CockpitHeaderProps {
   onReset: () => void;
   onSaveSession: () => void;
   isSaving?: boolean;
-  activeScenario: ScenarioId;
-  onSelectScenario: (scenarioId: ScenarioId) => void;
+  activeScenario?: ScenarioId;
+  onSelectScenario?: (scenarioId: ScenarioId) => void;
 }
 
 export const CockpitHeader: React.FC<CockpitHeaderProps> = ({
@@ -23,8 +23,8 @@ export const CockpitHeader: React.FC<CockpitHeaderProps> = ({
   onReset,
   onSaveSession,
   isSaving = false,
-  activeScenario,
-  onSelectScenario
+  activeScenario: _activeScenario,
+  onSelectScenario: _onSelectScenario
 }) => {
   const t = translations[currentLang];
   const isDark = theme === 'dark';
@@ -46,33 +46,6 @@ export const CockpitHeader: React.FC<CockpitHeaderProps> = ({
         <span className={`text-sm sm:text-base md:text-lg font-bold tracking-tight truncate ${isDark ? 'text-white/95' : 'text-slate-900'}`}>
           {t.header.brandTitle}
         </span>
-      </div>
-
-      {/* Center: Scenario Quick Switcher Bar */}
-      <div className="hidden lg:flex items-center gap-1.5 p-1 rounded-[6px] border transition-colors bg-black/30 border-white/10">
-        <div className="flex items-center gap-1 px-2 text-[11px] font-mono uppercase text-white/40 select-none">
-          <Layers className="w-3 h-3 text-brand-orange" />
-          <span>{currentLang === 'en' ? 'Scenario:' : 'Cenário:'}</span>
-        </div>
-
-        {t.scenarios.map((sc) => {
-          const isActive = activeScenario === sc.id;
-          return (
-            <button
-              key={sc.id}
-              onClick={() => onSelectScenario(sc.id)}
-              className={`px-2.5 py-1 text-xs font-semibold rounded-[4px] transition-all truncate select-none ${
-                isActive
-                  ? 'bg-brand-orange text-white shadow-sm ring-1 ring-white/20 font-bold'
-                  : isDark
-                  ? 'text-white/60 hover:text-white hover:bg-white/5'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200'
-              }`}
-            >
-              {sc.shortLabel}
-            </button>
-          );
-        })}
       </div>
 
       {/* Right Controls */}
