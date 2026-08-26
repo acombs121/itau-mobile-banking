@@ -13,7 +13,7 @@ interface PhoneContainerProps {
   activeScenario: ScenarioId;
   isVoiceCallActive: boolean;
   onToggleVoiceCall: () => void;
-  onActionClick: (action: string, targetId?: string) => void;
+  onActionClick: (action: string, targetId?: string, customPayload?: Record<string, any>) => void;
   isTravelModeActive?: boolean;
   isCdbSweepScheduled?: boolean;
   isOpenFinanceRefiDone?: boolean;
@@ -68,9 +68,9 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
     stopMicrophone,
   } = useGeminiLive({
     lang: currentLang,
-    onToolCall: (toolName) => {
-      console.log("Executing sub-agent tool call:", toolName);
-      onActionClick(toolName);
+    onToolCall: (toolName, _toolArgs, toolPayload) => {
+      console.log("Executing sub-agent tool call:", toolName, toolPayload);
+      onActionClick(toolName, undefined, toolPayload);
       if (toolName === 'get_account_info') {
         // Preserve specific sub-balance or scheduled payments card if already active
         setActiveCardId(prev => (

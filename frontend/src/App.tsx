@@ -367,8 +367,8 @@ export const App: React.FC = () => {
     }
   };
 
-  // Central Action Handler
-  const handleBankingAction = (actionType: string, targetId?: string) => {
+  // Central Action Handler driven by tool calls
+  const handleBankingAction = (actionType: string, targetId?: string, customPayload?: Record<string, any>) => {
     const tNotif = translations[currentLang].notifications;
     const nowTime = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + ' BRT';
 
@@ -380,20 +380,23 @@ export const App: React.FC = () => {
           : 'account_info_agent'
       ));
       setActiveScenario('account_info');
+      
+      const payloadData = customPayload || {
+        account_id: "ITAU-7749-00912",
+        customer: "Roberto Silva",
+        checking_balance_brl: 48950.20,
+        cdb_di_balance_brl: 85000.00,
+        mastercard_black_available_limit_brl: 72569.50,
+        scheduled_debits_next_thursday_brl: 38000.00,
+        status: "SYNCHRONIZED"
+      };
+
       setAgentStates(prev => ({
         ...prev,
         account_info_agent: {
           status: 'completed',
           lastRun: nowTime,
-          liveResult: {
-            account_id: "ITAU-7749-00912",
-            customer: "Roberto Silva",
-            checking_balance_brl: 48950.20,
-            cdb_di_balance_brl: 85000.00,
-            mastercard_black_available_limit_brl: 72569.50,
-            scheduled_debits_next_thursday_brl: 38000.00,
-            status: "SYNCHRONIZED"
-          }
+          liveResult: payloadData
         }
       }));
 
@@ -420,15 +423,7 @@ export const App: React.FC = () => {
         agentName: "Account Information & Statements Agent",
         action: "FETCH_CONSOLIDATED_ACCOUNTS_AND_STATEMENTS",
         status: "success",
-        payload: {
-          account_id: "ITAU-7749-00912",
-          customer: "Roberto Silva",
-          checking_balance_brl: 48950.20,
-          cdb_di_balance_brl: 85000.00,
-          mastercard_black_available_limit_brl: 72569.50,
-          scheduled_debits_next_thursday_brl: 38000.00,
-          status: "SYNCHRONIZED"
-        }
+        payload: payloadData
       };
       setTelemetryLogs(prev => [newLog, ...prev]);
     }
@@ -437,18 +432,21 @@ export const App: React.FC = () => {
       setActiveRunningAgentId('cash_flow_forecast_agent');
       setActiveDynamicCardId('cash_flow_forecast_agent');
       setActiveScenario('cash_flow');
+      
+      const payloadData = customPayload || {
+        target_date: "2026-08-25 06:00 BRT",
+        sweep_amount_brl: 15000.00,
+        source: "CDB_DI_LIQUIDEZ_DIARIA",
+        estimated_overdraft_interest_saved_brl: 184.60,
+        status: "SCHEDULED_AUTOMATED_SWEEP"
+      };
+
       setAgentStates(prev => ({
         ...prev,
         cash_flow_forecast_agent: {
           status: 'completed',
           lastRun: nowTime,
-          liveResult: {
-            target_date: "2026-08-25 06:00 BRT",
-            sweep_amount_brl: 15000.00,
-            source: "CDB_DI_LIQUIDEZ_DIARIA",
-            estimated_overdraft_interest_saved_brl: 184.60,
-            status: "SCHEDULED_AUTOMATED_SWEEP"
-          }
+          liveResult: payloadData
         }
       }));
 
@@ -472,12 +470,7 @@ export const App: React.FC = () => {
         agentName: "Cash Flow & Yield Forecasting Agent",
         action: "EXECUTE_OPTIMAL_CDB_SWEEP",
         status: "success",
-        payload: {
-          target_date: "2026-08-25 06:00 BRT",
-          sweep_amount_brl: 15000.00,
-          source: "CDB_DI_LIQUIDEZ_DIARIA",
-          estimated_overdraft_interest_saved_brl: 184.60
-        }
+        payload: payloadData
       };
       setTelemetryLogs(prev => [newLog, ...prev]);
     }
@@ -486,20 +479,23 @@ export const App: React.FC = () => {
       setActiveRunningAgentId('travel_shield_agent');
       setActiveDynamicCardId('travel_shield_agent');
       setActiveScenario('travel_shield');
+      
+      const payloadData = customPayload || {
+        travel_notice: "ACTIVE",
+        destinations: ["Portugal", "Spain"],
+        dates: "20/08 - 05/09",
+        network_authorizers: ["MASTERCARD_GLOBAL", "VISA_NET"],
+        international_pos_limit_brl: 50000.00,
+        fraud_suppression_airports_hotels: "ENABLED",
+        status: "FRAUD_SHIELD_ACTIVE"
+      };
+
       setAgentStates(prev => ({
         ...prev,
         travel_shield_agent: {
           status: 'completed',
           lastRun: nowTime,
-          liveResult: {
-            travel_notice: "ACTIVE",
-            destinations: ["Portugal", "Spain"],
-            dates: "20/08 - 05/09",
-            network_authorizers: ["MASTERCARD_GLOBAL", "VISA_NET"],
-            international_pos_limit_brl: 50000.00,
-            fraud_suppression_airports_hotels: "ENABLED",
-            status: "FRAUD_SHIELD_ACTIVE"
-          }
+          liveResult: payloadData
         }
       }));
 
@@ -526,43 +522,41 @@ export const App: React.FC = () => {
         agentName: "Travel Notice & International Card Shield",
         action: "REGISTER_NETWORK_TRAVEL_NOTICE",
         status: "success",
-        payload: {
-          destinations: ["Portugal", "Spain"],
-          dates: "20/08 - 05/09",
-          international_pos_limit_brl: 50000.00,
-          fraud_engine_mode: "SUPPRESS_FALSE_DECLINES"
-        }
+        payload: payloadData
       };
       setTelemetryLogs(prev => [newLog, ...prev]);
     }
     else if (actionType === 'get_card_benefits' || actionType === 'view_travel_insurance') {
       setActiveRunningAgentId('card_benefits_agent');
       setActiveDynamicCardId('card_benefits_agent');
+      
+      const payloadData = customPayload || {
+        card_tier: "Itaú Personnalité Mastercard Black",
+        travel_medical_insurance: {
+          schengen_compliant: true,
+          max_coverage_usd: 150000.00,
+          emergency_medical_coverage_eur: 30000.00
+        },
+        airport_lounge_access: {
+          program: "Mastercard Airport Experiences (LoungeKey)",
+          gru_vip_lounge: "UNLIMITED_COMPLIMENTARY",
+          international_passes: "4 COMPLIMENTARY/YEAR"
+        },
+        trip_protection: {
+          trip_cancellation_delay_usd: 3000.00,
+          baggage_loss_delay_usd: 1500.00
+        },
+        car_rental_coverage: "Masterseguro de Automóveis (CDW/LDW Global)",
+        concierge: "Mastercard Concierge 24/7",
+        status: "BENEFITS_ACTIVE"
+      };
+
       setAgentStates(prev => ({
         ...prev,
         card_benefits_agent: {
           status: 'completed',
           lastRun: nowTime,
-          liveResult: {
-            card_tier: "Itaú Personnalité Mastercard Black",
-            travel_medical_insurance: {
-              schengen_compliant: true,
-              max_coverage_usd: 150000.00,
-              emergency_medical_coverage_eur: 30000.00
-            },
-            airport_lounge_access: {
-              program: "Mastercard Airport Experiences (LoungeKey)",
-              gru_vip_lounge: "UNLIMITED_COMPLIMENTARY",
-              international_passes: "4 COMPLIMENTARY/YEAR"
-            },
-            trip_protection: {
-              trip_cancellation_delay_usd: 3000.00,
-              baggage_loss_delay_usd: 1500.00
-            },
-            car_rental_coverage: "Masterseguro de Automóveis (CDW/LDW Global)",
-            concierge: "Mastercard Concierge 24/7",
-            status: "BENEFITS_ACTIVE"
-          }
+          liveResult: payloadData
         }
       }));
 
@@ -589,12 +583,7 @@ export const App: React.FC = () => {
         agentName: "Mastercard Black Benefits & Coverage Agent",
         action: "FETCH_MASTERCARD_BLACK_BENEFITS",
         status: "success",
-        payload: {
-          card_tier: "Itaú Personnalité Mastercard Black",
-          schengen_medical_eur: 30000.00,
-          loungekey_gru: "UNLIMITED",
-          loungekey_int_passes: 4
-        }
+        payload: payloadData
       };
       setTelemetryLogs(prev => [newLog, ...prev]);
     }
@@ -603,19 +592,22 @@ export const App: React.FC = () => {
       setActiveRunningAgentId('open_finance_optimizer');
       setActiveDynamicCardId('open_finance_optimizer');
       setActiveScenario('open_finance');
+      
+      const payloadData = customPayload || {
+        external_balance_settled_brl: 18000.00,
+        previous_rate: "11.2% a.m.",
+        new_rate: "1.69% a.m.",
+        total_interest_saved_brl: 14280.00,
+        instrument_type: "CCB_DIGITAL_LEI_10931",
+        status: "REFINANCE_PROPOSAL_DISPATCHED"
+      };
+
       setAgentStates(prev => ({
         ...prev,
         open_finance_optimizer: {
           status: 'completed',
           lastRun: nowTime,
-          liveResult: {
-            external_balance_settled_brl: 18000.00,
-            previous_rate: "11.2% a.m.",
-            new_rate: "1.69% a.m.",
-            total_interest_saved_brl: 14280.00,
-            instrument_type: "CCB_DIGITAL_LEI_10931",
-            status: "REFINANCE_PROPOSAL_DISPATCHED"
-          }
+          liveResult: payloadData
         }
       }));
 
@@ -639,12 +631,7 @@ export const App: React.FC = () => {
         agentName: "Open Finance & Debt Refinancing Optimizer",
         action: "DISPATCH_INTERBANK_PAYOFF_CIP",
         status: "success",
-        payload: {
-          external_balance_settled_brl: 18000.00,
-          previous_rate: "11.2% a.m.",
-          new_rate: "1.69% a.m.",
-          total_interest_saved_brl: 14280.00
-        }
+        payload: payloadData
       };
       setTelemetryLogs(prev => [newLog, ...prev]);
     }

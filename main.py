@@ -30,7 +30,7 @@ APP_NAME = os.getenv("APP_NAME", "itau-banking-alerts")
 APP_ENV = os.getenv("APP_ENV", "local")
 GCP_PROJECT = os.getenv("GCP_PROJECT", "edgar-rag-demo")
 GCP_REGION = os.getenv("GCP_REGION", "us-central1")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.7-flash")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-live-preview")
 GEMINI_LIVE_MODEL = os.getenv("GEMINI_LIVE_MODEL", "gemini-3.5-flash-live-preview")
 
 # Initialize Gemini Enterprise Agent Platform client natively via ADC

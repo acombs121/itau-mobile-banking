@@ -11,7 +11,7 @@ export interface GeminiLiveState {
 
 export interface UseGeminiLiveOptions {
   lang: 'pt' | 'en';
-  onToolCall?: (toolName: string, args: Record<string, any>) => void;
+  onToolCall?: (toolName: string, args: Record<string, any>, payload?: Record<string, any>) => void;
   onActionTriggered?: (action: string) => void;
   onUserQuery?: (query: string) => void;
   onTurnComplete?: () => void;
@@ -213,7 +213,7 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
         if (data.tool_call) {
           console.log("Gemini Live Tool Call:", data.tool_call);
           if (onToolCallRef.current) {
-            onToolCallRef.current(data.tool_call.name, data.tool_call.args || {});
+            onToolCallRef.current(data.tool_call.name, data.tool_call.args || {}, data.tool_call.payload);
           }
           if (onActionTriggeredRef.current) {
             onActionTriggeredRef.current(data.tool_call.name);
