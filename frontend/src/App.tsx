@@ -71,7 +71,7 @@ export const App: React.FC = () => {
 
   // Active Scenario State: Default is 'account_info' (1st Agent)
   const [activeScenario, setActiveScenario] = useState<ScenarioId>('account_info');
-  const [activeRunningAgentId, setActiveRunningAgentId] = useState<string | null>(null);
+  const [activeRunningAgentId, setActiveRunningAgentId] = useState<string | null>('account_info_agent');
 
   // Dynamic Sub-Agent Lifecycle States for 5 Specialized Agents
   const [agentStates, setAgentStates] = useState<Record<string, { status: 'idle' | 'running' | 'completed'; lastRun?: string; liveResult?: Record<string, any> }>>({
@@ -290,7 +290,7 @@ export const App: React.FC = () => {
     }
     // 6. Generic Balance Query -> Show Clarification Prompt (Do not leak numbers prematurely!)
     else if (q.includes('balance') || q.includes('saldo') || q.includes('extrato') || q.includes('statement')) {
-      setActiveRunningAgentId(null);
+      setActiveRunningAgentId('account_info_agent');
       setActiveDynamicCardId('balance_clarification');
     }
     // 6. Cash Flow & Yield Forecasting
@@ -358,7 +358,7 @@ export const App: React.FC = () => {
     }
   };
 
-  // Turn Complete Handler
+  // Turn Complete Handler - keeps last agent highlighted until next is activated
   const handleTurnComplete = () => {
     if (activeRunningAgentId) {
       const finishedAgent = activeRunningAgentId;
@@ -374,9 +374,7 @@ export const App: React.FC = () => {
           }
         };
       });
-      setTimeout(() => {
-        setActiveRunningAgentId(null);
-      }, 1800);
+      // The last activated agent remains highlighted continuously
     }
   };
 
