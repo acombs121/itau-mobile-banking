@@ -1,6 +1,6 @@
 # Banco Itaú — Central de Segurança & Alertas Bancários
 
-An intelligent, real-time banking security and proactive alerts platform for **Banco Itaú Unibanco**, built with **Gemini Enterprise Agent Platform (fka Vertex AI Platform)**, **Python FastAPI**, **React 19**, **Vite**, and **Tailwind CSS**. Deployed securely on **Google Cloud Run** with native **Identity-Aware Proxy (IAP)**.
+An intelligent, real-time banking security and proactive alerts platform for **Banco Itaú Unibanco**, built with **Gemini Enterprise Agent Platform (fka Vertex AI Platform)** powered by **`gemini-3.5-flash-live-preview`** (Gemini Live Multimodal Voice & Function Calling API) and **`gemini-3.7-flash`** (Analytical Agent Reasoning), **Python FastAPI**, **React 19**, **Vite**, and **Tailwind CSS**. Deployed securely on **Google Cloud Run** with native **Identity-Aware Proxy (IAP)**.
 
 ---
 
@@ -128,7 +128,7 @@ chmod +x destroy.sh
 | [`frontend/src/App.tsx`](file:///Users/alexcombs/Projects/itau-banking-alerts/frontend/src/App.tsx) | Main React layout composing the Cockpit Header, Mobile Shell, Sub-Agent Orchestrator, and Telemetry. |
 | [`frontend/src/components/PhoneContainer.tsx`](file:///Users/alexcombs/Projects/itau-banking-alerts/frontend/src/components/PhoneContainer.tsx) | Interactive mobile device container with Personnalité account, balance toggle, and dynamic card canvas. |
 | [`frontend/src/components/AgentOrchestratorPanel.tsx`](file:///Users/alexcombs/Projects/itau-banking-alerts/frontend/src/components/AgentOrchestratorPanel.tsx) | Real-time multi-agent orchestrator panel showing active sub-agents and live JSON telemetry. |
-| [`frontend/src/components/VoiceBankingModal.tsx`](file:///Users/alexcombs/Projects/itau-banking-alerts/frontend/src/components/VoiceBankingModal.tsx) | Multimodal voice & chat AI assistant powered by Gemini 3.7 Flash. |
+| [`frontend/src/components/VoiceBankingModal.tsx`](file:///Users/alexcombs/Projects/itau-banking-alerts/frontend/src/components/VoiceBankingModal.tsx) | Multimodal voice & chat AI assistant powered by Gemini Live API (`gemini-3.5-flash-live-preview`). |
 | [`deploy.sh`](file:///Users/alexcombs/Projects/itau-banking-alerts/deploy.sh) | Cloud Run build and deployment script with IAP and Service Account automation. |
 | [`destroy.sh`](file:///Users/alexcombs/Projects/itau-banking-alerts/destroy.sh) | Automated resource cleanup script. |
 | [`run_local.sh`](file:///Users/alexcombs/Projects/itau-banking-alerts/run_local.sh) | Local development runner with 127.0.0.1 host binding. |
