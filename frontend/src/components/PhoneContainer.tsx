@@ -285,21 +285,6 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                     <span>3. {currentLang === 'en' ? 'Mastercard Black Card' : 'Cartão Mastercard Black'}</span>
                     <span className="text-[10px] opacity-60 font-mono">•••• 8841</span>
                   </button>
-
-                  <button
-                    onClick={() => {
-                      onActionClick('get_account_info');
-                      setActiveCardId('scheduled_payments');
-                    }}
-                    className={`w-full text-left p-2.5 rounded-[10px] border transition-all text-xs font-medium flex items-center justify-between ${
-                      isDark 
-                        ? 'bg-white/[0.04] border-white/10 hover:bg-brand-orange/10 hover:border-brand-orange/40 text-white' 
-                        : 'bg-slate-50 border-slate-200 hover:bg-orange-50 hover:border-brand-orange/40 text-slate-800'
-                    }`}
-                  >
-                    <span>4. {currentLang === 'en' ? 'Scheduled Debits (Next Week)' : 'Débitos Agendados (Próx. Semana)'}</span>
-                    <span className="text-[10px] opacity-90 font-mono text-brand-orange font-semibold">R$ 38.000,00</span>
-                  </button>
                 </div>
               </div>
             ) : activeCardId === 'balance_checking' ? (
