@@ -675,6 +675,21 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                     {isTravelModeActive ? <Check className="w-3.5 h-3.5" /> : <Plane className="w-3.5 h-3.5" />}
                     <span>{isTravelModeActive ? (currentLang === 'en' ? 'Travel Shield Active' : 'Aviso de Viagem Ativo') : (currentLang === 'en' ? 'Confirm Travel Notice' : 'Confirmar Aviso de Viagem')}</span>
                   </button>
+
+                  {/* Proactive Card Benefits Action Button */}
+                  {isTravelModeActive && (
+                    <button
+                      onClick={() => onActionClick('get_card_benefits')}
+                      className={`w-full py-2 px-3 rounded-[8px] font-bold text-xs flex items-center justify-center gap-1.5 transition-all mt-1.5 ${
+                        isDark 
+                          ? 'bg-brand-orange hover:bg-brand-orange-hover text-white shadow-md' 
+                          : 'bg-brand-orange hover:bg-brand-orange-hover text-white shadow-md'
+                      }`}
+                    >
+                      <ShieldPlus className="w-3.5 h-3.5" />
+                      <span>{currentLang === 'en' ? 'Explore Mastercard Black Benefits →' : 'Ver Benefícios do Mastercard Black →'}</span>
+                    </button>
+                  )}
                 </div>
               </div>
             ) : activeCardId === 'card_benefits_agent' ? (
