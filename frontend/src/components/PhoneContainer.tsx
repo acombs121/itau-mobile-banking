@@ -481,6 +481,18 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                       <span className="font-mono font-semibold text-[11px] text-brand-orange">R$ 34.150,00</span>
                     </div>
                   </div>
+
+                  {/* Outstanding Balance & End of Next Month Due Date */}
+                  <div className={`p-2.5 rounded-[8px] flex items-center justify-between text-xs ${isDark ? 'bg-white/[0.02] border border-white/[0.05]' : 'bg-slate-50 border border-slate-200'}`}>
+                    <div>
+                      <span className={`text-[9.5px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Outstanding Balance (Next Bill)' : 'Fatura em Aberto (Próx. Mês)'}</span>
+                      <span className={`font-mono font-bold text-sm ${isDark ? 'text-white' : 'text-slate-900'}`}>R$ 12.430,50</span>
+                    </div>
+                    <div className="text-right">
+                      <span className={`text-[9.5px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Due Date' : 'Vencimento'}</span>
+                      <span className="font-mono font-semibold text-[11.5px] text-brand-orange">{currentLang === 'en' ? 'Sep 28, 2026' : '28/09/2026'}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             ) : activeCardId === 'account_info_agent' ? (

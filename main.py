@@ -464,6 +464,8 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
                                                     "cdb_di_investments": "85.000,00 reais (100% CDI Liquidez Diaria)",
                                                     "mastercard_black_available_limit": "72.569,50 reais",
                                                     "mastercard_black_total_limit": "85.000,00 reais",
+                                                    "mastercard_black_outstanding_balance": "12.430,50 reais",
+                                                    "mastercard_black_next_invoice_due": "28/09/2026",
                                                     "scheduled_payments_total": "38.000,00 reais para a proxima quinta-feira (25/08)",
                                                     "scheduled_payments_list": [
                                                         {"name": "Fatura Mastercard Black", "amount": "34.150,00 reais", "due_date": "Quinta-feira 25/08", "type": "Debito Automatico"},
@@ -610,7 +612,7 @@ async def chat_endpoint(payload: ChatRequest, user: Dict[str, Any] = Depends(get
         elif "invest" in user_msg or "cdb" in user_msg or "poupan" in user_msg or "saving" in user_msg:
             reply = "Mr. Silva, your savings and Daily Liquidity CDB balance is R$ 85,000.00." if lang == "en" else "Sr. Silva, seu saldo em investimentos CDB DI com liquidez diária é de R$ 85.000,00."
         elif "card" in user_msg or "cart" in user_msg or "black" in user_msg:
-            reply = "Mr. Silva, your available limit on the Mastercard Black is R$ 72,569.50." if lang == "en" else "Sr. Silva, seu limite disponível no Mastercard Black é de R$ 72.569,50."
+            reply = "Mr. Silva, your available limit on the Mastercard Black is R$ 72,569.50, and your open balance is R$ 12,430.50 due on September 28th." if lang == "en" else "Sr. Silva, seu limite disponível no Mastercard Black é de R$ 72.569,50, e sua fatura em aberto é de R$ 12.430,50 com vencimento em 28 de setembro."
         else:
             reply = "Certainly, Mr. Silva. Are you looking for the balance of your checking account, your savings and CDB investments, or your Mastercard Black card?" if lang == "en" else "Com certeza, Sr. Silva. Você está procurando o saldo da sua conta corrente, da sua poupança e investimentos CDB, ou do seu cartão Mastercard Black?"
     elif "viagem" in user_msg or "travel" in user_msg or "portugal" in user_msg or "espanha" in user_msg or "spain" in user_msg or "lisboa" in user_msg or "madrid" in user_msg:
