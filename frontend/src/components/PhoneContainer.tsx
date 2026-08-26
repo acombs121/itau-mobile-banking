@@ -372,8 +372,8 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                     {/* Item 1: Mastercard Black Card Bill */}
                     <div className={`p-2.5 rounded-[8px] flex items-center justify-between ${isDark ? 'bg-white/[0.02] border border-white/[0.05]' : 'bg-slate-50 border border-slate-200'}`}>
                       <div className="flex items-center gap-2.5 min-w-0">
-                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${isDark ? 'bg-white/[0.05]' : 'bg-slate-200/70'}`}>
-                          <CreditCard className="w-3.5 h-3.5 opacity-70" />
+                        <div className="w-7 h-7 rounded-lg bg-brand-orange/15 flex items-center justify-center flex-shrink-0">
+                          <CreditCard className="w-3.5 h-3.5 text-brand-orange" />
                         </div>
                         <div className="min-w-0">
                           <span className={`font-semibold block truncate ${isDark ? 'text-white/90' : 'text-slate-900'}`}>{currentLang === 'en' ? 'Mastercard Black Bill' : 'Fatura Mastercard Black'}</span>
@@ -386,11 +386,11 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                     {/* Item 2: Condomínio Edifício Jardins */}
                     <div className={`p-2.5 rounded-[8px] flex items-center justify-between ${isDark ? 'bg-white/[0.02] border border-white/[0.05]' : 'bg-slate-50 border border-slate-200'}`}>
                       <div className="flex items-center gap-2.5 min-w-0">
-                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${isDark ? 'bg-white/[0.05]' : 'bg-slate-200/70'}`}>
-                          <Building2 className="w-3.5 h-3.5 opacity-70" />
+                        <div className="w-7 h-7 rounded-lg bg-brand-orange/15 flex items-center justify-center flex-shrink-0">
+                          <Building2 className="w-3.5 h-3.5 text-brand-orange" />
                         </div>
                         <div className="min-w-0">
-                          <span className={`font-semibold block truncate ${isDark ? 'text-white/90' : 'text-slate-900'}`}>Condomínio Ed. Jardins</span>
+                          <span className={`font-semibold block truncate ${isDark ? 'text-white/90' : 'text-slate-900'}`}>{currentLang === 'en' ? 'Condomínio Ed. Jardins' : 'Condomínio Ed. Jardins'}</span>
                           <span className={`text-[10px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Scheduled Boleto • Aug 25' : 'Boleto Agendado • 25/08'}</span>
                         </div>
                       </div>
