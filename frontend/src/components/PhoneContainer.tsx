@@ -219,7 +219,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
               }`}>
                 <div className="flex items-center justify-between mb-2.5">
                   <div className="flex items-center gap-2">
-                    <HelpCircle className="w-3.5 h-3.5 text-brand-orange animate-pulse" />
+                    <HelpCircle className="w-3.5 h-3.5 text-brand-orange" />
                     <span className="text-[10.5px] font-mono font-bold tracking-wide uppercase text-brand-orange">
                       {currentLang === 'en' ? 'BALANCE INQUIRY' : 'CONSULTA DE SALDO'}
                     </span>
@@ -544,7 +544,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
               }`}>
                 <div className="flex items-center justify-between mb-2.5">
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-brand-orange animate-ping"></span>
+                    <span className="w-2 h-2 rounded-full bg-brand-orange"></span>
                     <span className="text-[10px] font-mono font-bold tracking-wide uppercase text-brand-orange">
                       {currentLang === 'en' ? 'CASH FLOW & YIELD OPTIMIZER' : 'PREVISÃO DE SALDO & YIELD'}
                     </span>
@@ -591,7 +591,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
               }`}>
                 <div className="flex items-center justify-between mb-2.5">
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-brand-orange animate-pulse"></span>
+                    <span className="w-2 h-2 rounded-full bg-brand-orange"></span>
                     <span className="text-[10px] font-mono font-bold tracking-wide uppercase text-brand-orange">
                       {currentLang === 'en' ? 'TRAVEL SHIELD & FRAUD DEFENSE' : 'AVISO VIAGEM & ANTIFRAUDE'}
                     </span>
@@ -646,7 +646,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
               }`}>
                 <div className="flex items-center justify-between mb-2.5">
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
+                    <span className="w-2 h-2 rounded-full bg-blue-400"></span>
                     <span className="text-[10px] font-mono font-bold tracking-wide uppercase text-blue-500">
                       {currentLang === 'en' ? 'MASTERCARD BLACK BENEFITS' : 'BENEFÍCIOS MASTERCARD BLACK'}
                     </span>
@@ -694,7 +694,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
               }`}>
                 <div className="flex items-center justify-between mb-2.5">
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
                     <span className="text-[10px] font-mono font-bold tracking-wide uppercase text-emerald-500">
                       {currentLang === 'en' ? 'OPEN FINANCE ARBITRAGE' : 'OPORTUNIDADE OPEN FINANCE'}
                     </span>

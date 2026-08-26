@@ -120,7 +120,7 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
                       <span
                         className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
                           isRunning
-                            ? 'bg-brand-orange animate-ping'
+                            ? 'bg-brand-orange shadow-[0_0_8px_rgba(255,100,35,0.8)]'
                             : isDark ? 'bg-white/20' : 'bg-slate-300'
                         }`}
                       />
@@ -131,8 +131,8 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
 
                     {isRunning && (
                       <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
-                        <span className="text-[10px] sm:text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-brand-orange text-white animate-pulse flex items-center gap-1 shadow-sm">
-                          <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
+                        <span className="text-[10px] sm:text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-brand-orange text-white flex items-center gap-1 shadow-sm">
+                          <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
                           {currentLang === 'en' ? 'Active' : 'Ativo'}
                         </span>
                       </div>
@@ -160,7 +160,7 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
                 <div className="flex flex-col h-full min-h-0">
                   <div className="flex justify-between items-center mb-3 pb-2.5 border-b border-white/[0.08] flex-shrink-0">
                     <div className="flex items-center gap-2">
-                      <span className={`w-2 h-2 rounded-full ${selectedAgentDetail.status === 'processing' ? 'bg-brand-orange animate-ping' : 'bg-emerald-400'}`}></span>
+                      <span className={`w-2 h-2 rounded-full ${selectedAgentDetail.status === 'processing' ? 'bg-brand-orange' : 'bg-emerald-500'}`}></span>
                       <span className="font-bold text-brand-orange text-xs sm:text-[12.5px] uppercase tracking-wide">
                         {selectedAgentDetail.id}
                       </span>
