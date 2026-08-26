@@ -28,7 +28,7 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
   const isDark = theme === 'dark';
 
   const activeScenarioDef = t.scenarios.find(s => s.id === activeScenario) || t.scenarios[0];
-  const [selectedAgentId, setSelectedAgentId] = useState<string>(activeScenarioDef.agentId);
+  const [selectedAgentId, setSelectedAgentId] = useState<string>(t.subagents.list[0].id);
 
   // Auto-focus on whichever agent is actively running or triggered
   useEffect(() => {

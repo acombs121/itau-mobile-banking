@@ -69,8 +69,8 @@ export const App: React.FC = () => {
     return (savedTheme === 'light' || savedTheme === 'dark') ? savedTheme : 'dark';
   });
 
-  // Active Scenario State: Default is 'cash_flow'
-  const [activeScenario, setActiveScenario] = useState<ScenarioId>('cash_flow');
+  // Active Scenario State: Default is 'account_info' (1st Agent)
+  const [activeScenario, setActiveScenario] = useState<ScenarioId>('account_info');
   const [activeRunningAgentId, setActiveRunningAgentId] = useState<string | null>(null);
 
   // Dynamic Sub-Agent Lifecycle States for 5 Specialized Agents
