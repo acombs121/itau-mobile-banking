@@ -138,7 +138,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
             {/* Dynamic Island Pill */}
             <div className="w-24 h-5 bg-black rounded-full mx-auto -mt-0.5 flex items-center justify-between px-2.5 shadow-inner border border-white/5">
               <div className="w-2.5 h-2.5 rounded-full bg-[#111] border border-white/20"></div>
-              <div className={`w-1.5 h-1.5 rounded-full ${isVoiceCallActive ? 'bg-brand-orange animate-pulse' : 'bg-emerald-500/80 animate-pulse'}`}></div>
+              <div className={`w-1.5 h-1.5 rounded-full ${isVoiceCallActive ? 'bg-brand-orange' : 'bg-emerald-500/80'}`}></div>
             </div>
 
             <div className="flex items-center gap-1 font-mono text-[10px] font-bold">
@@ -752,9 +752,9 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
               {isVoiceCallActive && (
                 <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded ${
                   isSpeaking
-                    ? 'bg-brand-orange/20 text-brand-orange animate-pulse'
+                    ? 'bg-brand-orange/20 text-brand-orange'
                     : isListening
-                    ? 'bg-emerald-500/20 text-emerald-400 animate-pulse'
+                    ? 'bg-emerald-500/20 text-emerald-400'
                     : 'bg-white/10 text-white/50'
                 }`}>
                   {isSpeaking ? (currentLang === 'en' ? 'SPEAKING' : 'FALANDO') : isListening ? (currentLang === 'en' ? 'LISTENING' : 'OUVINDO') : 'ACTIVE'}
@@ -776,7 +776,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                       isSpeaking
                         ? 'bg-brand-orange shadow-[0_0_8px_#FF6423]'
                         : isListening
-                        ? 'bg-emerald-400 shadow-[0_0_8px_#34D399] animate-pulse'
+                        ? 'bg-emerald-400 shadow-[0_0_8px_#34D399]'
                         : 'bg-white/20'
                     }`}
                   />
@@ -790,9 +790,9 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
               className={`w-8 h-8 rounded-full flex items-center justify-center transition-all flex-shrink-0 ${
                 isVoiceCallActive
                   ? isSpeaking
-                    ? 'bg-brand-orange text-white ring-4 ring-brand-orange/40 shadow-[0_0_15px_#FF6423] animate-pulse'
+                    ? 'bg-brand-orange text-white ring-4 ring-brand-orange/40 shadow-[0_0_15px_#FF6423]'
                     : isListening
-                    ? 'bg-emerald-500 text-white ring-4 ring-emerald-500/40 shadow-[0_0_15px_#10B981] animate-pulse'
+                    ? 'bg-emerald-500 text-white ring-4 ring-emerald-500/40 shadow-[0_0_15px_#10B981]'
                     : 'bg-brand-orange text-white shadow-md'
                   : 'bg-brand-orange hover:bg-brand-orange-hover text-white shadow-sm'
               }`}

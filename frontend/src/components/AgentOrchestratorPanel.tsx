@@ -84,7 +84,7 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
         <div className={`flex items-center gap-2 text-xs font-mono ${
           isDark ? 'text-white/40' : 'text-slate-500'
         }`}>
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
           <span>ORCHESTRATOR ACTIVE</span>
         </div>
       </div>
@@ -159,12 +159,9 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
               {selectedAgentDetail ? (
                 <div className="flex flex-col h-full min-h-0">
                   <div className="flex justify-between items-center mb-3 pb-2.5 border-b border-white/[0.08] flex-shrink-0">
-                    <div className="flex items-center gap-2">
-                      <span className={`w-2 h-2 rounded-full ${selectedAgentDetail.status === 'processing' ? 'bg-brand-orange' : 'bg-emerald-500'}`}></span>
-                      <span className="font-bold text-brand-orange text-xs sm:text-[12.5px] uppercase tracking-wide">
-                        {selectedAgentDetail.id}
-                      </span>
-                    </div>
+                    <span className="font-bold text-brand-orange text-xs sm:text-[12.5px] uppercase tracking-wide">
+                      {selectedAgentDetail.id}
+                    </span>
                     <span className="text-xs text-white/40">
                       {selectedAgentDetail.lastRun || '14:52:10 BRT'}
                     </span>

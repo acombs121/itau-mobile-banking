@@ -117,9 +117,9 @@ export const VoiceBankingModal: React.FC<VoiceBankingModalProps> = ({
                 style={{ height: `${h}%` }}
                 className={`w-1 rounded-full ${
                   isListening
-                    ? 'bg-emerald-400 animate-pulse'
+                    ? 'bg-emerald-400'
                     : isProcessing
-                    ? 'bg-brand-orange animate-pulse'
+                    ? 'bg-brand-orange'
                     : 'bg-brand-orange shadow-[0_0_8px_#FF6423]'
                 }`}
               />
@@ -127,7 +127,7 @@ export const VoiceBankingModal: React.FC<VoiceBankingModalProps> = ({
           </div>
 
           <div className="flex items-center gap-2 text-xs font-mono text-white/60">
-            <Volume2 className="w-4 h-4 text-brand-orange animate-pulse" />
+            <Volume2 className="w-4 h-4 text-brand-orange" />
             <span>{isListening ? t.listening : isProcessing ? t.processing : t.speaking}</span>
           </div>
         </div>
@@ -153,7 +153,7 @@ export const VoiceBankingModal: React.FC<VoiceBankingModalProps> = ({
 
           {isProcessing && (
             <div className="flex items-center gap-2 text-xs text-brand-orange">
-              <div className="w-1.5 h-1.5 rounded-full bg-brand-orange animate-ping" />
+              <div className="w-1.5 h-1.5 rounded-full bg-brand-orange" />
               <span>{t.processing}</span>
             </div>
           )}
@@ -180,7 +180,7 @@ export const VoiceBankingModal: React.FC<VoiceBankingModalProps> = ({
             onClick={() => setIsListening(!isListening)}
             className={`w-9 h-9 rounded-[4px] flex items-center justify-center transition-all ${
               isListening
-                ? 'bg-rose-600 text-white animate-pulse'
+                ? 'bg-rose-600 text-white'
                 : 'bg-white/5 border border-white/10 text-white hover:bg-white/10'
             }`}
           >
