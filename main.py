@@ -449,8 +449,7 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
                                             tool_name = fc.name
                                             tool_args = fc.args or {}
                                             logger.info(f"Gemini Live Tool Call: {tool_name} with args: {tool_args}")
-                                            
-                                                            if tool_name == 'get_account_info':
+                                            if tool_name == 'get_account_info':
                                                 tool_result_payload = {
                                                     "customer": "Roberto Silva",
                                                     "itau_personnalite_accounts": {
