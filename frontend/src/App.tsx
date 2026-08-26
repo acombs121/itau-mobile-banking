@@ -232,7 +232,31 @@ export const App: React.FC = () => {
         }
       }));
     }
-    // 5. Generic Balance Query -> Show Clarification Prompt (Do not leak numbers prematurely!)
+    // 5. Specific Scheduled Payments / Debits / Bills Query
+    else if (q.includes('schedule') || q.includes('agendad') || q.includes('payment') || q.includes('pagamento') || q.includes('bill') || q.includes('boleto') || q.includes('debit') || q.includes('débito') || q.includes('due') || q.includes('vencimento') || q.includes('next week') || q.includes('semana')) {
+      setActiveRunningAgentId('account_info_agent');
+      setActiveDynamicCardId('scheduled_payments');
+      setAgentStates(prev => ({
+        ...prev,
+        account_info_agent: {
+          status: 'running',
+          lastRun: nowTime,
+          liveResult: {
+            account_id: "ITAU-7749-00912",
+            scheduled_payments_total_brl: 38000.00,
+            scheduled_date: "2026-08-25 (Thursday)",
+            items: [
+              { name: "Mastercard Black Invoice", amount_brl: 34150.00, method: "Auto-Debit" },
+              { name: "Condomínio Edifício Jardins", amount_brl: 3850.00, method: "Scheduled Boleto" }
+            ],
+            checking_balance_brl: 48950.20,
+            coverage: "100% COVERED",
+            status: "QUERY_COMPLETE"
+          }
+        }
+      }));
+    }
+    // 6. Generic Balance Query -> Show Clarification Prompt (Do not leak numbers prematurely!)
     else if (q.includes('balance') || q.includes('saldo') || q.includes('extrato') || q.includes('statement')) {
       setActiveRunningAgentId(null);
       setActiveDynamicCardId('balance_clarification');

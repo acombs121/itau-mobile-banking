@@ -338,7 +338,10 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
       3. ONLY AFTER the user specifies which one they want (for example, saying "checking", "savings", "card", "all of them", etc.), you call the `get_account_info` tool and state the exact requested balance number!
 
     You coordinate 5 specialized sub-agents:
-    1. Account Information Agent (`get_account_info`): When user answers which balance they want (checking, savings/CDB, or black card) or asks about statements/debits, call `get_account_info` and provide ONLY the requested figure concisely.
+    1. Account Information Agent (`get_account_info`): When user answers which balance they want (checking, savings/CDB, or black card) OR asks what payments/debits/bills are scheduled over the next week:
+       - Call `get_account_info` immediately so the itemized list card renders on screen.
+       - If asked about scheduled payments/debits/bills: List them clearly and concisely: "You have two payments scheduled for next Thursday totaling 38.000 reais: your Mastercard Black invoice of 34.150 reais, and your condominium fee of 3.850 reais. Your checking balance of 48.950 reais covers both."
+       - If asked about specific balances: provide ONLY the requested figure concisely.
     2. Cash Flow & Yield Forecasting Agent (`sweep_cdb`): 
        - TRIGGER: ONLY when the user explicitly asks about buying expensive flight tickets (e.g. R$ 24k to Lisbon) or asks if their checking account has enough to clear next Thursday's bills. DO NOT call this tool for general travel or benefits questions!
        - ACTIONS: Call `sweep_cdb`, concisely state that checking will have a shortfall of 13.050 reais on Thursday, and offer to schedule an automated sweep of 15.000 reais from CDB DI on Thursday morning (06:00 BRT).
@@ -395,7 +398,13 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
                                 # Text input from browser
                                 if "text_input" in msg:
                                     logger.info(f"Gemini Live Turn Input: {msg['text_input']}")
-                                    await session.send(input=msg["text_input"], end_of_turn=True)
+                                    await session.send_client_content(
+                                        turns=types.Content(
+                                            role="user",
+                                            parts=[types.Part(text=msg["text_input"])]
+                                        ),
+                                        turn_complete=True
+                                    )
                                 
                                 # 16kHz PCM Realtime Audio from microphone
                                 elif "realtime_audio_pcm_16k" in msg:
@@ -455,7 +464,12 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
                                                     "cdb_di_investments": "85.000,00 reais (100% CDI Liquidez Diaria)",
                                                     "mastercard_black_available_limit": "72.569,50 reais",
                                                     "mastercard_black_total_limit": "85.000,00 reais",
-                                                    "scheduled_debits_next_thursday": "38.000,00 reais (fatura 34.150 reais + condominio 3.850 reais)"
+                                                    "scheduled_payments_total": "38.000,00 reais para a proxima quinta-feira (25/08)",
+                                                    "scheduled_payments_list": [
+                                                        {"name": "Fatura Mastercard Black", "amount": "34.150,00 reais", "due_date": "Quinta-feira 25/08", "type": "Debito Automatico"},
+                                                        {"name": "Condominio Edificio Jardins", "amount": "3.850,00 reais", "due_date": "Quinta-feira 25/08", "type": "Boleto Agendado"}
+                                                    ],
+                                                    "coverage_status": "SUFICIENTE (Saldo de 48.950,20 reais cobre os 38.000,00 reais agendados)"
                                                 }
                                             elif tool_name == 'get_card_benefits':
                                                 tool_result_payload = {

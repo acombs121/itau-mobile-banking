@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { QrCode, ArrowUpRight, ArrowDownLeft, CreditCard, Mic, MicOff, X, Check, ShieldCheck, Plane, TrendingUp, HelpCircle, ShieldPlus, Car, MapPin } from 'lucide-react';
+import { QrCode, ArrowUpRight, ArrowDownLeft, CreditCard, Mic, MicOff, X, Check, ShieldCheck, Plane, TrendingUp, HelpCircle, ShieldPlus, Car, MapPin, Calendar, Building2, ChevronRight } from 'lucide-react';
 import { BankingProfile } from '../types/banking';
 import { IOSNotification, ScenarioId } from '../types/itau_concierge';
 import { Language, translations } from '../i18n/translations';
@@ -279,6 +279,21 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                     <span>3. {currentLang === 'en' ? 'Mastercard Black Card' : 'Cartão Mastercard Black'}</span>
                     <span className="text-[10px] opacity-60 font-mono">•••• 8841</span>
                   </button>
+
+                  <button
+                    onClick={() => {
+                      onActionClick('get_account_info');
+                      setActiveCardId('scheduled_payments');
+                    }}
+                    className={`w-full text-left p-2.5 rounded-[10px] border transition-all text-xs font-medium flex items-center justify-between ${
+                      isDark 
+                        ? 'bg-white/[0.04] border-white/10 hover:bg-brand-orange/10 hover:border-brand-orange/40 text-white' 
+                        : 'bg-slate-50 border-slate-200 hover:bg-orange-50 hover:border-brand-orange/40 text-slate-800'
+                    }`}
+                  >
+                    <span>4. {currentLang === 'en' ? 'Scheduled Debits (Next Week)' : 'Débitos Agendados (Próx. Semana)'}</span>
+                    <span className="text-[10px] opacity-60 font-mono text-amber-400">R$ 38.000,00</span>
+                  </button>
                 </div>
               </div>
             ) : activeCardId === 'balance_checking' ? (
@@ -312,10 +327,87 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                       <span className="text-[9px] text-white/40 block">{currentLang === 'en' ? 'Overdraft (LIS)' : 'Limite LIS'}</span>
                       <span className="font-mono font-semibold text-[11px] text-white/80">R$ 10.000,00</span>
                     </div>
-                    <div className={`p-2 rounded-[8px] ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}>
-                      <span className="text-[9px] text-white/40 block">{currentLang === 'en' ? 'Debits Next Thu' : 'Débitos Quinta'}</span>
+                    <button 
+                      onClick={() => setActiveCardId('scheduled_payments')}
+                      className={`p-2 rounded-[8px] text-left transition-all hover:ring-1 hover:ring-amber-400/40 cursor-pointer ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-[9px] text-white/40 block">{currentLang === 'en' ? 'Debits Next Thu' : 'Débitos Quinta'}</span>
+                        <ChevronRight className="w-2.5 h-2.5 text-amber-400/70" />
+                      </div>
                       <span className="font-mono font-semibold text-[11px] text-amber-400">R$ 38.000,00</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (activeCardId === 'scheduled_payments' || activeCardId === 'balance_scheduled_payments') ? (
+              /* Scheduled Payments & Debits Itemized List Card */
+              <div className={`w-full rounded-[16px] p-4 border animate-fadeIn shadow-2xl relative ${
+                isDark ? 'bg-[#15151A] border-amber-500/30 text-white' : 'bg-white border-amber-500/30 text-slate-900 shadow-lg'
+              }`}>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-3.5 h-3.5 text-amber-400" />
+                    <span className="text-[10.5px] font-mono font-bold tracking-wide uppercase text-amber-400">
+                      {currentLang === 'en' ? 'SCHEDULED PAYMENTS (NEXT 7 DAYS)' : 'PAGAMENTOS AGENDADOS (7 DIAS)'}
+                    </span>
+                  </div>
+                  <button 
+                    onClick={() => setActiveCardId(null)}
+                    className="w-5 h-5 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-colors"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+
+                <div className="space-y-2 text-xs">
+                  {/* Total Header Summary */}
+                  <div className={`p-2.5 rounded-[10px] flex items-center justify-between ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
+                    <div>
+                      <span className="text-[9.5px] text-white/50 block uppercase font-semibold">{currentLang === 'en' ? 'Total Scheduled for Thursday' : 'Total Agendado para Quinta'}</span>
+                      <span className="text-base font-bold font-mono text-amber-400">R$ 38.000,00</span>
                     </div>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-semibold">2 {currentLang === 'en' ? 'Debits' : 'Débitos'}</span>
+                  </div>
+
+                  {/* Itemized Payment List */}
+                  <div className="space-y-1.5 mt-1">
+                    {/* Item 1: Mastercard Black Card Bill */}
+                    <div className={`p-2.5 rounded-[8px] flex items-center justify-between ${isDark ? 'bg-white/[0.02] border border-white/[0.05]' : 'bg-slate-50 border border-slate-200'}`}>
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-7 h-7 rounded-lg bg-brand-orange/15 flex items-center justify-center flex-shrink-0">
+                          <CreditCard className="w-3.5 h-3.5 text-brand-orange" />
+                        </div>
+                        <div className="min-w-0">
+                          <span className="font-semibold text-white/90 block truncate">{currentLang === 'en' ? 'Mastercard Black Bill' : 'Fatura Mastercard Black'}</span>
+                          <span className="text-[10px] text-white/50 block">{currentLang === 'en' ? 'Auto-debit • Aug 25' : 'Débito Automático • 25/08'}</span>
+                        </div>
+                      </div>
+                      <span className="font-mono font-bold text-white text-right ml-2 flex-shrink-0">R$ 34.150,00</span>
+                    </div>
+
+                    {/* Item 2: Condomínio Edifício Jardins */}
+                    <div className={`p-2.5 rounded-[8px] flex items-center justify-between ${isDark ? 'bg-white/[0.02] border border-white/[0.05]' : 'bg-slate-50 border border-slate-200'}`}>
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-7 h-7 rounded-lg bg-blue-500/15 flex items-center justify-center flex-shrink-0">
+                          <Building2 className="w-3.5 h-3.5 text-blue-400" />
+                        </div>
+                        <div className="min-w-0">
+                          <span className="font-semibold text-white/90 block truncate">Condomínio Ed. Jardins</span>
+                          <span className="text-[10px] text-white/50 block">{currentLang === 'en' ? 'Scheduled Boleto • Aug 25' : 'Boleto Agendado • 25/08'}</span>
+                        </div>
+                      </div>
+                      <span className="font-mono font-bold text-white text-right ml-2 flex-shrink-0">R$ 3.850,00</span>
+                    </div>
+                  </div>
+
+                  {/* Coverage Verification Status */}
+                  <div className={`p-2 rounded-[8px] flex items-center justify-between text-[10.5px] mt-1 ${isDark ? 'bg-emerald-500/10 text-emerald-300' : 'bg-emerald-50 text-emerald-800'}`}>
+                    <div className="flex items-center gap-1.5">
+                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>{currentLang === 'en' ? 'Checking Balance Covers 100%' : 'Saldo em Conta Cobre 100%'}</span>
+                    </div>
+                    <span className="font-mono font-semibold">R$ 48.950,20</span>
                   </div>
                 </div>
               </div>
