@@ -257,11 +257,11 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
             function_declarations=[
                 types.FunctionDeclaration(
                     name="get_account_info",
-                    description="Retrieves real-time account balances, investment holdings (CDB DI), Mastercard Black credit limit, and scheduled upcoming debits (prior and scheduled). Triggered by Account Information Agent.",
+                    description="Retrieves real-time consolidated account balances, investment holdings (CDB DI), Mastercard Black limits, scheduled debits, and connected Open Finance multi-institution balances (BTG Pactual R$ 120k, XP R$ 210k, total consolidated liquid patrimony R$ 463,950.20). Triggered by Account Information Agent.",
                     parameters=types.Schema(
                         type=types.Type.OBJECT,
                         properties={
-                            "query_type": types.Schema(type=types.Type.STRING, description="Type of query, e.g. 'all', 'checking', 'cdb_investments', 'scheduled_debits', 'card_limits'")
+                            "query_type": types.Schema(type=types.Type.STRING, description="Type of query, e.g. 'all', 'consolidated_open_finance', 'checking', 'cdb_investments', 'scheduled_debits', 'card_limits'")
                         }
                     )
                 ),
@@ -303,7 +303,7 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
                 ),
                 types.FunctionDeclaration(
                     name="refinance_open_finance",
-                    description="Issues an electronic CCB under Lei 10.931 and executes interbank debt consolidation/portability to settle high-interest competitor credit (saving R$ 14,280). Triggered by Open Finance & Debt Refinancing Optimizer.",
+                    description="Pulls external accounts via Open Finance rails, consolidates multi-bank balances, and issues an electronic CCB under Lei 10.931 to refinance high-interest competitor credit (saving R$ 14,280). Triggered by Open Finance & Debt Refinancing Optimizer.",
                     parameters=types.Schema(
                         type=types.Type.OBJECT,
                         properties={
@@ -323,44 +323,38 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
 
     Customer Financial Context:
     - Customer: Roberto Silva (Honorific: "Mr. Silva" in English, "Sr. Silva" in Portuguese)
-    - Checking Balance: R$ 48.950,20
-    - Savings & Investment / Daily Liquidity CDB DI (100% CDI): R$ 85.000,00
-    - Mastercard Black (last 4: 8841): Available Limit R$ 72.569,50
-    - Scheduled Debits next Thursday: R$ 38.000,00 (Condo Pix R$ 3.850 + Mastercard Black Bill R$ 34.150).
-    - Open Finance External Debt: R$ 18.000,00 at 11.2%/mo. Pre-approved Itaú Sob Medida: 1.69%/mo (Total saved: R$ 14.280,00).
+    - Itaú Checking Balance: R$ 48.950,20
+    - Itaú Daily Liquidity CDB DI (100% CDI): R$ 85.000,00
+    - Itaú Mastercard Black (•••• 8841): Available Limit R$ 72.569,50 | Outstanding Balance R$ 12.430,50 (Due Sep 28)
+    - Scheduled Debits next Thursday: R$ 38.000,00 (Condo Boleto R$ 3.850 + Mastercard Black Invoice R$ 34.150).
+    - Open Finance External Connected Accounts:
+      * BTG Pactual: R$ 120.000,00 (Checking / Liquidity)
+      * XP Investimentos: R$ 210.000,00 (Fixed Income & Treasury)
+      * Total Consolidated Liquid Balance (Itaú + Open Finance): R$ 463.950,20
+      * Competitor Revolving Credit Debt: R$ 18.000,00 at 11.2%/mo. Pre-approved Itaú Sob Medida CCB: 1.69%/mo (Total saved: R$ 14.280,00).
 
-    CRITICAL BALANCE QUERY PROTOCOL (MANDATORY):
-    - When the user asks for their balance in general (e.g. "what is my balance?", "check my balance", "i want to check my balances", "qual é o meu saldo?", "consultar saldo"):
-      1. YOU MUST NOT STATE ANY BALANCE NUMBERS OR FIGURES YET.
-      2. YOU MUST FIRST ASK A CLARIFYING QUESTION:
-         - If in English: "Certainly, Mr. Silva. Are you looking for the balance of your checking account, your savings and CDB investments, or your Mastercard Black card?"
-         - If in Portuguese: "Com certeza, Sr. Silva. Você está procurando o saldo da sua conta corrente, da sua poupança e investimentos CDB, ou do seu cartão Mastercard Black?"
-      3. ONLY AFTER the user specifies which one they want (for example, saying "checking", "savings", "card", "all of them", etc.), you call the `get_account_info` tool and state the exact requested balance number!
+    CRITICAL BALANCE QUERY & OPEN FINANCE CONSOLIDATION PROTOCOL:
+    1. OPEN FINANCE BALANCE CONSOLIDATION:
+       - When the user asks about "consolidating my balances", "consolidate my balances", "can you consolidate my balances?", "view my consolidated balances", "pull my external accounts", "consolidar meus saldos", "consolidar contas", or "consolidar posições no open finance":
+         * YOU MUST BE FULLY AWARE that you can securely pull external balance and asset data across all financial institutions through Open Finance consent!
+         * ALWAYS call `get_account_info` (with query_type="consolidated_open_finance") so the consolidated multi-institution canvas renders on screen.
+         * STATE THE CONSOLIDATED SUMMARY:
+           - In English: "Certainly, Mr. Silva! Through Open Finance, I can pull your external balances and consolidate your complete financial position. Your total liquid patrimony across all institutions is R$ 463,950.20: R$ 133,950.20 at Itaú (Checking and CDB DI), R$ 120,000.00 at BTG Pactual, and R$ 210,000.00 at XP Investimentos. Open Finance also shows an external credit balance of R$ 18,000.00 that we can optimize."
+           - In Portuguese: "Com certeza, Sr. Silva! Através do Open Finance, posso buscar seus saldos externos e consolidar sua posição financeira completa. Seu patrimônio líquido total entre todas as instituições é de R$ 463.950,20: R$ 133.950,20 no Itaú (Conta Corrente e CDB DI), R$ 120.000,00 no BTG Pactual e R$ 210.000,00 na XP Investimentos. O Open Finance também identificou uma dívida externa de R$ 18.000,00 que podemos otimizar."
+    2. SPECIFIC BALANCE INQUIRY (Clarification Protocol):
+       - When the user asks for a simple balance in general without mentioning consolidation (e.g. "what is my balance?", "check my balance", "qual é o meu saldo?"):
+         1. DO NOT state numbers immediately.
+         2. ASK THE CLARIFYING QUESTION:
+            - If in English: "Certainly, Mr. Silva. Are you looking for the balance of your checking account, your savings and CDB investments, or your Mastercard Black card?"
+            - If in Portuguese: "Com certeza, Sr. Silva. Você está procurando o saldo da sua conta corrente, da sua poupança e investimentos CDB, ou do seu cartão Mastercard Black?"
+         3. Only after they specify the account, call `get_account_info` and provide the figure.
 
     You coordinate 5 specialized sub-agents:
-    1. Account Information Agent (`get_account_info`): When user answers which balance they want (checking, savings/CDB, or black card) OR asks what payments/debits/bills are scheduled over the next week:
-       - Call `get_account_info` immediately so the itemized list card renders on screen.
-       - If asked about scheduled payments/debits/bills: List them clearly and concisely: "Mr. Silva, you have two payments scheduled for next Thursday totaling 38.000 reais: your Mastercard Black invoice of 34.150 reais, and your condominium fee of 3.850 reais. Your checking balance of 48.950 reais covers both." (In Portuguese: "Sr. Silva, você possui dois débitos agendados para a próxima quinta-feira totalizando 38.000 reais...")
-       - If asked about specific balances: provide ONLY the requested figure concisely.
-    2. Cash Flow & Yield Forecasting Agent (`sweep_cdb`): 
-       - TRIGGER: ONLY when the user explicitly asks about buying expensive flight tickets (e.g. R$ 24k to Lisbon) or asks if their checking account has enough to clear next Thursday's bills. DO NOT call this tool for general travel or benefits questions!
-       - ACTIONS: Call `sweep_cdb`, concisely state that checking will have a shortfall of 13.050 reais on Thursday, and offer to schedule an automated sweep of 15.000 reais from CDB DI on Thursday morning (06:00 BRT).
-    3. Travel Notice & International Card Shield Agent (`activate_travel_mode`):
-       - TRIGGER: When the user mentions an upcoming trip to Portugal/Spain or asks for travel card protection.
-       - FOCUS: STRICTLY fraud prevention and transaction authorization reliability. DO NOT mention insurance, lounges, or car rentals here.
-       - ACTIONS:
-         1) ALWAYS call `activate_travel_mode` immediately.
-         2) CONCISE RESPONSE (under 2 sentences):
-            - If in English: "All set, Mr. Silva! I've registered your travel notice for Portugal and Spain, elevated your daily POS limit to 50.000 reais, and pre-suppressed foreign terminal declines. Are you departing from Guarulhos, and would you like to explore your Mastercard Black travel perks?"
-            - If in Portuguese: "Tudo pronto, Sr. Silva! Ativei seu aviso de viagem para Portugal e Espanha com limite elevado para 50.000 reais e antifraude ajustado. Você vai embarcar por Guarulhos? Gostaria de conhecer os benefícios do seu Mastercard Black?"
-    4. Mastercard Black Benefits & Coverage Agent (`get_card_benefits`):
-       - TRIGGER: When the user confirms the hand-off question (e.g., "Yes", "Please", "Sim", "Quero", "I'm flying from Guarulhos") OR asks directly about card perks/lounges/insurance.
-       - ACTIONS:
-         1) ALWAYS call `get_card_benefits` immediately so the benefits card displays on the customer's phone.
-         2) CONCISE & TAILORED RESPONSE (CRITICAL: MAXIMUM 2 SHORT SENTENCES + 1 BRIEF QUESTION. DO NOT RECITE LONG LISTS):
-            - If in English: "Mr. Silva, for your trip you have unlimited access to the Mastercard Black VIP Lounge at Guarulhos Terminal 3 plus 4 LoungeKey passes for Europe, along with €30,000 in Schengen travel medical insurance. Will you be renting a car or booking special dining?"
-            - If in Portuguese: "Sr. Silva, para sua viagem você tem acesso ilimitado à Sala VIP Mastercard Black no Terminal 3 de Guarulhos mais 4 passes LoungeKey na Europa, além de seguro médico Schengen de €30.000. Pretende alugar carro ou fazer reservas especiais?"
-    5. Open Finance Optimizer (`refinance_open_finance`): When asked about debt, loans, or savings, explain the 18.000 reais competitor balance at 11.2%/mo, offer to issue the electronic CCB at 1.69%/mo saving 14.280 reais, and call `refinance_open_finance`.
+    1. Account Information Agent (`get_account_info`): Handles balance inquiries, scheduled payments, and multi-bank Open Finance balance consolidation.
+    2. Cash Flow & Yield Forecasting Agent (`sweep_cdb`): Triggered when buying expensive flights (R$ 24k) causing Thursday shortfall; offers CDB sweep of 15.000 reais.
+    3. Travel Notice & International Card Shield Agent (`activate_travel_mode`): Triggered when discussing travel; elevates limit to 50.000 reais and suppresses false declines.
+    4. Mastercard Black Benefits & Coverage Agent (`get_card_benefits`): Triggered for card perks; highlights GRU T3 VIP Lounge, 4 LoungeKey passes, and €30k Schengen medical insurance.
+    5. Open Finance Optimizer (`refinance_open_finance`): Pulls external accounts and refinances 18.000 reais competitor debt via digital CCB at 1.69%/mo, saving 14.280 reais.
 
     Spoken Persona Directives & Brazilian Banking Identity:
     - You represent Banco Itaú, Brazil's leading private bank and premier wealth management franchise (Itaú Personnalité).
@@ -456,22 +450,31 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
                                             tool_args = fc.args or {}
                                             logger.info(f"Gemini Live Tool Call: {tool_name} with args: {tool_args}")
                                             
-                                            # Construct real backend payload for this tool
-                                            if tool_name == 'get_account_info':
+                                                            if tool_name == 'get_account_info':
                                                 tool_result_payload = {
                                                     "customer": "Roberto Silva",
-                                                    "checking_balance": "48.950,20 reais",
-                                                    "cdb_di_investments": "85.000,00 reais (100% CDI Liquidez Diaria)",
-                                                    "mastercard_black_available_limit": "72.569,50 reais",
-                                                    "mastercard_black_total_limit": "85.000,00 reais",
-                                                    "mastercard_black_outstanding_balance": "12.430,50 reais",
-                                                    "mastercard_black_next_invoice_due": "28/09/2026",
+                                                    "itau_personnalite_accounts": {
+                                                        "checking_balance": "48.950,20 reais",
+                                                        "cdb_di_investments": "85.000,00 reais (100% CDI Liquidez Diaria)",
+                                                        "mastercard_black_available_limit": "72.569,50 reais",
+                                                        "mastercard_black_total_limit": "85.000,00 reais",
+                                                        "mastercard_black_outstanding_balance": "12.430,50 reais",
+                                                        "mastercard_black_next_invoice_due": "28/09/2026",
+                                                        "total_itau_liquid": "133.950,20 reais"
+                                                    },
+                                                    "open_finance_connected_assets": {
+                                                        "btg_pactual_checking_liquidity": "120.000,00 reais",
+                                                        "xp_investimentos_fixed_income": "210.000,00 reais",
+                                                        "total_external_liquid": "330.000,00 reais",
+                                                        "external_competitor_debt": "18.000,00 reais (11,2% a.m.)"
+                                                    },
+                                                    "total_consolidated_liquid_patrimony": "463.950,20 reais",
                                                     "scheduled_payments_total": "38.000,00 reais para a proxima quinta-feira (25/08)",
                                                     "scheduled_payments_list": [
                                                         {"name": "Fatura Mastercard Black", "amount": "34.150,00 reais", "due_date": "Quinta-feira 25/08", "type": "Debito Automatico"},
                                                         {"name": "Condominio Edificio Jardins", "amount": "3.850,00 reais", "due_date": "Quinta-feira 25/08", "type": "Boleto Agendado"}
                                                     ],
-                                                    "coverage_status": "SUFICIENTE (Saldo de 48.950,20 reais cobre os 38.000,00 reais agendados)"
+                                                    "coverage_status": "SUFICIENTE (Saldo Itaú de 48.950,20 reais cobre os 38.000,00 reais agendados)"
                                                 }
                                             elif tool_name == 'get_card_benefits':
                                                 tool_result_payload = {
@@ -606,6 +609,11 @@ async def chat_endpoint(payload: ChatRequest, user: Dict[str, Any] = Depends(get
             reply = "Hello Mr. Silva. If you purchase the flight tickets today (R$ 24,000), your scheduled debits next Thursday will result in a shortfall of R$ 13,050. I see you have R$ 85,000 in your Daily Liquidity CDB. Would you like me to schedule an automatic transfer of R$ 15,000 on Thursday morning?"
         else:
             reply = "Olá Sr. Silva. Ao comprar as passagens hoje (R$ 24.000,00), seus débitos agendados na próxima quinta-feira resultarão em um déficit de R$ 13.050,00. Identifiquei R$ 85.000,00 no seu CDB DI. Deseja agendar um resgate automático de R$ 15.000,00 para quinta-feira?"
+    elif "consolid" in user_msg or "patrimon" in user_msg or "todas as contas" in user_msg or "all my accounts" in user_msg or ("open finance" in user_msg and "saldo" in user_msg):
+        if lang == "en":
+            reply = "Certainly, Mr. Silva! Through Open Finance, I can pull your external balances and consolidate your complete financial position. Your total liquid patrimony across all institutions is R$ 463,950.20: R$ 133,950.20 at Itaú (Checking and CDB DI), R$ 120,000.00 at BTG Pactual, and R$ 210,000.00 at XP Investimentos. Open Finance also shows an external credit balance of R$ 18,000.00 that we can consolidate and optimize."
+        else:
+            reply = "Com certeza, Sr. Silva! Através do Open Finance, posso buscar seus saldos externos e consolidar sua posição financeira completa. Seu patrimônio líquido total entre todas as instituições é de R$ 463.950,20: R$ 133.950,20 no Itaú (Conta Corrente e CDB DI), R$ 120.000,00 no BTG Pactual e R$ 210.000,00 na XP Investimentos. O Open Finance também identificou uma dívida externa de R$ 18.000,00 que podemos consolidar e otimizar."
     elif "saldo" in user_msg or "balance" in user_msg:
         if "corrente" in user_msg or "checking" in user_msg:
             reply = "Mr. Silva, your checking account balance is R$ 48,950.20." if lang == "en" else "Sr. Silva, o saldo da sua conta corrente é de R$ 48.950,20."

@@ -256,6 +256,38 @@ export const App: React.FC = () => {
         }
       }));
     }
+    // 5. Open Finance Balance Consolidation Query
+    else if (q.includes('consolidat') || q.includes('consolidar') || q.includes('patrimon') || q.includes('all accounts') || q.includes('all balances') || q.includes('todas as contas') || (q.includes('open finance') && (q.includes('balance') || q.includes('saldo')))) {
+      setActiveRunningAgentId('account_info_agent');
+      setActiveDynamicCardId('account_info_agent');
+      setActiveScenario('account_info');
+      setAgentStates(prev => ({
+        ...prev,
+        account_info_agent: {
+          status: 'running',
+          lastRun: nowTime,
+          liveResult: {
+            account_id: "ITAU-7749-00912",
+            customer: "Roberto Silva",
+            total_consolidated_liquid_patrimony_brl: 463950.20,
+            itau_accounts: {
+              checking_balance_brl: 48950.20,
+              cdb_di_balance_brl: 85000.00,
+              mastercard_black_available_limit_brl: 72569.50,
+              total_itau_liquid_brl: 133950.20
+            },
+            open_finance_connected_assets: {
+              btg_pactual_checking_liquidity_brl: 120000.00,
+              xp_investimentos_fixed_income_brl: 210000.00,
+              total_external_liquid_brl: 330000.00,
+              external_competitor_debt_brl: 18000.00
+            },
+            scheduled_debits_next_thursday_brl: 38000.00,
+            status: "OPEN_FINANCE_CONSOLIDATED"
+          }
+        }
+      }));
+    }
     // 6. Generic Balance Query -> Show Clarification Prompt (Do not leak numbers prematurely!)
     else if (q.includes('balance') || q.includes('saldo') || q.includes('extrato') || q.includes('statement')) {
       setActiveRunningAgentId(null);
