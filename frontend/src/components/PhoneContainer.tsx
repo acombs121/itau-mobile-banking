@@ -296,7 +296,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                     }`}
                   >
                     <span>4. {currentLang === 'en' ? 'Scheduled Debits (Next Week)' : 'Débitos Agendados (Próx. Semana)'}</span>
-                    <span className="text-[10px] opacity-60 font-mono text-amber-400">R$ 38.000,00</span>
+                    <span className="text-[10px] opacity-90 font-mono text-brand-orange font-semibold">R$ 38.000,00</span>
                   </button>
                 </div>
               </div>
@@ -333,13 +333,13 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                     </div>
                     <button 
                       onClick={() => setActiveCardId('scheduled_payments')}
-                      className={`p-2 rounded-[8px] text-left transition-all hover:ring-1 hover:ring-amber-400/40 cursor-pointer ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}
+                      className={`p-2 rounded-[8px] text-left transition-all hover:ring-1 hover:ring-brand-orange/40 cursor-pointer ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}
                     >
                       <div className="flex items-center justify-between">
                         <span className="text-[9px] text-white/40 block">{currentLang === 'en' ? 'Debits Next Thu' : 'Débitos Quinta'}</span>
-                        <ChevronRight className="w-2.5 h-2.5 text-amber-400/70" />
+                        <ChevronRight className="w-2.5 h-2.5 text-brand-orange/70" />
                       </div>
-                      <span className="font-mono font-semibold text-[11px] text-amber-400">R$ 38.000,00</span>
+                      <span className="font-mono font-semibold text-[11px] text-brand-orange">R$ 38.000,00</span>
                     </button>
                   </div>
                 </div>
@@ -347,12 +347,12 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
             ) : (activeCardId === 'scheduled_payments' || activeCardId === 'balance_scheduled_payments') ? (
               /* Scheduled Payments & Debits Itemized List Card */
               <div className={`w-full rounded-[16px] p-4 border animate-fadeIn shadow-2xl relative ${
-                isDark ? 'bg-[#15151A] border-amber-500/30 text-white' : 'bg-white border-amber-500/30 text-slate-900 shadow-lg'
+                isDark ? 'bg-[#15151A] border-brand-orange/40 text-white' : 'bg-white border-brand-orange/40 text-slate-900 shadow-lg'
               }`}>
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    <Calendar className="w-3.5 h-3.5 text-amber-400" />
-                    <span className="text-[10.5px] font-mono font-bold tracking-wide uppercase text-amber-400">
+                    <Calendar className="w-3.5 h-3.5 text-brand-orange" />
+                    <span className="text-[10.5px] font-mono font-bold tracking-wide uppercase text-brand-orange">
                       {currentLang === 'en' ? 'SCHEDULED PAYMENTS (NEXT 7 DAYS)' : 'PAGAMENTOS AGENDADOS (7 DIAS)'}
                     </span>
                   </div>
@@ -369,9 +369,9 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                   <div className={`p-2.5 rounded-[10px] flex items-center justify-between ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
                     <div>
                       <span className="text-[9.5px] text-white/50 block uppercase font-semibold">{currentLang === 'en' ? 'Total Scheduled for Thursday' : 'Total Agendado para Quinta'}</span>
-                      <span className="text-base font-bold font-mono text-amber-400">R$ 38.000,00</span>
+                      <span className="text-base font-bold font-mono text-brand-orange">R$ 38.000,00</span>
                     </div>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-semibold">2 {currentLang === 'en' ? 'Debits' : 'Débitos'}</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-brand-orange/20 text-brand-orange font-semibold">2 {currentLang === 'en' ? 'Debits' : 'Débitos'}</span>
                   </div>
 
                   {/* Itemized Payment List */}
@@ -483,7 +483,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                     </div>
                     <div className={`p-2 rounded-[8px] ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}>
                       <span className="text-[9px] text-white/40 block">{currentLang === 'en' ? 'Current Bill Due Thu' : 'Fatura Venc. Quinta'}</span>
-                      <span className="font-mono font-semibold text-[11px] text-amber-400">R$ 34.150,00</span>
+                      <span className="font-mono font-semibold text-[11px] text-brand-orange">R$ 34.150,00</span>
                     </div>
                   </div>
                 </div>
@@ -573,12 +573,12 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
             ) : activeCardId === 'travel_shield_agent' ? (
               /* Travel Shield Dynamic Card */
               <div className={`w-full rounded-[16px] p-4 border animate-fadeIn shadow-2xl relative ${
-                isDark ? 'bg-[#15151A] border-amber-500/40 text-white' : 'bg-white border-amber-500/40 text-slate-900 shadow-lg'
+                isDark ? 'bg-[#15151A] border-brand-orange/40 text-white' : 'bg-white border-brand-orange/40 text-slate-900 shadow-lg'
               }`}>
                 <div className="flex items-center justify-between mb-2.5">
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-                    <span className="text-[10px] font-mono font-bold tracking-wide uppercase text-amber-400">
+                    <span className="w-2 h-2 rounded-full bg-brand-orange animate-pulse"></span>
+                    <span className="text-[10px] font-mono font-bold tracking-wide uppercase text-brand-orange">
                       {currentLang === 'en' ? 'TRAVEL SHIELD & FRAUD DEFENSE' : 'AVISO VIAGEM & ANTIFRAUDE'}
                     </span>
                   </div>
@@ -594,7 +594,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                   <div className={`p-2.5 rounded-[10px] ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
                     <span className="text-[10px] text-white/50 block">{currentLang === 'en' ? 'Destinations' : 'Destinos'}</span>
                     <div className="flex items-center gap-1.5 mt-1">
-                      <MapPin className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+                      <MapPin className="w-3.5 h-3.5 text-brand-orange flex-shrink-0" />
                       <span className="font-semibold text-white">Portugal (LIS) • Espanha (MAD)</span>
                     </div>
                   </div>
@@ -602,7 +602,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                   <div className="grid grid-cols-2 gap-2">
                     <div className={`p-2 rounded-[8px] ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}>
                       <span className="text-[9px] text-white/40 block">{currentLang === 'en' ? 'POS Spend Limit' : 'Limite POS'}</span>
-                      <span className="font-mono font-bold text-amber-300">R$ 50.000,00</span>
+                      <span className="font-mono font-bold text-brand-orange">R$ 50.000,00</span>
                     </div>
                     <div className={`p-2 rounded-[8px] ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}>
                       <span className="text-[9px] text-white/40 block">{currentLang === 'en' ? 'Declines' : 'Recusas'}</span>
@@ -615,7 +615,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                     className={`w-full py-2 px-3 rounded-[8px] font-bold text-xs flex items-center justify-center gap-1.5 transition-all mt-1 ${
                       isTravelModeActive
                         ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                        : 'bg-amber-500 hover:bg-amber-600 text-slate-900 shadow-md'
+                        : 'bg-brand-orange hover:bg-brand-orange-hover text-white shadow-md'
                     }`}
                   >
                     {isTravelModeActive ? <Check className="w-3.5 h-3.5" /> : <Plane className="w-3.5 h-3.5" />}

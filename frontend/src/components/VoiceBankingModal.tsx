@@ -119,7 +119,7 @@ export const VoiceBankingModal: React.FC<VoiceBankingModalProps> = ({
                   isListening
                     ? 'bg-emerald-400 animate-pulse'
                     : isProcessing
-                    ? 'bg-amber-400 animate-pulse'
+                    ? 'bg-brand-orange animate-pulse'
                     : 'bg-brand-orange shadow-[0_0_8px_#FF6423]'
                 }`}
               />
