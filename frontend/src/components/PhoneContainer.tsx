@@ -334,15 +334,15 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                 </div>
               </div>
             ) : (activeCardId === 'scheduled_payments' || activeCardId === 'balance_scheduled_payments') ? (
-              /* Scheduled Payments & Debits Itemized List Card */
+              /* Scheduled Payments & Debits Itemized List Card - Simplified Executive Palette */
               <div className={`w-full rounded-[16px] p-4 border animate-fadeIn shadow-2xl relative ${
-                isDark ? 'bg-[#15151A] border-brand-orange/40 text-white' : 'bg-white border-brand-orange/40 text-slate-900 shadow-lg'
+                isDark ? 'bg-[#15151A] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-lg'
               }`}>
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    <Calendar className="w-3.5 h-3.5 text-brand-orange" />
-                    <span className="text-[10.5px] font-mono font-bold tracking-wide uppercase text-brand-orange">
-                      {currentLang === 'en' ? 'SCHEDULED PAYMENTS (NEXT 7 DAYS)' : 'PAGAMENTOS AGENDADOS (7 DIAS)'}
+                    <Calendar className="w-3.5 h-3.5 opacity-70" />
+                    <span className={`text-[10.5px] font-mono font-bold tracking-wide uppercase ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
+                      {currentLang === 'en' ? 'SCHEDULED PAYMENTS' : 'PAGAMENTOS AGENDADOS'}
                     </span>
                   </div>
                   <button 
@@ -357,12 +357,14 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
 
                 <div className="space-y-2 text-xs">
                   {/* Total Header Summary */}
-                  <div className={`p-2.5 rounded-[10px] flex items-center justify-between ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
+                  <div className={`p-2.5 rounded-[10px] flex items-center justify-between ${isDark ? 'bg-white/[0.03] border border-white/[0.05]' : 'bg-slate-50 border border-slate-200'}`}>
                     <div>
-                      <span className={`text-[9.5px] block uppercase font-semibold ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Total Scheduled for Thursday' : 'Total Agendado para Quinta'}</span>
-                      <span className="text-base font-bold font-mono text-brand-orange">R$ 38.000,00</span>
+                      <span className={`text-[9.5px] block uppercase font-medium ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Total Scheduled for Thursday' : 'Total Agendado para Quinta'}</span>
+                      <span className={`text-xl font-bold font-mono ${isDark ? 'text-white' : 'text-slate-900'}`}>R$ 38.000,00</span>
                     </div>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-brand-orange/20 text-brand-orange font-semibold">2 {currentLang === 'en' ? 'Debits' : 'Débitos'}</span>
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-semibold ${isDark ? 'bg-white/[0.06] text-white/70 border border-white/[0.08]' : 'bg-slate-200 text-slate-700'}`}>
+                      2 {currentLang === 'en' ? 'Debits' : 'Débitos'}
+                    </span>
                   </div>
 
                   {/* Itemized Payment List */}
@@ -370,8 +372,8 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                     {/* Item 1: Mastercard Black Card Bill */}
                     <div className={`p-2.5 rounded-[8px] flex items-center justify-between ${isDark ? 'bg-white/[0.02] border border-white/[0.05]' : 'bg-slate-50 border border-slate-200'}`}>
                       <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-7 h-7 rounded-lg bg-brand-orange/15 flex items-center justify-center flex-shrink-0">
-                          <CreditCard className="w-3.5 h-3.5 text-brand-orange" />
+                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${isDark ? 'bg-white/[0.05]' : 'bg-slate-200/70'}`}>
+                          <CreditCard className="w-3.5 h-3.5 opacity-70" />
                         </div>
                         <div className="min-w-0">
                           <span className={`font-semibold block truncate ${isDark ? 'text-white/90' : 'text-slate-900'}`}>{currentLang === 'en' ? 'Mastercard Black Bill' : 'Fatura Mastercard Black'}</span>
@@ -384,8 +386,8 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                     {/* Item 2: Condomínio Edifício Jardins */}
                     <div className={`p-2.5 rounded-[8px] flex items-center justify-between ${isDark ? 'bg-white/[0.02] border border-white/[0.05]' : 'bg-slate-50 border border-slate-200'}`}>
                       <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-7 h-7 rounded-lg bg-blue-500/15 flex items-center justify-center flex-shrink-0">
-                          <Building2 className="w-3.5 h-3.5 text-blue-400" />
+                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${isDark ? 'bg-white/[0.05]' : 'bg-slate-200/70'}`}>
+                          <Building2 className="w-3.5 h-3.5 opacity-70" />
                         </div>
                         <div className="min-w-0">
                           <span className={`font-semibold block truncate ${isDark ? 'text-white/90' : 'text-slate-900'}`}>Condomínio Ed. Jardins</span>
@@ -397,9 +399,9 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                   </div>
 
                   {/* Coverage Verification Status */}
-                  <div className={`p-2 rounded-[8px] flex items-center justify-between text-[10.5px] mt-1 ${isDark ? 'bg-emerald-500/10 text-emerald-300' : 'bg-emerald-50 text-emerald-800'}`}>
+                  <div className={`p-2 rounded-[8px] flex items-center justify-between text-[11px] mt-1 ${isDark ? 'bg-white/[0.02] border border-white/[0.05] text-white/70' : 'bg-slate-50 border border-slate-200 text-slate-700'}`}>
                     <div className="flex items-center gap-1.5">
-                      <Check className="w-3.5 h-3.5 text-emerald-500" />
+                      <Check className="w-3.5 h-3.5 opacity-60" />
                       <span>{currentLang === 'en' ? 'Checking Balance Covers 100%' : 'Saldo em Conta Cobre 100%'}</span>
                     </div>
                     <span className="font-mono font-semibold">R$ 48.950,20</span>
