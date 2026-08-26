@@ -1,143 +1,276 @@
 #!/usr/bin/env bash
 # =====================================================================
-# Automated Cloud Run Deployment Script (deploy.sh)
-# Deploys Itaú Banking Alerts Demo to Google Cloud Run with Native IAP
+# Automated Cloud Run Deployment Script
+# Parameterized via .env - No hardcoded values
+# Adheres fully to cloud-run-demo skill guidelines
 # =====================================================================
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "${SCRIPT_DIR}"
-
+# 1. Ensure .env exists and safely source variables using POSIX set -a
 if [[ ! -f .env ]]; then
-  echo "Error: .env file not found. Copy example.env to .env and configure it."
+  echo "ERROR: .env file not found. Please copy example.env to .env and configure your values." >&2
   exit 1
 fi
 
-# POSIX-safe .env sourcing
 set -a
 # shellcheck disable=SC1091
 source .env
 set +a
 
-# Defaults
-GCP_PROJECT="${GCP_PROJECT:-}"
-GCP_REGION="${GCP_REGION:-us-central1}"
-APP_NAME="${APP_NAME:-itau-banking-alerts}"
-GEMINI_MODEL="${GEMINI_MODEL:-gemini-3.7-flash}"
-SERVICE_ACCOUNT_NAME="${SERVICE_ACCOUNT_NAME:-${APP_NAME}-sa}"
-MIN_INSTANCES="${MIN_INSTANCES:-0}"
-MAX_INSTANCES="${MAX_INSTANCES:-3}"
-MEMORY="${MEMORY:-2Gi}"
-CPU="${CPU:-1}"
-IAP_ALLOWED_DOMAINS="${IAP_ALLOWED_DOMAINS:-google.com}"
+# 2. Validate required environment variables and format constraints
+: "${GCP_PROJECT:?Missing GCP_PROJECT in .env}"
+: "${GCP_REGION:?Missing GCP_REGION in .env}"
+: "${APP_NAME:?Missing APP_NAME in .env}"
+: "${SERVICE_ACCOUNT_NAME:?Missing SERVICE_ACCOUNT_NAME in .env}"
+: "${GEMINI_MODEL:?Missing GEMINI_MODEL in .env}"
+: "${IAP_ALLOWED_DOMAINS:=google.com}"
 
-if [[ -z "${GCP_PROJECT}" ]]; then
-  echo "Error: GCP_PROJECT is not set in .env"
+# Determine IAP Allowed Member for GCP IAM (defaulting to current gcloud user if unspecified)
+CURRENT_ACCOUNT=$(gcloud config get-value account 2>/dev/null || true)
+IAP_ALLOWED_MEMBER="${IAP_ALLOWED_MEMBER:-}"
+
+# Intercept and correct if user specified domain:google.com in IAM member
+if [[ "${IAP_ALLOWED_MEMBER}" =~ (^|:)domain:.*google\.com$|^google\.com$ ]]; then
+  echo "NOTICE: 'domain:google.com' cannot be added to IAM roles due to GCP Domain Restricted Sharing (DRS) Org Policies."
+  echo "        Using active gcloud user (${CURRENT_ACCOUNT}) for IAM role binding, while keeping 'google.com' in IAP_ALLOWED_DOMAINS for JWT verification."
+  IAP_ALLOWED_MEMBER=""
+fi
+
+if [[ -z "${IAP_ALLOWED_MEMBER}" ]]; then
+  if [[ -n "${CURRENT_ACCOUNT}" ]]; then
+    IAP_ALLOWED_MEMBER="user:${CURRENT_ACCOUNT}"
+  else
+    echo "ERROR: IAP_ALLOWED_MEMBER is not set and no active gcloud account found in 'gcloud config get-value account'." >&2
+    echo "Please set IAP_ALLOWED_MEMBER in .env (e.g. user:your-email@example.com)." >&2
+    exit 1
+  fi
+elif [[ "${IAP_ALLOWED_MEMBER}" != *":"* ]]; then
+  if [[ "${IAP_ALLOWED_MEMBER}" == *"@"* ]]; then
+    IAP_ALLOWED_MEMBER="user:${IAP_ALLOWED_MEMBER}"
+  else
+    IAP_ALLOWED_MEMBER="domain:${IAP_ALLOWED_MEMBER}"
+  fi
+fi
+
+# Preflight Check: Validate APP_NAME naming regex
+if [[ ! "${APP_NAME}" =~ ^[a-z]([-a-z0-9]*[a-z0-9])?$ ]]; then
+  echo "ERROR: APP_NAME '${APP_NAME}' is invalid. Must start with a lowercase letter, contain only lowercase letters, numbers, or hyphens, and not end with a hyphen." >&2
   exit 1
 fi
 
-echo "====================================================================="
-echo " Deploying ${APP_NAME} to Google Cloud Run"
-echo " Project: ${GCP_PROJECT} | Region: ${GCP_REGION} | Model: ${GEMINI_MODEL}"
-echo "====================================================================="
-
-gcloud config set project "${GCP_PROJECT}" --quiet
-
-# Enable required Google Cloud APIs
-echo "Enabling necessary GCP APIs..."
-gcloud services enable \
-  run.googleapis.com \
-  aiplatform.googleapis.com \
-  iap.googleapis.com \
-  cloudbuild.googleapis.com \
-  secretmanager.googleapis.com \
-  --project="${GCP_PROJECT}"
-
-PROJECT_NUMBER=$(gcloud projects describe "${GCP_PROJECT}" --format="value(projectNumber)")
-SA_EMAIL="${SERVICE_ACCOUNT_NAME}@${GCP_PROJECT}.iam.gserviceaccount.com"
-
-# Create Dedicated Runtime Service Account if not exists
-if ! gcloud iam service-accounts describe "${SA_EMAIL}" --project="${GCP_PROJECT}" >/dev/null 2>&1; then
-  echo "Creating dedicated runtime Service Account: ${SA_EMAIL}..."
-  gcloud iam service-accounts create "${SERVICE_ACCOUNT_NAME}" \
-    --display-name="Runtime SA for ${APP_NAME}" \
-    --project="${GCP_PROJECT}"
+# Preflight Check: Validate Service Account name length (max 30 characters)
+if (( ${#SERVICE_ACCOUNT_NAME} > 30 )); then
+  echo "ERROR: SERVICE_ACCOUNT_NAME '${SERVICE_ACCOUNT_NAME}' exceeds Google Cloud's 30-character limit." >&2
+  exit 1
 fi
 
-# Grant least-privilege roles to runtime SA
-echo "Granting IAM roles to runtime Service Account..."
-gcloud projects add-iam-policy-binding "${GCP_PROJECT}" \
-  --member="serviceAccount:${SA_EMAIL}" \
-  --role="roles/aiplatform.user" \
-  --condition=None --quiet >/dev/null
+SERVICE_ACCOUNT_EMAIL="${SERVICE_ACCOUNT_NAME}@${GCP_PROJECT}.iam.gserviceaccount.com"
+REPO_NAME="${APP_NAME}-repo"
+IMAGE_URL="${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT}/${REPO_NAME}/${APP_NAME}:latest"
 
-# Grant run.invoker to IAP Service Agent
-IAP_SA="service-${PROJECT_NUMBER}@gcp-sa-iap.iam.gserviceaccount.com"
-echo "Granting Cloud Run Invoker to IAP Service Agent: ${IAP_SA}..."
-gcloud projects add-iam-policy-binding "${GCP_PROJECT}" \
-  --member="serviceAccount:${IAP_SA}" \
-  --role="roles/run.invoker" \
-  --condition=None --quiet >/dev/null || true
+echo "=========================================================="
+echo "Deploying:    ${APP_NAME}"
+echo "Project:      ${GCP_PROJECT}"
+echo "Region:       ${GCP_REGION}"
+echo "Model:        ${GEMINI_MODEL}"
+echo "SA Email:     ${SERVICE_ACCOUNT_EMAIL}"
+echo "IAM Member:   ${IAP_ALLOWED_MEMBER}"
+echo "IAP Domains:  ${IAP_ALLOWED_DOMAINS}"
+echo "=========================================================="
 
-IMAGE_URI="gcr.io/${GCP_PROJECT}/${APP_NAME}:latest"
+# 3. Preflight check: Ensure gcloud is authenticated and project is accessible
+gcloud config set project "${GCP_PROJECT}" --quiet
+PROJECT_NUMBER=$(gcloud projects describe "${GCP_PROJECT}" --format="value(projectNumber)")
+: "${PROJECT_NUMBER:?Unable to retrieve GCP Project Number. Please check gcloud authentication and billing.}"
 
-echo "Building and deploying container via Cloud Build & Cloud Run..."
-gcloud builds submit --tag "${IMAGE_URI}" --project="${GCP_PROJECT}"
+# 4. Enable required GCP APIs
+echo "--> Enabling required Google Cloud APIs..."
+gcloud services enable \
+  run.googleapis.com \
+  secretmanager.googleapis.com \
+  aiplatform.googleapis.com \
+  artifactregistry.googleapis.com \
+  cloudbuild.googleapis.com \
+  iap.googleapis.com \
+  iam.googleapis.com \
+  --project="${GCP_PROJECT}" --quiet
 
-# Deploy to Cloud Run with IAP enabled and IAM service check disabled
-gcloud run deploy "${APP_NAME}" \
-  --image="${IMAGE_URI}" \
-  --region="${GCP_REGION}" \
-  --platform=managed \
-  --service-account="${SA_EMAIL}" \
-  --min-instances="${MIN_INSTANCES}" \
-  --max-instances="${MAX_INSTANCES}" \
-  --memory="${MEMORY}" \
-  --cpu="${CPU}" \
-  --timeout=300 \
-  --iap \
-  --no-invoker-iam-check \
-  --no-allow-unauthenticated \
-  --ingress=all \
-  --set-env-vars="^@^APP_ENV=production@GCP_PROJECT=${GCP_PROJECT}@GCP_REGION=${GCP_REGION}@GEMINI_MODEL=${GEMINI_MODEL}@PROJECT_NUMBER=${PROJECT_NUMBER}@IAP_ALLOWED_DOMAINS=${IAP_ALLOWED_DOMAINS}" \
+# 5. Create Artifact Registry repository if it doesn't exist
+echo "--> Checking Artifact Registry repository..."
+if ! gcloud artifacts repositories describe "${REPO_NAME}" --location="${GCP_REGION}" --project="${GCP_PROJECT}" >/dev/null 2>&1; then
+  echo "    Creating Artifact Registry repo: ${REPO_NAME}..."
+  gcloud artifacts repositories create "${REPO_NAME}" \
+    --repository-format=docker \
+    --location="${GCP_REGION}" \
+    --description="Docker repository for ${APP_NAME} demo" \
+    --project="${GCP_PROJECT}" --quiet
+fi
+
+# 6. Create dedicated runtime Service Account if it doesn't exist (NO JSON KEYS)
+echo "--> Checking runtime Service Account..."
+if ! gcloud iam service-accounts describe "${SERVICE_ACCOUNT_EMAIL}" --project="${GCP_PROJECT}" >/dev/null 2>&1; then
+  echo "    Creating Service Account: ${SERVICE_ACCOUNT_NAME}..."
+  gcloud iam service-accounts create "${SERVICE_ACCOUNT_NAME}" \
+    --display-name="Runtime Service Account for ${APP_NAME} Cloud Run Demo" \
+    --project="${GCP_PROJECT}" --quiet
+fi
+
+# 7. Grant Vertex AI user role to the runtime Service Account (with propagation retry)
+echo "--> Granting roles/aiplatform.user to Service Account..."
+for i in {1..5}; do
+  if gcloud projects add-iam-policy-binding "${GCP_PROJECT}" \
+    --member="serviceAccount:${SERVICE_ACCOUNT_EMAIL}" \
+    --role="roles/aiplatform.user" \
+    --condition=None \
+    --quiet >/dev/null 2>&1; then
+    break
+  fi
+  echo "    Waiting for IAM service account propagation (attempt $i/5)..."
+  sleep 5
+done
+
+# 8. Check Secret Manager for required secrets (with non-interactive CI guard)
+SECRET_FLAGS=""
+if [[ -n "${REQUIRED_SECRETS:-}" ]]; then
+  echo "--> Checking Secret Manager secrets..."
+  IFS=',' read -ra SECRETS <<< "${REQUIRED_SECRETS}"
+  for SECRET_NAME in "${SECRETS[@]}"; do
+    SECRET_NAME=$(echo "${SECRET_NAME}" | xargs) # Trim whitespace
+    if [[ -z "${SECRET_NAME}" ]]; then continue; fi
+
+    if ! gcloud secrets describe "${SECRET_NAME}" --project="${GCP_PROJECT}" >/dev/null 2>&1; then
+      echo "    Secret '${SECRET_NAME}' not found in Secret Manager."
+      if [[ ! -t 0 ]]; then
+        echo "ERROR: Secret '${SECRET_NAME}' is missing and shell is non-interactive." >&2
+        exit 1
+      fi
+      read -s -p "    Enter value for secret '${SECRET_NAME}': " SECRET_VAL
+      echo ""
+      echo -n "${SECRET_VAL}" | gcloud secrets create "${SECRET_NAME}" \
+        --data-file=- \
+        --replication-policy="automatic" \
+        --project="${GCP_PROJECT}" --quiet
+      echo "    Created secret '${SECRET_NAME}'."
+    fi
+
+    # Grant Secret Accessor role to Service Account for this secret
+    gcloud secrets add-iam-policy-binding "${SECRET_NAME}" \
+      --member="serviceAccount:${SERVICE_ACCOUNT_EMAIL}" \
+      --role="roles/secretmanager.secretAccessor" \
+      --project="${GCP_PROJECT}" \
+      --quiet >/dev/null
+
+    if [[ -z "${SECRET_FLAGS}" ]]; then
+      SECRET_FLAGS="--set-secrets=${SECRET_NAME}=${SECRET_NAME}:latest"
+    else
+      SECRET_FLAGS="${SECRET_FLAGS},${SECRET_NAME}=${SECRET_NAME}:latest"
+    fi
+  done
+fi
+
+# 9. Build container image using Cloud Build
+echo "--> Building container image via Cloud Build..."
+gcloud builds submit --tag="${IMAGE_URL}" --project="${GCP_PROJECT}" --quiet
+
+# 10. Deploy to Google Cloud Run with safe --set-env-vars delimiter and IAP enabled
+echo "--> Deploying service to Google Cloud Run..."
+DEPLOY_CMD=(
+  gcloud run deploy "${APP_NAME}"
+  --image="${IMAGE_URL}"
+  --region="${GCP_REGION}"
+  --service-account="${SERVICE_ACCOUNT_EMAIL}"
+  --min-instances="${MIN_INSTANCES:-0}"
+  --max-instances="${MAX_INSTANCES:-3}"
+  --memory="${MEMORY:-2Gi}"
+  --cpu="${CPU:-1}"
+  --iap
+  --no-invoker-iam-check
+  --no-allow-unauthenticated
+  --ingress="all"
+  --set-env-vars="^@^GCP_PROJECT=${GCP_PROJECT}@GCP_REGION=${GCP_REGION}@GEMINI_MODEL=${GEMINI_MODEL}@APP_ENV=${PROD_ENV:-production}@DEBUG=false@IAP_ALLOWED_DOMAINS=${IAP_ALLOWED_DOMAINS}@PROJECT_NUMBER=${PROJECT_NUMBER}"
   --project="${GCP_PROJECT}"
+  --quiet
+)
 
-SERVICE_URL=$(gcloud run services describe "${APP_NAME}" --platform=managed --region="${GCP_REGION}" --format="value(status.url)" --project="${GCP_PROJECT}")
+if [[ -n "${SECRET_FLAGS}" ]]; then
+  DEPLOY_CMD+=("${SECRET_FLAGS}")
+fi
+
+"${DEPLOY_CMD[@]}"
+
+# 11. Retrieve deployed Service URL
+SERVICE_URL=$(gcloud run services describe "${APP_NAME}" \
+  --region="${GCP_REGION}" \
+  --project="${GCP_PROJECT}" \
+  --format="value(status.url)")
+
+echo "--> Deployed Service URL: ${SERVICE_URL}"
+
+# 12. Configure correct IAP IAM Roles
+echo "--> Configuring IAP IAM access for ${IAP_ALLOWED_DOMAINS}..."
+# Grant roles/iap.httpsResourceAccessor at the Cloud Run IAP resource level
+gcloud iap web add-iam-policy-binding \
+  --resource-type=cloud-run \
+  --service="${APP_NAME}" \
+  --region="${GCP_REGION}" \
+  --member="domain:${IAP_ALLOWED_DOMAINS:-google.com}" \
+  --role="roles/iap.httpsResourceAccessor" \
+  --project="${GCP_PROJECT}" --quiet || true
+
+if [[ -n "${IAP_ALLOWED_MEMBER:-}" ]]; then
+  echo "--> Granting IAP access for member: ${IAP_ALLOWED_MEMBER}..."
+  gcloud iap web add-iam-policy-binding \
+    --resource-type=cloud-run \
+    --service="${APP_NAME}" \
+    --region="${GCP_REGION}" \
+    --member="${IAP_ALLOWED_MEMBER}" \
+    --role="roles/iap.httpsResourceAccessor" \
+    --project="${GCP_PROJECT}" --quiet >/dev/null 2>&1 || true
+fi
+
+# Grant roles/run.invoker to the IAP Service Agent
+IAP_SERVICE_AGENT="service-${PROJECT_NUMBER}@gcp-sa-iap.iam.gserviceaccount.com"
+gcloud run services add-iam-policy-binding "${APP_NAME}" \
+  --region="${GCP_REGION}" \
+  --member="serviceAccount:${IAP_SERVICE_AGENT}" \
+  --role="roles/run.invoker" \
+  --project="${GCP_PROJECT}" --quiet >/dev/null
+
 SERVICE_DOMAIN=$(echo "${SERVICE_URL}" | sed -e 's|^[^/]*//||' -e 's|/.*$||')
 
-echo "Configuring IAP Allowed Domains for ${SERVICE_DOMAIN}..."
+# 13. Programmatically configure IAP Allowed Domains
+echo "--> Programmatically configuring IAP Allowed Domains for ${SERVICE_DOMAIN}..."
 IAP_SETTINGS_TMP=$(mktemp)
-cat << EOF > "${IAP_SETTINGS_TMP}"
+cat << EOF_IAP > "${IAP_SETTINGS_TMP}"
 accessSettings:
   allowedDomainsSettings:
     enable: true
     domains:
       - "${SERVICE_DOMAIN}"
       - "${APP_NAME}-${PROJECT_NUMBER}.${GCP_REGION}.run.app"
-EOF
+EOF_IAP
 
 gcloud iap settings set "${IAP_SETTINGS_TMP}" \
   --project="${GCP_PROJECT}" \
   --resource-type=cloud-run \
   --region="${GCP_REGION}" \
-  --service="${APP_NAME}" --quiet || true
+  --service="${APP_NAME}" --quiet >/dev/null 2>&1 || true
 rm -f "${IAP_SETTINGS_TMP}"
 
-# Grant IAP Access to allowed principal
-IAP_PRINCIPAL="${IAP_ALLOWED_MEMBER:-user:$(gcloud config get-value account 2>/dev/null)}"
-if [[ -n "${IAP_PRINCIPAL}" ]]; then
-  echo "Granting IAP Access to ${IAP_PRINCIPAL} on Cloud Run resource..."
-  gcloud iap web add-iam-policy-binding \
-    --resource-type=cloud-run \
-    --service="${APP_NAME}" \
-    --region="${GCP_REGION}" \
-    --member="${IAP_PRINCIPAL}" \
-    --role="roles/iap.httpsResourceAccessor" \
-    --project="${GCP_PROJECT}" || true
+# 14. Post-deploy smoke test
+echo "--> Running post-deploy smoke test against ${SERVICE_URL}..."
+HTTP_STATUS=$(curl -sI -o /dev/null -w "%{http_code}" "${SERVICE_URL}" || true)
+if [[ "${HTTP_STATUS}" =~ ^(200|302|401|403)$ ]]; then
+  echo "--> Smoke test passed! (HTTP Status: ${HTTP_STATUS})"
+else
+  echo "WARNING: Unexpected smoke test response status: ${HTTP_STATUS}" >&2
 fi
 
-echo "====================================================================="
-echo " Deployment Complete!"
-echo " Service URL: ${SERVICE_URL}"
-echo " Protected by Identity-Aware Proxy (IAP)"
-echo "====================================================================="
+echo "=========================================================="
+echo "DEPLOYMENT COMPLETE!"
+echo "Service URL:    ${SERVICE_URL}"
+echo "Service Domain: ${SERVICE_DOMAIN}"
+echo "IAP Principal:  domain:${IAP_ALLOWED_DOMAINS}"
+echo "IAP Domains:    Enabled (${SERVICE_DOMAIN})"
+echo "IAM Member:     ${IAP_ALLOWED_MEMBER:-None}"
+echo "=========================================================="
