@@ -23,6 +23,7 @@ export default {
       },
       fontFamily: {
         sans: ['Inter', 'Helvetica Neue', 'Arial', 'sans-serif'],
+        arimo: ['Arimo', 'Helvetica Neue', 'Arial', 'sans-serif'],
       },
     },
   },

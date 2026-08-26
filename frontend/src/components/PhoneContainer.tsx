@@ -210,7 +210,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
           </div>
 
           {/* Dynamic Center Canvas: Optically Positioned In-Canvas Agent Cards or Watermark */}
-          <div className={`flex-1 w-full px-4 pt-3 pb-2 flex flex-col justify-start items-center min-h-0 overflow-y-auto custom-scrollbar ${isDark ? 'bg-transparent' : 'bg-slate-50/40'}`}>
+          <div className={`flex-1 w-full px-4 pt-3 pb-2 flex flex-col justify-start items-center min-h-0 overflow-y-auto custom-scrollbar font-arimo ${isDark ? 'bg-transparent' : 'bg-slate-50/40'}`}>
             
             {/* 0. Balance Clarification Interactive Card (Shown when user asks general balance, BEFORE specifying account) */}
             {activeCardId === 'balance_clarification' ? (
