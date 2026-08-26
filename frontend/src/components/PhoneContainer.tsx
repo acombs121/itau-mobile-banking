@@ -72,8 +72,12 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
       console.log("Executing sub-agent tool call:", toolName);
       onActionClick(toolName);
       if (toolName === 'get_account_info') {
-        // Only show if not already showing a specific sub-balance
-        setActiveCardId(prev => (prev?.startsWith('balance_') ? prev : 'account_info_agent'));
+        // Preserve specific sub-balance or scheduled payments card if already active
+        setActiveCardId(prev => (
+          (prev?.startsWith('balance_') || prev === 'scheduled_payments' || prev === 'balance_scheduled_payments')
+            ? prev
+            : 'account_info_agent'
+        ));
       }
       else if (toolName === 'sweep_cdb') setActiveCardId('cash_flow_forecast_agent');
       else if (toolName === 'activate_travel_mode') setActiveCardId('travel_shield_agent');

@@ -374,7 +374,11 @@ export const App: React.FC = () => {
 
     if (actionType === 'get_account_info' || actionType === 'view_statements' || actionType === 'view_limits') {
       setActiveRunningAgentId('account_info_agent');
-      setActiveDynamicCardId(prev => (prev?.startsWith('balance_') ? prev : 'account_info_agent'));
+      setActiveDynamicCardId(prev => (
+        (prev?.startsWith('balance_') || prev === 'scheduled_payments' || prev === 'balance_scheduled_payments')
+          ? prev
+          : 'account_info_agent'
+      ));
       setActiveScenario('account_info');
       setAgentStates(prev => ({
         ...prev,
