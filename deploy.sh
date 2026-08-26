@@ -23,7 +23,7 @@ set +a
 : "${APP_NAME:?Missing APP_NAME in .env}"
 : "${SERVICE_ACCOUNT_NAME:?Missing SERVICE_ACCOUNT_NAME in .env}"
 : "${GEMINI_MODEL:=gemini-3.7-flash}"
-: "${GEMINI_LIVE_MODEL:=gemini-2.0-flash-exp}"
+: "${GEMINI_LIVE_MODEL:=gemini-3.5-flash-live-preview}"
 : "${IAP_ALLOWED_DOMAINS:=google.com}"
 
 # Determine IAP Allowed Member for GCP IAM (defaulting to current gcloud user if unspecified)

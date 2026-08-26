@@ -40,7 +40,7 @@ This document records the core architectural patterns, WebSocket audio streaming
 ```json
 {
   "setup": {
-    "model": "projects/<PROJECT_ID>/locations/us-central1/publishers/google/models/gemini-2.0-flash-exp",
+    "model": "projects/<PROJECT_ID>/locations/us-central1/publishers/google/models/gemini-3.5-flash-live-preview",
     "generation_config": {
       "response_modalities": ["AUDIO"],
       "speech_config": {

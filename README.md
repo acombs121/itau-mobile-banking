@@ -21,7 +21,7 @@ An intelligent, real-time banking security and proactive alerts platform for **B
 
 The **Itaú Banking Alerts Platform** coordinates proactive financial intelligence and security resolution through a high-performance, dual-engine AI architecture:
 
-1. **Gemini Live Multimodal WebSocket API** (`gemini-2.0-flash-exp` / Live Preview):
+1. **Gemini Live Multimodal WebSocket API** (`gemini-3.5-flash-live-preview`):
    - **Real-Time Voice Streaming**: Bidirectional 16kHz PCM microphone audio streaming and low-latency 24kHz audio synthesis (`Aoede` persona).
    - **Autonomous Function Calling**: Sub-second dispatching of banking sub-agents (`get_account_info`, `sweep_cdb`, `activate_travel_mode`, `get_card_benefits`, `refinance_open_finance`).
 2. **Gemini Enterprise Agent Platform REST API** (`gemini-3.7-flash`):
@@ -39,12 +39,13 @@ The **Itaú Banking Alerts Platform** coordinates proactive financial intelligen
            (Sub-Agent Tool Triggers)   (Bidirectional Live Audio / REST)
                        │                          │
                        ▼                          ▼
-        ┌──────────────────────────┐   ┌──────────────────────────────┐
-        │      Itaú Guard AI       │   │   Gemini Enterprise Agent    │
-        │     Decision Graph       │   │        Platform (ADC)        │
-        │    (BACEN MED Rules)     │   │  • Live: gemini-2.0-flash-exp│
-        └──────────────────────────┘   │  • REST: gemini-3.7-flash    │
-                                       └──────────────────────────────┘
+        ┌──────────────────────────┐   ┌────────────────────────────────┐
+        │      Itaú Guard AI       │   │    Gemini Enterprise Agent     │
+        │     Decision Graph       │   │         Platform (ADC)         │
+        │    (BACEN MED Rules)     │   │ • Live: gemini-3.5-flash-live- │
+        └──────────────────────────┘   │         preview                │
+                                       │ • REST: gemini-3.7-flash       │
+                                       └────────────────────────────────┘
 ```
 
 ---
