@@ -256,7 +256,40 @@ export const App: React.FC = () => {
         }
       }));
     }
-    // 5. Open Finance Balance Consolidation Query
+    // 5. Best Rates, Refinancing & Savings Yield Arbitrage Query
+    else if (q.includes('rate') || q.includes('taxa') || q.includes('best rate') || q.includes('melhor taxa') || q.includes('refinanc') || q.includes('arbitrag') || q.includes('debt') || q.includes('dívida') || q.includes('loan') || q.includes('empréstimo') || q.includes('ccb') || q.includes('saving') || q.includes('poupan') || q.includes('yield')) {
+      setActiveRunningAgentId('open_finance_optimizer');
+      setActiveDynamicCardId('open_finance_optimizer');
+      setActiveScenario('open_finance');
+      setAgentStates(prev => ({
+        ...prev,
+        open_finance_optimizer: {
+          status: 'running',
+          lastRun: nowTime,
+          liveResult: {
+            external_bank: "BANCO_COMPETITOR_SA",
+            debt_refinancing: {
+              competitor_balance_brl: 18000.00,
+              competitor_rate_pm: 11.20,
+              itau_rate_pm: 1.69,
+              rate_spread_saved: "-9.51% a.m.",
+              monthly_savings_brl: 680.40,
+              total_savings_brl: 14280.00,
+              mechanism: "CCB_DIGITAL_LEI_10931"
+            },
+            savings_yield_arbitrage: {
+              external_liquid_assets_brl: 330000.00,
+              competitor_savings_yield: "85% do CDI",
+              itau_cdb_di_yield: "100% do CDI",
+              yield_spread: "+15% do CDI",
+              projected_annual_yield_increase_brl: 5940.00
+            },
+            status: "OPEN_FINANCE_ARBITRAGE_ACTIVE"
+          }
+        }
+      }));
+    }
+    // 6. Open Finance Balance Consolidation Query
     else if (q.includes('consolidat') || q.includes('consolidar') || q.includes('patrimon') || q.includes('all accounts') || q.includes('all balances') || q.includes('todas as contas') || (q.includes('open finance') && (q.includes('balance') || q.includes('saldo')))) {
       setActiveRunningAgentId('account_info_agent');
       setActiveDynamicCardId('account_info_agent');
@@ -288,13 +321,13 @@ export const App: React.FC = () => {
         }
       }));
     }
-    // 6. Generic Balance Query -> Show Clarification Prompt (Do not leak numbers prematurely!)
+    // 7. Generic Balance Query -> Show Clarification Prompt (Do not leak numbers prematurely!)
     else if (q.includes('balance') || q.includes('saldo') || q.includes('extrato') || q.includes('statement')) {
       setActiveRunningAgentId('account_info_agent');
       setActiveDynamicCardId('balance_clarification');
     }
-    // 6. Cash Flow & Yield Forecasting
-    else if (q.includes('ticket') || q.includes('passagem') || q.includes('lisbon') || q.includes('lisboa') || q.includes('forecast') || q.includes('previsão') || q.includes('shortfall') || q.includes('sweep') || q.includes('resgate') || q.includes('yield') || q.includes('rendimento')) {
+    // 8. Cash Flow & Yield Forecasting
+    else if (q.includes('ticket') || q.includes('passagem') || q.includes('lisbon') || q.includes('lisboa') || q.includes('forecast') || q.includes('previsão') || q.includes('shortfall') || q.includes('sweep') || q.includes('resgate')) {
       setActiveRunningAgentId('cash_flow_forecast_agent');
       setActiveDynamicCardId('cash_flow_forecast_agent');
       setActiveScenario('cash_flow');
@@ -314,7 +347,7 @@ export const App: React.FC = () => {
         }
       }));
     }
-    // 7. Travel Notice & Fraud Defense
+    // 9. Travel Notice & Fraud Defense
     else if (q.includes('travel') || q.includes('viagem') || q.includes('portugal') || q.includes('spain') || q.includes('espanha') || q.includes('madrid') || q.includes('trip') || q.includes('flight') || q.includes('abroad')) {
       setActiveRunningAgentId('travel_shield_agent');
       setActiveDynamicCardId('travel_shield_agent');
@@ -331,27 +364,6 @@ export const App: React.FC = () => {
             pos_limit_brl: 50000.00,
             fraud_suppression: "ENABLING",
             status: "ENGAGING_FRAUD_SHIELD"
-          }
-        }
-      }));
-    }
-    // 8. Open Finance
-    else if (q.includes('refinance') || q.includes('refinanciamento') || q.includes('open finance') || q.includes('debt') || q.includes('dívida') || q.includes('loan') || q.includes('empréstimo') || q.includes('ccb') || q.includes('rate') || q.includes('taxa')) {
-      setActiveRunningAgentId('open_finance_optimizer');
-      setActiveDynamicCardId('open_finance_optimizer');
-      setActiveScenario('open_finance');
-      setAgentStates(prev => ({
-        ...prev,
-        open_finance_optimizer: {
-          status: 'running',
-          lastRun: nowTime,
-          liveResult: {
-            external_bank: "BANCO_COMPETITOR_SA",
-            external_rate_pm: 11.20,
-            itau_rate_pm: 1.69,
-            monthly_savings_brl: 680.40,
-            total_savings_brl: 14280.00,
-            status: "READY_FOR_ELECTRONIC_CCB"
           }
         }
       }));

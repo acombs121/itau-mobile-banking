@@ -726,15 +726,15 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                 </div>
               </div>
             ) : activeCardId === 'open_finance_optimizer' ? (
-              /* Open Finance Optimizer Dynamic Card */
-              <div className={`w-full rounded-[16px] p-4 border animate-fadeIn shadow-2xl relative ${
-                isDark ? 'bg-[#15151A] border-emerald-500/40 text-white' : 'bg-white border-emerald-500/40 text-slate-900 shadow-lg'
+              /* Open Finance Rate Comparison & Yield Arbitrage Dynamic Card */
+              <div className={`w-full rounded-[16px] p-3.5 border animate-fadeIn shadow-2xl relative ${
+                isDark ? 'bg-[#15151A] border-emerald-500/30 text-white' : 'bg-white border-emerald-500/30 text-slate-900 shadow-lg'
               }`}>
-                <div className="flex items-center justify-between mb-2.5">
+                <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#10B981]"></span>
                     <span className="text-[10px] font-mono font-bold tracking-wide uppercase text-emerald-500">
-                      {currentLang === 'en' ? 'OPEN FINANCE ARBITRAGE' : 'OPORTUNIDADE OPEN FINANCE'}
+                      {currentLang === 'en' ? 'BEST RATES & YIELD ARBITRAGE' : 'MELHORES TAXAS & ARBITRAGEM OPEN FINANCE'}
                     </span>
                   </div>
                   <button 
@@ -748,22 +748,71 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                 </div>
 
                 <div className="space-y-2 text-xs">
-                  <div className={`p-2.5 rounded-[10px] ${isDark ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-300' : 'bg-emerald-50 border border-emerald-200 text-emerald-800'}`}>
-                    <span className="text-[10px] font-bold uppercase block">{currentLang === 'en' ? 'Total Savings Projected' : 'Economia Total Projetada'}</span>
-                    <span className="text-base font-bold font-mono">R$ 14.280,00</span>
-                    <span className="text-[10px] block opacity-80 mt-0.5">{currentLang === 'en' ? 'Saves R$ 680.40 / month (11.2% -> 1.69% a.m.)' : 'Economia de R$ 680,40/mês (11,2% -> 1,69% a.m.)'}</span>
+                  {/* 1. Debt Interest Rate Comparison */}
+                  <div className={`p-2.5 rounded-[10px] space-y-1.5 ${isDark ? 'bg-white/[0.03] border border-white/[0.06]' : 'bg-slate-50 border border-slate-200'}`}>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[9.5px] font-bold uppercase tracking-wider text-amber-400">
+                        {currentLang === 'en' ? 'Credit & Debt Rate Optimization' : 'Taxa de Dívidas & Crédito (R$ 18.000)'}
+                      </span>
+                      <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400">
+                        {currentLang === 'en' ? 'Save R$ 14,280' : 'Economia R$ 14.280'}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-[11px] pt-0.5">
+                      <div className={`p-1.5 rounded-[6px] ${isDark ? 'bg-white/[0.02]' : 'bg-white'}`}>
+                        <span className={`text-[9px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'You Pay (Competitor)' : 'Você Paga (Concorrente)'}</span>
+                        <span className="font-mono font-bold text-red-400">11,20% a.m.</span>
+                      </div>
+                      <div className={`p-1.5 rounded-[6px] ${isDark ? 'bg-white/[0.02]' : 'bg-white'}`}>
+                        <span className={`text-[9px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Itaú Sob Medida' : 'Itaú Sob Medida'}</span>
+                        <span className={`font-mono font-bold ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>1,69% a.m.</span>
+                      </div>
+                    </div>
+                    <div className="text-[10px] flex items-center justify-between pt-0.5 border-t border-white/[0.05]">
+                      <span className={isDark ? 'text-white/60' : 'text-slate-500'}>{currentLang === 'en' ? 'Rate Spread / Monthly Savings' : 'Diferença de Taxa / Ganho Mensal'}</span>
+                      <span className="font-mono font-semibold text-emerald-400">-9,51% a.m. (R$ 680,40/mês)</span>
+                    </div>
                   </div>
 
+                  {/* 2. Savings & Fixed Income Yield Comparison */}
+                  <div className={`p-2.5 rounded-[10px] space-y-1.5 ${isDark ? 'bg-white/[0.03] border border-white/[0.06]' : 'bg-slate-50 border border-slate-200'}`}>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[9.5px] font-bold uppercase tracking-wider text-emerald-400">
+                        {currentLang === 'en' ? 'Savings & Yield Difference' : 'Rendimento & Poupança (R$ 330.000)'}
+                      </span>
+                      <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400">
+                        {currentLang === 'en' ? '+R$ 5,940 / yr' : '+R$ 5.940 / ano'}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-[11px] pt-0.5">
+                      <div className={`p-1.5 rounded-[6px] ${isDark ? 'bg-white/[0.02]' : 'bg-white'}`}>
+                        <span className={`text-[9px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Competitor Yield' : 'Rendimento Concorrente'}</span>
+                        <span className="font-mono font-bold text-amber-400">85% do CDI</span>
+                      </div>
+                      <div className={`p-1.5 rounded-[6px] ${isDark ? 'bg-white/[0.02]' : 'bg-white'}`}>
+                        <span className={`text-[9px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Itaú CDB DI' : 'Itaú CDB DI'}</span>
+                        <span className={`font-mono font-bold ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>100% do CDI</span>
+                      </div>
+                    </div>
+                    <div className="text-[10px] flex items-center justify-between pt-0.5 border-t border-white/[0.05]">
+                      <span className={isDark ? 'text-white/60' : 'text-slate-500'}>{currentLang === 'en' ? 'Yield Spread Advantage' : 'Ganho Adicional de Rendimento'}</span>
+                      <span className="font-mono font-semibold text-emerald-400">+15% CDI (Liquidez Diária)</span>
+                    </div>
+                  </div>
+
+                  {/* Refinance Action Button */}
                   <button
                     onClick={() => onActionClick('refinance_open_finance')}
                     className={`w-full py-2 px-3 rounded-[8px] font-bold text-xs flex items-center justify-center gap-1.5 transition-all mt-1 ${
                       isOpenFinanceRefiDone
                         ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                        : 'bg-emerald-500 hover:bg-emerald-600 text-slate-900 shadow-md'
+                        : 'bg-brand-orange hover:bg-brand-orange-hover text-white shadow-md'
                     }`}
                   >
                     {isOpenFinanceRefiDone ? <Check className="w-3.5 h-3.5" /> : <ShieldCheck className="w-3.5 h-3.5" />}
-                    <span>{isOpenFinanceRefiDone ? (currentLang === 'en' ? 'CCB Issued (R$ 14k Saved)' : 'CCB Emitida (R$ 14k Salvos)') : (currentLang === 'en' ? 'Issue Digital CCB (Lei 10.931)' : 'Emitir CCB Digital (Lei 10.931)')}</span>
+                    <span>{isOpenFinanceRefiDone ? (currentLang === 'en' ? 'CCB Issued (R$ 14,280 Saved)' : 'CCB Emitida (R$ 14.280 Salvos)') : (currentLang === 'en' ? 'Issue Digital CCB (Lei 10.931)' : 'Emitir CCB Digital (Lei 10.931)')}</span>
                   </button>
                 </div>
               </div>

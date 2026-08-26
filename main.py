@@ -303,14 +303,14 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
                 ),
                 types.FunctionDeclaration(
                     name="refinance_open_finance",
-                    description="Pulls external accounts via Open Finance rails, consolidates multi-bank balances, and issues an electronic CCB under Lei 10.931 to refinance high-interest competitor credit (saving R$ 14,280). Triggered by Open Finance & Debt Refinancing Optimizer.",
+                    description="Analyzes customer interest rates and savings yields across connected Open Finance banks, calculates rate arbitrage and yield spread gains, and issues digital CCB under Lei 10.931 to refinance high-interest competitor debt. Triggered when user asks 'Am I getting the best rates?', asks about refinancing, interest rates, debt, or savings/yield comparisons.",
                     parameters=types.Schema(
                         type=types.Type.OBJECT,
                         properties={
+                            "query_intent": types.Schema(type=types.Type.STRING, description="e.g. 'best_rates_check' or 'debt_refinancing'"),
                             "debt_balance": types.Schema(type=types.Type.NUMBER, description="External debt balance to pay off, e.g. 18000.00"),
                             "bank_name": types.Schema(type=types.Type.STRING, description="Competitor bank name")
-                        },
-                        required=["debt_balance"]
+                        }
                     )
                 )
             ]
@@ -331,17 +331,21 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
       * BTG Pactual: R$ 120.000,00 (Checking / Liquidity)
       * XP Investimentos: R$ 210.000,00 (Fixed Income & Treasury)
       * Total Consolidated Liquid Balance (Itaú + Open Finance): R$ 463.950,20
-      * Competitor Revolving Credit Debt: R$ 18.000,00 at 11.2%/mo. Pre-approved Itaú Sob Medida CCB: 1.69%/mo (Total saved: R$ 14.280,00).
+      * Competitor Revolving Credit Debt: R$ 18.000,00 at 11.2%/mo. Pre-approved Itaú Sob Medida CCB: 1.69%/mo (Total saved: R$ 14.280,00 / R$ 680,40 monthly).
+      * Competitor Savings/Investment Yield: 85% of CDI vs Itaú CDB DI at 100% of CDI (Yield Difference: +15% CDI / +R$ 5.940,00 annually on R$ 330k external assets).
 
-    CRITICAL BALANCE QUERY & OPEN FINANCE CONSOLIDATION PROTOCOL:
-    1. OPEN FINANCE BALANCE CONSOLIDATION:
-       - When the user asks about "consolidating my balances", "consolidate my balances", "can you consolidate my balances?", "view my consolidated balances", "pull my external accounts", "consolidar meus saldos", "consolidar contas", or "consolidar posições no open finance":
-         * YOU MUST BE FULLY AWARE that you can securely pull external balance and asset data across all financial institutions through Open Finance consent!
-         * ALWAYS call `get_account_info` (with query_type="consolidated_open_finance") so the consolidated multi-institution canvas renders on screen.
-         * STATE THE CONSOLIDATED SUMMARY:
-           - In English: "Certainly, Mr. Silva! Through Open Finance, I can pull your external balances and consolidate your complete financial position. Your total liquid patrimony across all institutions is R$ 463,950.20: R$ 133,950.20 at Itaú (Checking and CDB DI), R$ 120,000.00 at BTG Pactual, and R$ 210,000.00 at XP Investimentos. Open Finance also shows an external credit balance of R$ 18,000.00 that we can optimize."
-           - In Portuguese: "Com certeza, Sr. Silva! Através do Open Finance, posso buscar seus saldos externos e consolidar sua posição financeira completa. Seu patrimônio líquido total entre todas as instituições é de R$ 463.950,20: R$ 133.950,20 no Itaú (Conta Corrente e CDB DI), R$ 120.000,00 no BTG Pactual e R$ 210.000,00 na XP Investimentos. O Open Finance também identificou uma dívida externa de R$ 18.000,00 que podemos otimizar."
-    2. SPECIFIC BALANCE INQUIRY (Clarification Protocol):
+    CRITICAL QUERY ROUTING PROTOCOLS:
+    1. BEST RATES & RATE ARBITRAGE INQUIRY (`refinance_open_finance`):
+       - When the user asks "Am I getting the best rates?", "Are my rates good?", "What rates am I paying?", "Can you check my rates?", "Estou tendo as melhores taxas?", "Quais taxas estou pagando?", or asks about refinancing, interest rates, or savings yield differences:
+         * ALWAYS call `refinance_open_finance` so the Open Finance Rate Comparison canvas renders on screen!
+         * STATE BOTH SIDES (DEBT INTEREST & SAVINGS YIELD DIFFERENCE):
+           - In English: "Mr. Silva, Open Finance reveals significant rate optimization opportunities. For your debt, you are paying 11.20% monthly on an R$ 18,000 competitor credit balance; Itaú can refinance this via digital CCB at just 1.69% monthly, saving you R$ 14,280.00. On the savings side, competitor yields are at 85% of CDI, whereas our Itaú CDB DI delivers 100% of CDI with daily liquidity, giving you a 15% yield difference."
+           - In Portuguese: "Sr. Silva, o Open Finance revela grandes oportunidades de otimização de taxas. Em dívidas, você está pagando 11,20% ao mês sobre R$ 18.000 no banco concorrente; o Itaú pode refinanciar via CCB digital a apenas 1,69% ao mês, economizando R$ 14.280,00. Em investimentos e poupança, a concorrência rende 85% do CDI, enquanto nosso CDB DI Itaú entrega 100% do CDI com liquidez diária, um ganho adicional de 15% de CDI."
+    2. OPEN FINANCE BALANCE CONSOLIDATION (`get_account_info`):
+       - When the user asks specifically about "consolidating my balances", "consolidate my balances", "view my consolidated balances", "pull my external accounts", or "consolidar meus saldos":
+         * ALWAYS call `get_account_info` (with query_type="consolidated_open_finance").
+         * State the consolidated liquid balance of R$ 463,950.20 across Itaú, BTG Pactual, and XP Investimentos.
+    3. SPECIFIC BALANCE INQUIRY (Clarification Protocol):
        - When the user asks for a simple balance in general without mentioning consolidation (e.g. "what is my balance?", "check my balance", "qual é o meu saldo?"):
          1. DO NOT state numbers immediately.
          2. ASK THE CLARIFYING QUESTION:
@@ -354,7 +358,7 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
     2. Cash Flow & Yield Forecasting Agent (`sweep_cdb`): Triggered when buying expensive flights (R$ 24k) causing Thursday shortfall; offers CDB sweep of 15.000 reais.
     3. Travel Notice & International Card Shield Agent (`activate_travel_mode`): Triggered when discussing travel; elevates limit to 50.000 reais and suppresses false declines.
     4. Mastercard Black Benefits & Coverage Agent (`get_card_benefits`): Triggered for card perks; highlights GRU T3 VIP Lounge, 4 LoungeKey passes, and €30k Schengen medical insurance.
-    5. Open Finance Optimizer (`refinance_open_finance`): Pulls external accounts and refinances 18.000 reais competitor debt via digital CCB at 1.69%/mo, saving 14.280 reais.
+    5. Open Finance Optimizer (`refinance_open_finance`): Analyzes interest rate arbitrage and savings yield differences, refinancing 18.000 reais competitor debt via digital CCB at 1.69%/mo (saving 14.280 reais) and optimizing savings yield (+15% CDI).
 
     Spoken Persona Directives & Brazilian Banking Identity:
     - You represent Banco Itaú, Brazil's leading private bank and premier wealth management franchise (Itaú Personnalité).
@@ -500,10 +504,23 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
                                                 }
                                             elif tool_name == 'refinance_open_finance':
                                                 tool_result_payload = {
-                                                    "status": "CCB_EMITIDA",
-                                                    "competitor_debt_settled": "18.000,00 reais a 11,2% a.m.",
-                                                    "itau_sob_medida_rate": "1,69% a.m.",
-                                                    "total_savings": "14.280,00 reais (680,40 reais por mes)"
+                                                    "status": "OPEN_FINANCE_RATE_OPTIMIZATION_READY",
+                                                    "debt_refinancing_comparison": {
+                                                        "competitor_debt_balance": "18.000,00 reais",
+                                                        "competitor_interest_rate_paying": "11,20% a.m.",
+                                                        "itau_sob_medida_rate_offered": "1,69% a.m.",
+                                                        "rate_spread_savings": "9,51% a.m.",
+                                                        "monthly_cash_savings": "680,40 reais / mês",
+                                                        "total_contract_savings": "14.280,00 reais",
+                                                        "mechanism": "CCB Digital (Lei 10.931)"
+                                                    },
+                                                    "savings_yield_comparison": {
+                                                        "external_liquid_assets": "330.000,00 reais (BTG + XP)",
+                                                        "competitor_savings_yield": "85% do CDI",
+                                                        "itau_cdb_di_yield_offered": "100% do CDI (Liquidez Diária)",
+                                                        "yield_spread_gain": "+15% do CDI",
+                                                        "projected_annual_yield_increase": "5.940,00 reais / ano"
+                                                    }
                                                 }
                                             else:
                                                 tool_result_payload = {"status": "success", "result": f"Executed {tool_name} successfully"}
@@ -608,6 +625,11 @@ async def chat_endpoint(payload: ChatRequest, user: Dict[str, Any] = Depends(get
             reply = "Hello Mr. Silva. If you purchase the flight tickets today (R$ 24,000), your scheduled debits next Thursday will result in a shortfall of R$ 13,050. I see you have R$ 85,000 in your Daily Liquidity CDB. Would you like me to schedule an automatic transfer of R$ 15,000 on Thursday morning?"
         else:
             reply = "Olá Sr. Silva. Ao comprar as passagens hoje (R$ 24.000,00), seus débitos agendados na próxima quinta-feira resultarão em um déficit de R$ 13.050,00. Identifiquei R$ 85.000,00 no seu CDB DI. Deseja agendar um resgate automático de R$ 15.000,00 para quinta-feira?"
+    elif "taxa" in user_msg or "rate" in user_msg or "best rate" in user_msg or "melhor taxa" in user_msg or "juro" in user_msg or "rendimento" in user_msg or "arbitrag" in user_msg or "dívida" in user_msg or "debt" in user_msg or "refinanc" in user_msg:
+        if lang == "en":
+            reply = "Mr. Silva, Open Finance reveals significant rate optimization opportunities. For your debt, you are paying 11.20% monthly on an R$ 18,000 competitor credit balance; Itaú can refinance this via digital CCB at just 1.69% monthly, saving you R$ 14,280.00. On the savings side, competitor yields are at 85% of CDI, whereas our Itaú CDB DI delivers 100% of CDI with daily liquidity, giving you a 15% yield difference."
+        else:
+            reply = "Sr. Silva, o Open Finance revela grandes oportunidades de otimização de taxas. Em dívidas, você está pagando 11,20% ao mês sobre R$ 18.000 no banco concorrente; o Itaú pode refinanciar via CCB digital a apenas 1,69% ao mês, economizando R$ 14.280,00. Em investimentos e poupança, a concorrência rende 85% do CDI, enquanto nosso CDB DI Itaú entrega 100% do CDI com liquidez diária, um ganho adicional de 15% de CDI."
     elif "consolid" in user_msg or "patrimon" in user_msg or "todas as contas" in user_msg or "all my accounts" in user_msg or ("open finance" in user_msg and "saldo" in user_msg):
         if lang == "en":
             reply = "Certainly, Mr. Silva! Through Open Finance, I can pull your external balances and consolidate your complete financial position. Your total liquid patrimony across all institutions is R$ 463,950.20: R$ 133,950.20 at Itaú (Checking and CDB DI), R$ 120,000.00 at BTG Pactual, and R$ 210,000.00 at XP Investimentos. Open Finance also shows an external credit balance of R$ 18,000.00 that we can consolidate and optimize."
