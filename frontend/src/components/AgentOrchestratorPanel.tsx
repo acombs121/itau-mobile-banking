@@ -47,15 +47,14 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
     const liveState = agentStates[localizedAgent.id];
     const isRunning = (activeRunningAgentId === localizedAgent.id) || (isProcessingAgent === localizedAgent.id) || (liveState?.status === 'running');
     const isCompleted = liveState?.status === 'completed';
-    const isScenarioDefaultAgent = localizedAgent.id === activeScenarioDef.agentId;
 
-    const status = isRunning ? 'processing' : isCompleted ? 'completed' : (isScenarioDefaultAgent ? 'completed' : 'idle');
-    const resultData = liveState?.liveResult || (isScenarioDefaultAgent ? activeScenarioDef.telemetryPayload : localizedAgent.defaultResult);
+    const status = isRunning ? 'processing' : isCompleted ? 'completed' : 'idle';
+    const resultData = liveState?.liveResult || localizedAgent.defaultResult;
 
     return {
       ...localizedAgent,
       status,
-      lastRun: liveState?.lastRun || (isScenarioDefaultAgent ? '14:52:10 BRT' : undefined),
+      lastRun: liveState?.lastRun,
       resultData
     };
   });
@@ -109,8 +108,8 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
                       ? 'bg-brand-orange/[0.12] border-brand-orange ring-2 ring-brand-orange shadow-[0_0_20px_rgba(255,100,35,0.35)]'
                       : isSelected
                       ? isDark
-                        ? 'bg-white/[0.06] border-brand-orange ring-1 ring-brand-orange/40'
-                        : 'bg-orange-50/50 border-brand-orange ring-1 ring-brand-orange/30 shadow-sm'
+                        ? 'bg-white/[0.05] border-white/20'
+                        : 'bg-slate-100/70 border-slate-300'
                       : isDark
                       ? 'bg-white/[0.02] border-white/[0.06] hover:border-white/[0.18]'
                       : 'bg-white border-slate-200 hover:border-slate-300 shadow-sm'

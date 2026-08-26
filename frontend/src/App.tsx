@@ -76,7 +76,7 @@ export const App: React.FC = () => {
   // Dynamic Sub-Agent Lifecycle States for 5 Specialized Agents
   const [agentStates, setAgentStates] = useState<Record<string, { status: 'idle' | 'running' | 'completed'; lastRun?: string; liveResult?: Record<string, any> }>>({
     account_info_agent: { status: 'idle' },
-    cash_flow_forecast_agent: { status: 'completed', lastRun: '14:52:10 BRT' },
+    cash_flow_forecast_agent: { status: 'idle' },
     travel_shield_agent: { status: 'idle' },
     card_benefits_agent: { status: 'idle' },
     open_finance_optimizer: { status: 'idle' }

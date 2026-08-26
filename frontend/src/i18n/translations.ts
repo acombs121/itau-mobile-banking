@@ -207,7 +207,7 @@ export const translations = {
             name: "Transações Internacionais Previstas",
             group: "Evento Viagem",
             layer: "Input",
-            color: "#F59E0B",
+            color: "#FF6423",
             details: "Gastos previstos em Euros (EUR) • Risco de falso positivo em maquininhas no exterior"
           },
           {
@@ -684,7 +684,7 @@ export const translations = {
             name: "Expected International Transactions",
             group: "Travel Event",
             layer: "Input",
-            color: "#F59E0B",
+            color: "#FF6423",
             details: "Projected spend in Euros (EUR) • Risk of overseas false positive declines"
           },
           {
