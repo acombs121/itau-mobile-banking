@@ -777,20 +777,21 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
           </div>
 
           {/* Bottom Voice Concierge Bar (Placed above Footer Nav) */}
-          <div className={`px-4 py-2 border-t flex items-center justify-between flex-shrink-0 transition-colors relative ${
+          <div className={`px-4 py-2 border-t flex items-center justify-between flex-shrink-0 transition-colors ${
             isDark ? 'border-white/[0.08] bg-[#121217]' : 'border-slate-200 bg-slate-100/90'
           }`}>
-            <div className="flex items-center gap-2 min-w-0 z-10">
+            {/* Left Column: Branding */}
+            <div className="flex items-center gap-2 flex-1 min-w-0">
               <div className="w-2 h-2 rounded-full bg-brand-orange flex-shrink-0"></div>
               <span className={`text-xs font-semibold tracking-tight truncate ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
                 Itaú Concierge
               </span>
             </div>
 
-            {/* Centered Live Audio Waveform */}
-            {isVoiceCallActive && (
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="flex items-center gap-1 h-6 px-3 bg-black/40 rounded-full border border-white/10 animate-fadeIn pointer-events-auto shadow-sm">
+            {/* Center Column: Live Audio Waveform (Balanced in the exact center) */}
+            <div className="flex-1 flex items-center justify-center min-w-0">
+              {isVoiceCallActive && (
+                <div className="flex items-center gap-1 h-6 px-3 bg-black/40 rounded-full border border-white/10 animate-fadeIn shadow-sm">
                   {audioLevels.slice(0, 9).map((level, i) => (
                     <div
                       key={i}
@@ -808,25 +809,27 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                     />
                   ))}
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
-            {/* Mic Trigger Button */}
-            <button
-              onClick={onToggleVoiceCall}
-              className={`w-8 h-8 rounded-full flex items-center justify-center transition-all flex-shrink-0 z-10 ${
-                isVoiceCallActive
-                  ? isSpeaking
-                    ? 'bg-brand-orange text-white ring-4 ring-brand-orange/40 shadow-[0_0_15px_#FF6423]'
-                    : isListening
-                    ? 'bg-emerald-500 text-white ring-4 ring-emerald-500/40 shadow-[0_0_15px_#10B981]'
-                    : 'bg-brand-orange text-white shadow-md'
-                  : 'bg-brand-orange hover:bg-brand-orange-hover text-white shadow-sm'
-              }`}
-              title={isVoiceCallActive ? "Itaú Concierge Voice Active (Click to End)" : "Start Itaú Concierge Voice"}
-            >
-              {isVoiceCallActive && !isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-            </button>
+            {/* Right Column: Mic Trigger Button */}
+            <div className="flex-1 flex justify-end items-center">
+              <button
+                onClick={onToggleVoiceCall}
+                className={`w-8 h-8 rounded-full flex items-center justify-center transition-all flex-shrink-0 ${
+                  isVoiceCallActive
+                    ? isSpeaking
+                      ? 'bg-brand-orange text-white ring-4 ring-brand-orange/40 shadow-[0_0_15px_#FF6423]'
+                      : isListening
+                      ? 'bg-emerald-500 text-white ring-4 ring-emerald-500/40 shadow-[0_0_15px_#10B981]'
+                      : 'bg-brand-orange text-white shadow-md'
+                    : 'bg-brand-orange hover:bg-brand-orange-hover text-white shadow-sm'
+                }`}
+                title={isVoiceCallActive ? "Itaú Concierge Voice Active (Click to End)" : "Start Itaú Concierge Voice"}
+              >
+                {isVoiceCallActive && !isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+              </button>
+            </div>
           </div>
 
           {/* Minimalist Bottom Bar */}
