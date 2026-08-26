@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { QrCode, ArrowUpRight, ArrowDownLeft, CreditCard, Mic, MicOff, X, Check, ShieldCheck, Plane, TrendingUp, HelpCircle } from 'lucide-react';
+import { QrCode, ArrowUpRight, ArrowDownLeft, CreditCard, Mic, MicOff, X, Check, ShieldCheck, Plane, TrendingUp, HelpCircle, ShieldPlus, Car, MapPin } from 'lucide-react';
 import { BankingProfile } from '../types/banking';
 import { IOSNotification, ScenarioId } from '../types/itau_concierge';
 import { Language, translations } from '../i18n/translations';
@@ -346,8 +346,11 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                   </div>
 
                   <div className={`p-2.5 rounded-[8px] ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}>
-                    <div className="text-xs font-semibold text-white/90">📈 {currentLang === 'en' ? 'Yield Rate: 100% of CDI' : 'Rentabilidade: 100% do CDI'}</div>
-                    <div className="text-[10px] text-white/50 mt-0.5">{currentLang === 'en' ? 'Immediate withdrawal 24/7 without penalties.' : 'Resgate imediato 24/7 com liquidez diária.'}</div>
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-white/90">
+                      <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>{currentLang === 'en' ? 'Yield Rate: 100% of CDI' : 'Rentabilidade: 100% do CDI'}</span>
+                    </div>
+                    <div className="text-[10px] text-white/50 mt-0.5 ml-5">{currentLang === 'en' ? 'Immediate withdrawal 24/7 without penalties.' : 'Resgate imediato 24/7 com liquidez diária.'}</div>
                   </div>
                 </div>
               </div>
@@ -467,7 +470,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                     }`}
                   >
                     {isCdbSweepScheduled ? <Check className="w-3.5 h-3.5" /> : <TrendingUp className="w-3.5 h-3.5" />}
-                    <span>{isCdbSweepScheduled ? (currentLang === 'en' ? 'Sweep Scheduled ✓' : 'Resgate Agendado ✓') : (currentLang === 'en' ? 'Schedule CDB Sweep (R$ 15k)' : 'Agendar Resgate CDB (R$ 15k)')}</span>
+                    <span>{isCdbSweepScheduled ? (currentLang === 'en' ? 'Sweep Scheduled' : 'Resgate Agendado') : (currentLang === 'en' ? 'Schedule CDB Sweep (R$ 15k)' : 'Agendar Resgate CDB (R$ 15k)')}</span>
                   </button>
                 </div>
               </div>
@@ -494,7 +497,10 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                 <div className="space-y-2 text-xs">
                   <div className={`p-2.5 rounded-[10px] ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
                     <span className="text-[10px] text-white/50 block">{currentLang === 'en' ? 'Destinations' : 'Destinos'}</span>
-                    <span className="font-semibold text-white">🇵🇹 Portugal (LIS) & 🇪🇸 Espanha (MAD)</span>
+                    <div className="flex items-center gap-1.5 mt-1">
+                      <MapPin className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+                      <span className="font-semibold text-white">Portugal (LIS) • Espanha (MAD)</span>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2">
@@ -517,7 +523,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                     }`}
                   >
                     {isTravelModeActive ? <Check className="w-3.5 h-3.5" /> : <Plane className="w-3.5 h-3.5" />}
-                    <span>{isTravelModeActive ? (currentLang === 'en' ? 'Travel Shield Active ✓' : 'Aviso de Viagem Ativo ✓') : (currentLang === 'en' ? 'Confirm Travel Notice' : 'Confirmar Aviso de Viagem')}</span>
+                    <span>{isTravelModeActive ? (currentLang === 'en' ? 'Travel Shield Active' : 'Aviso de Viagem Ativo') : (currentLang === 'en' ? 'Confirm Travel Notice' : 'Confirmar Aviso de Viagem')}</span>
                   </button>
                 </div>
               </div>
@@ -542,19 +548,28 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                 </div>
 
                 <div className="space-y-2 text-xs">
-                  <div className={`p-2 rounded-[8px] ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
-                    <div className="font-semibold text-blue-300">🏥 {currentLang === 'en' ? 'Schengen Medical Insurance' : 'Seguro Médico Schengen'}</div>
-                    <div className="text-[10px] text-white/60">€30.000 / USD $150.000 {currentLang === 'en' ? 'coverage included' : 'cobertura inclusa'}</div>
+                  <div className={`p-2.5 rounded-[8px] flex items-start gap-2.5 ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
+                    <ShieldPlus className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <div className="font-semibold text-blue-300">{currentLang === 'en' ? 'Schengen Medical Insurance' : 'Seguro Médico Schengen'}</div>
+                      <div className="text-[10px] text-white/60">€30.000 / USD $150.000 {currentLang === 'en' ? 'coverage included' : 'cobertura inclusa'}</div>
+                    </div>
                   </div>
 
-                  <div className={`p-2 rounded-[8px] ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
-                    <div className="font-semibold text-white">✈️ {currentLang === 'en' ? 'VIP Airport Lounges' : 'Salas VIP Aeroportos'}</div>
-                    <div className="text-[10px] text-white/60">{currentLang === 'en' ? 'GRU T3 Unlimited + 4 LoungeKey passes' : 'GRU T3 Ilimitado + 4 passes LoungeKey'}</div>
+                  <div className={`p-2.5 rounded-[8px] flex items-start gap-2.5 ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
+                    <Plane className="w-4 h-4 text-white/90 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <div className="font-semibold text-white">{currentLang === 'en' ? 'VIP Airport Lounges' : 'Salas VIP Aeroportos'}</div>
+                      <div className="text-[10px] text-white/60">{currentLang === 'en' ? 'GRU T3 Unlimited + 4 LoungeKey passes' : 'GRU T3 Ilimitado + 4 passes LoungeKey'}</div>
+                    </div>
                   </div>
 
-                  <div className={`p-2 rounded-[8px] ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
-                    <div className="font-semibold text-emerald-400">🚗 {currentLang === 'en' ? 'Masterseguro Auto (CDW/LDW)' : 'Masterseguro de Automóveis'}</div>
-                    <div className="text-[10px] text-white/60">{currentLang === 'en' ? 'Rental car damage protection + 24/7 Concierge' : 'Cobertura de locação + Concierge 24h'}</div>
+                  <div className={`p-2.5 rounded-[8px] flex items-start gap-2.5 ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
+                    <Car className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <div className="font-semibold text-emerald-400">{currentLang === 'en' ? 'Masterseguro Auto (CDW/LDW)' : 'Masterseguro de Automóveis'}</div>
+                      <div className="text-[10px] text-white/60">{currentLang === 'en' ? 'Rental car damage protection + 24/7 Concierge' : 'Cobertura de locação + Concierge 24h'}</div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -594,7 +609,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                     }`}
                   >
                     {isOpenFinanceRefiDone ? <Check className="w-3.5 h-3.5" /> : <ShieldCheck className="w-3.5 h-3.5" />}
-                    <span>{isOpenFinanceRefiDone ? (currentLang === 'en' ? 'CCB Issued (R$ 14k Saved) ✓' : 'CCB Emitida (R$ 14k Salvos) ✓') : (currentLang === 'en' ? 'Issue Digital CCB (Lei 10.931)' : 'Emitir CCB Digital (Lei 10.931)')}</span>
+                    <span>{isOpenFinanceRefiDone ? (currentLang === 'en' ? 'CCB Issued (R$ 14k Saved)' : 'CCB Emitida (R$ 14k Salvos)') : (currentLang === 'en' ? 'Issue Digital CCB (Lei 10.931)' : 'Emitir CCB Digital (Lei 10.931)')}</span>
                   </button>
                 </div>
               </div>
