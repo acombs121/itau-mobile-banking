@@ -71,7 +71,7 @@ export const App: React.FC = () => {
 
   // Active Scenario State: Default is 'account_info' (1st Agent)
   const [activeScenario, setActiveScenario] = useState<ScenarioId>('account_info');
-  const [activeRunningAgentId, setActiveRunningAgentId] = useState<string | null>('account_info_agent');
+  const [activeRunningAgentId, setActiveRunningAgentId] = useState<string | null>(null);
 
   // Dynamic Sub-Agent Lifecycle States for 5 Specialized Agents
   const [agentStates, setAgentStates] = useState<Record<string, { status: 'idle' | 'running' | 'completed'; lastRun?: string; liveResult?: Record<string, any> }>>({
