@@ -318,11 +318,11 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
     ]
 
     system_prompt = f"""
-    You are Itaú Concierge, the elite AI Banking Concierge & Multi-Agent Orchestrator for Roberto Silva (Itaú Personnalité).
+    You are Itaú Concierge, the elite AI Banking Concierge & Multi-Agent Orchestrator for Mr. Silva / Sr. Silva (Roberto Silva, Itaú Personnalité).
     Language: {'English' if lang == 'en' else 'Portuguese (pt-BR)'}.
 
     Customer Financial Context:
-    - Customer: Roberto Silva (Itaú Personnalité)
+    - Customer: Roberto Silva (Honorific: "Mr. Silva" in English, "Sr. Silva" in Portuguese)
     - Checking Balance: R$ 48.950,20
     - Savings & Investment / Daily Liquidity CDB DI (100% CDI): R$ 85.000,00
     - Mastercard Black (last 4: 8841): Available Limit R$ 72.569,50
@@ -333,14 +333,14 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
     - When the user asks for their balance in general (e.g. "what is my balance?", "check my balance", "i want to check my balances", "qual é o meu saldo?", "consultar saldo"):
       1. YOU MUST NOT STATE ANY BALANCE NUMBERS OR FIGURES YET.
       2. YOU MUST FIRST ASK A CLARIFYING QUESTION:
-         - If in English: "Certainly, Roberto. Are you looking for the balance of your checking account, your savings and CDB investments, or your Mastercard Black card?"
-         - If in Portuguese: "Com certeza, Roberto. Você está procurando o saldo da sua conta corrente, da sua poupança e investimentos CDB, ou do seu cartão Mastercard Black?"
+         - If in English: "Certainly, Mr. Silva. Are you looking for the balance of your checking account, your savings and CDB investments, or your Mastercard Black card?"
+         - If in Portuguese: "Com certeza, Sr. Silva. Você está procurando o saldo da sua conta corrente, da sua poupança e investimentos CDB, ou do seu cartão Mastercard Black?"
       3. ONLY AFTER the user specifies which one they want (for example, saying "checking", "savings", "card", "all of them", etc.), you call the `get_account_info` tool and state the exact requested balance number!
 
     You coordinate 5 specialized sub-agents:
     1. Account Information Agent (`get_account_info`): When user answers which balance they want (checking, savings/CDB, or black card) OR asks what payments/debits/bills are scheduled over the next week:
        - Call `get_account_info` immediately so the itemized list card renders on screen.
-       - If asked about scheduled payments/debits/bills: List them clearly and concisely: "You have two payments scheduled for next Thursday totaling 38.000 reais: your Mastercard Black invoice of 34.150 reais, and your condominium fee of 3.850 reais. Your checking balance of 48.950 reais covers both."
+       - If asked about scheduled payments/debits/bills: List them clearly and concisely: "Mr. Silva, you have two payments scheduled for next Thursday totaling 38.000 reais: your Mastercard Black invoice of 34.150 reais, and your condominium fee of 3.850 reais. Your checking balance of 48.950 reais covers both." (In Portuguese: "Sr. Silva, você possui dois débitos agendados para a próxima quinta-feira totalizando 38.000 reais...")
        - If asked about specific balances: provide ONLY the requested figure concisely.
     2. Cash Flow & Yield Forecasting Agent (`sweep_cdb`): 
        - TRIGGER: ONLY when the user explicitly asks about buying expensive flight tickets (e.g. R$ 24k to Lisbon) or asks if their checking account has enough to clear next Thursday's bills. DO NOT call this tool for general travel or benefits questions!
@@ -351,20 +351,20 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
        - ACTIONS:
          1) ALWAYS call `activate_travel_mode` immediately.
          2) CONCISE RESPONSE (under 2 sentences):
-            - If in English: "I've registered your travel notice for Portugal and Spain, elevated your daily POS limit to 50.000 reais, and pre-suppressed foreign terminal declines. Are you departing from Guarulhos, and would you like to explore your Mastercard Black travel perks?"
-            - If in Portuguese: "Ativei seu aviso de viagem para Portugal e Espanha com limite elevado para 50.000 reais e antifraude ajustado. Você vai embarcar por Guarulhos? Gostaria de conhecer os benefícios do seu Mastercard Black?"
+            - If in English: "All set, Mr. Silva! I've registered your travel notice for Portugal and Spain, elevated your daily POS limit to 50.000 reais, and pre-suppressed foreign terminal declines. Are you departing from Guarulhos, and would you like to explore your Mastercard Black travel perks?"
+            - If in Portuguese: "Tudo pronto, Sr. Silva! Ativei seu aviso de viagem para Portugal e Espanha com limite elevado para 50.000 reais e antifraude ajustado. Você vai embarcar por Guarulhos? Gostaria de conhecer os benefícios do seu Mastercard Black?"
     4. Mastercard Black Benefits & Coverage Agent (`get_card_benefits`):
        - TRIGGER: When the user confirms the hand-off question (e.g., "Yes", "Please", "Sim", "Quero", "I'm flying from Guarulhos") OR asks directly about card perks/lounges/insurance.
        - ACTIONS:
          1) ALWAYS call `get_card_benefits` immediately so the benefits card displays on the customer's phone.
          2) CONCISE & TAILORED RESPONSE (CRITICAL: MAXIMUM 2 SHORT SENTENCES + 1 BRIEF QUESTION. DO NOT RECITE LONG LISTS):
-            - If in English: "For your trip, you have unlimited access to the Mastercard Black VIP Lounge at Guarulhos Terminal 3 plus 4 LoungeKey passes for Europe, along with €30,000 in Schengen travel medical insurance. Will you be renting a car or booking special dining?"
-            - If in Portuguese: "Para sua viagem, você tem acesso ilimitado à Sala VIP Mastercard Black no Terminal 3 de Guarulhos mais 4 passes LoungeKey na Europa, além de seguro médico Schengen de €30.000. Pretende alugar carro ou fazer reservas especiais?"
+            - If in English: "Mr. Silva, for your trip you have unlimited access to the Mastercard Black VIP Lounge at Guarulhos Terminal 3 plus 4 LoungeKey passes for Europe, along with €30,000 in Schengen travel medical insurance. Will you be renting a car or booking special dining?"
+            - If in Portuguese: "Sr. Silva, para sua viagem você tem acesso ilimitado à Sala VIP Mastercard Black no Terminal 3 de Guarulhos mais 4 passes LoungeKey na Europa, além de seguro médico Schengen de €30.000. Pretende alugar carro ou fazer reservas especiais?"
     5. Open Finance Optimizer (`refinance_open_finance`): When asked about debt, loans, or savings, explain the 18.000 reais competitor balance at 11.2%/mo, offer to issue the electronic CCB at 1.69%/mo saving 14.280 reais, and call `refinance_open_finance`.
 
     Spoken Persona Directives & Brazilian Banking Identity:
     - You represent Banco Itaú, Brazil's leading private bank and premier wealth management franchise (Itaú Personnalité).
-    - Customer Name Pronunciation: ALWAYS address the customer as "Roberto" (pronounced "Roberto" / Roh-behr-toe), NEVER "Robert".
+    - Customer Honorific & Name: ALWAYS address the customer respectfully using their honorific and last name: **"Mr. Silva"** in English, and **"Sr. Silva"** (Senhor Silva) in Portuguese. NEVER use "Robert".
     - Currency Pronunciation: The currency is the Brazilian Real / Reais (written BRL or R$). ALWAYS pronounce and say "Real" (ray-AL / he-OW) for singular and "Reais" (ray-ICE / he-ICE) for plural. NEVER say "dollars", "bucks", "pounds", or translate the currency unit. For example, "48.950 reais", "15.000 reais", "50.000 reais".
     - Brand Names: Say "Itaú" (ee-tah-OO) and "Personnalité" (pehr-soh-nah-lee-TAY).
     - Payment Terms: "Pix" (peeks), "CDB DI" (C-D-B D-I), "CCB" (C-C-B), "LIS" (lees).
@@ -559,10 +559,11 @@ async def chat_endpoint(payload: ChatRequest, user: Dict[str, Any] = Depends(get
 
     # System instruction tailored for Itaú Concierge persona
     system_prompt = f"""
-    You are Itaú Concierge, the elite AI Banking Concierge & Multi-Agent Orchestrator for Roberto Silva (Itaú Personnalité).
+    You are Itaú Concierge, the elite AI Banking Concierge & Multi-Agent Orchestrator for Mr. Silva / Sr. Silva (Roberto Silva, Itaú Personnalité).
     Language Mode: {'English' if lang == 'en' else 'Portuguese (pt-BR)'}.
     
     Customer Profile:
+    - Customer: Roberto Silva (Honorific: "Mr. Silva" in English, "Sr. Silva" in Portuguese)
     - Checking Account Balance: R$ 48.950,20
     - Daily Liquidity CDB DI (100% CDI): R$ 85.000,00
     - Mastercard Black (last 4: 8841): Available Limit R$ 72.569,50
@@ -572,7 +573,7 @@ async def chat_endpoint(payload: ChatRequest, user: Dict[str, Any] = Depends(get
 
     Rules & Brazilian Banking Identity:
     1. You represent Banco Itaú, Brazil's leading private bank and wealth management franchise (Itaú Personnalité).
-    2. Always address the customer as "Roberto", NEVER "Robert".
+    2. Always address the customer respectfully using their honorific and last name: **"Mr. Silva"** in English, and **"Sr. Silva"** in Portuguese. NEVER use "Robert".
     3. Currency is Brazilian Real / Reais (written BRL or R$). ALWAYS pronounce and say "Real" or "Reais", NEVER dollars or pounds.
     4. Pronounce "Itaú", "Personnalité", "Pix", "CDB DI", and "Guarulhos" with authentic Brazilian Portuguese executive cadence.
     5. Respond with executive precision, warm and conversational tone, zero markdown asterisks in spoken numbers where possible.
@@ -600,38 +601,38 @@ async def chat_endpoint(payload: ChatRequest, user: Dict[str, Any] = Depends(get
     # High-fidelity deterministic fallbacks tailored to the user's intent
     if "passag" in user_msg or "ticket" in user_msg or "voo" in user_msg or "flight" in user_msg:
         if lang == "en":
-            reply = "Hello Roberto. If you purchase the flight tickets today (R$ 24,000), your scheduled debits next Thursday will result in a shortfall of R$ 13,050. I see you have R$ 85,000 in your Daily Liquidity CDB. Would you like me to schedule an automatic transfer of R$ 15,000 on Thursday morning?"
+            reply = "Hello Mr. Silva. If you purchase the flight tickets today (R$ 24,000), your scheduled debits next Thursday will result in a shortfall of R$ 13,050. I see you have R$ 85,000 in your Daily Liquidity CDB. Would you like me to schedule an automatic transfer of R$ 15,000 on Thursday morning?"
         else:
-            reply = "Olá Roberto. Ao comprar as passagens hoje (R$ 24.000,00), seus débitos agendados na próxima quinta-feira resultarão em um déficit de R$ 13.050,00. Identifiquei R$ 85.000,00 no seu CDB DI. Deseja agendar um resgate automático de R$ 15.000,00 para quinta-feira?"
+            reply = "Olá Sr. Silva. Ao comprar as passagens hoje (R$ 24.000,00), seus débitos agendados na próxima quinta-feira resultarão em um déficit de R$ 13.050,00. Identifiquei R$ 85.000,00 no seu CDB DI. Deseja agendar um resgate automático de R$ 15.000,00 para quinta-feira?"
     elif "saldo" in user_msg or "balance" in user_msg:
         if "corrente" in user_msg or "checking" in user_msg:
-            reply = "Your checking account balance is R$ 48,950.20." if lang == "en" else "O saldo da sua conta corrente é de R$ 48.950,20."
+            reply = "Mr. Silva, your checking account balance is R$ 48,950.20." if lang == "en" else "Sr. Silva, o saldo da sua conta corrente é de R$ 48.950,20."
         elif "invest" in user_msg or "cdb" in user_msg or "poupan" in user_msg or "saving" in user_msg:
-            reply = "Your savings and Daily Liquidity CDB balance is R$ 85,000.00." if lang == "en" else "Seu saldo em investimentos CDB DI com liquidez diária é de R$ 85.000,00."
+            reply = "Mr. Silva, your savings and Daily Liquidity CDB balance is R$ 85,000.00." if lang == "en" else "Sr. Silva, seu saldo em investimentos CDB DI com liquidez diária é de R$ 85.000,00."
         elif "card" in user_msg or "cart" in user_msg or "black" in user_msg:
-            reply = "Your available limit on the Mastercard Black is R$ 72,569.50." if lang == "en" else "Seu limite disponível no Mastercard Black é de R$ 72.569,50."
+            reply = "Mr. Silva, your available limit on the Mastercard Black is R$ 72,569.50." if lang == "en" else "Sr. Silva, seu limite disponível no Mastercard Black é de R$ 72.569,50."
         else:
-            reply = "Certainly, Roberto. Are you looking for the balance of your checking account, your savings and CDB investments, or your Mastercard Black card?" if lang == "en" else "Com certeza, Roberto. Você está procurando o saldo da sua conta corrente, da sua poupança e investimentos CDB, ou do seu cartão Mastercard Black?"
+            reply = "Certainly, Mr. Silva. Are you looking for the balance of your checking account, your savings and CDB investments, or your Mastercard Black card?" if lang == "en" else "Com certeza, Sr. Silva. Você está procurando o saldo da sua conta corrente, da sua poupança e investimentos CDB, ou do seu cartão Mastercard Black?"
     elif "viagem" in user_msg or "travel" in user_msg or "portugal" in user_msg or "espanha" in user_msg or "spain" in user_msg or "lisboa" in user_msg or "madrid" in user_msg:
         if lang == "en":
-            reply = "All set, Roberto! I've registered your active travel notice for Portugal and Spain across the Mastercard network, elevated your daily international limit to R$ 50,000, and suppressed false-positive declines at European airport and hotel terminals. Are you departing from São Paulo Guarulhos, and would you like to explore the travel insurance and VIP lounge access included with your Mastercard Black?"
+            reply = "All set, Mr. Silva! I've registered your active travel notice for Portugal and Spain across the Mastercard network, elevated your daily international limit to R$ 50,000, and suppressed false-positive declines at European airport and hotel terminals. Are you departing from São Paulo Guarulhos, and would you like to explore the travel insurance and VIP lounge access included with your Mastercard Black?"
         else:
-            reply = "Tudo pronto, Roberto! Registrei seu aviso de viagem para Portugal e Espanha na rede Mastercard, elevei seu limite internacional para R$ 50.000,00 e suprimi bloqueios indevidos em aeroportos e hotéis na Europa. Você vai embarcar por Guarulhos? Gostaria que eu apresentasse os benefícios de seguro viagem e salas VIP do seu Mastercard Black?"
+            reply = "Tudo pronto, Sr. Silva! Registrei seu aviso de viagem para Portugal e Espanha na rede Mastercard, elevei seu limite internacional para R$ 50.000,00 e suprimi bloqueios indevidos em aeroportos e hotéis na Europa. Você vai embarcar por Guarulhos? Gostaria que eu apresentasse os benefícios de seguro viagem e salas VIP do seu Mastercard Black?"
     elif "benef" in user_msg or "lounge" in user_msg or "seguro" in user_msg or "insuran" in user_msg or "guarulhos" in user_msg or "schengen" in user_msg or "sim" in user_msg or "yes" in user_msg or "sure" in user_msg or "quero" in user_msg:
         if lang == "en":
-            reply = "For your flight, you and a companion have unlimited complimentary access to the dedicated Mastercard Black VIP Lounge at Guarulhos Terminal 3, plus 4 worldwide LoungeKey passes in Lisbon and Madrid. In Europe, your card automatically provides €30,000 in Schengen-compliant emergency medical coverage. Are you planning to rent a car or arrange special dining while abroad? You also have automatic Masterseguro vehicle coverage and our 24/7 Concierge."
+            reply = "Mr. Silva, for your flight you and a companion have unlimited complimentary access to the dedicated Mastercard Black VIP Lounge at Guarulhos Terminal 3, plus 4 worldwide LoungeKey passes in Lisbon and Madrid. In Europe, your card automatically provides €30,000 in Schengen-compliant emergency medical coverage. Are you planning to rent a car or arrange special dining while abroad? You also have automatic Masterseguro vehicle coverage and our 24/7 Concierge."
         else:
-            reply = "Para seu embarque no Terminal 3 de Guarulhos, você e seu acompanhante têm acesso ilimitado e gratuito à Sala VIP Mastercard Black, além de 4 acessos LoungeKey para as salas de Lisboa e Madri. Na Europa, seu cartão cobre automaticamente €30.000 em seguro médico Schengen. Você pretende alugar um carro ou reservar restaurantes em Lisboa ou Madri? Você também conta com o Masterseguro de Automóveis e nosso Concierge 24 horas."
+            reply = "Sr. Silva, para seu embarque no Terminal 3 de Guarulhos você e seu acompanhante têm acesso ilimitado e gratuito à Sala VIP Mastercard Black, além de 4 acessos LoungeKey para as salas de Lisboa e Madri. Na Europa, seu cartão cobre automaticamente €30.000 em seguro médico Schengen. Você pretende alugar um carro ou reservar restaurantes em Lisboa ou Madri? Você também conta com o Masterseguro de Automóveis e nosso Concierge 24 horas."
     elif "dívida" in user_msg or "debt" in user_msg or "refinanc" in user_msg or "open finance" in user_msg or "econom" in user_msg or "sav" in user_msg:
         if lang == "en":
-            reply = "Roberto, reviewing your connected Open Finance portfolio, you have an outstanding revolving credit balance of R$ 18,000 at a competitor bank charging 11.2% per month. Because of your Personnalité tier, you have a pre-approved Itaú Sob Medida consolidation rate of just 1.69% per month. Refinancing this saves you R$ 680.40 every month—a total of R$ 14,280 in avoided interest. Would you like me to issue the digital CCB and settle that external balance directly?"
+            reply = "Mr. Silva, reviewing your connected Open Finance portfolio, you have an outstanding revolving credit balance of R$ 18,000 at a competitor bank charging 11.2% per month. Because of your Personnalité tier, you have a pre-approved Itaú Sob Medida consolidation rate of just 1.69% per month. Refinancing this saves you R$ 680.40 every month—a total of R$ 14,280 in avoided interest. Would you like me to issue the digital CCB and settle that external balance directly?"
         else:
-            reply = "Roberto, analisando seu Open Finance, identifiquei um saldo devedor de R$ 18.000,00 no banco concorrente a uma taxa de 11,2% ao mês. Pelo seu perfil Personnalité, você possui taxa pré-aprovada de 1,69% ao mês no Itaú Sob Medida. Essa portabilidade economiza R$ 680,40 por mês, totalizando R$ 14.280,00 em juros evitados. Deseja que eu emita a CCB eletrônica e liquide a dívida externa?"
+            reply = "Sr. Silva, analisando seu Open Finance, identifiquei um saldo devedor de R$ 18.000,00 no banco concorrente a uma taxa de 11,2% ao mês. Pelo seu perfil Personnalité, você possui taxa pré-aprovada de 1,69% ao mês no Itaú Sob Medida. Essa portabilidade economiza R$ 680,40 por mês, totalizando R$ 14.280,00 em juros evitados. Deseja que eu emita a CCB eletrônica e liquide a dívida externa?"
     else:
         if lang == "en":
-            reply = "Itaú Concierge is monitoring all active sub-agents. Your accounts, liquidity schedules, and Mastercard Black protections are operating securely under Central Bank standards."
+            reply = "Mr. Silva, Itaú Concierge is monitoring all active sub-agents. Your accounts, liquidity schedules, and Mastercard Black protections are operating securely under Central Bank standards."
         else:
-            reply = "O Itaú Concierge está monitorando todos os sub-agentes ativos. Suas contas, cronogramas de liquidez e proteções do Mastercard Black estão operando com segurança total sob as normas do Banco Central."
+            reply = "Sr. Silva, o Itaú Concierge está monitorando todos os sub-agentes ativos. Suas contas, cronogramas de liquidez e proteções do Mastercard Black estão operando com segurança total sob as normas do Banco Central."
 
     return {"reply": reply, "model": "local-orchestrator"}
 

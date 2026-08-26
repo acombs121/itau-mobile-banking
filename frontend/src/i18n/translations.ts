@@ -454,7 +454,7 @@ export const translations = {
     modal: {
       title: "Itaú Concierge Live",
       subtitle: "Assistente Multimodal de Operações Financeiras & Segurança Proativa",
-      initialGreeting: "Olá Roberto. Sou o Itaú Concierge. Como posso ajudar com suas contas, previsão de liquidez ou planos de viagem hoje?",
+      initialGreeting: "Olá Sr. Silva. Sou o Itaú Concierge. Como posso ajudar com suas contas, previsão de liquidez ou planos de viagem hoje?",
       micHelp: "Fale diretamente sobre saldo, compras de passagens aéreas ou refinanciamento.",
       endCall: "Encerrar Chamada",
       speaking: "Itaú Concierge Falando...",
@@ -931,7 +931,7 @@ export const translations = {
     modal: {
       title: "Itaú Concierge Live",
       subtitle: "Multimodal Proactive Banking & Security Assistant",
-      initialGreeting: "Hello Roberto. I am Itaú Concierge. How can I assist with your accounts, liquidity forecast, or travel plans today?",
+      initialGreeting: "Hello Mr. Silva. I am Itaú Concierge. How can I assist with your accounts, liquidity forecast, or travel plans today?",
       micHelp: "Speak directly about balances, flight ticket purchases, or debt refinancing.",
       endCall: "End Call",
       speaking: "Itaú Concierge Speaking...",
