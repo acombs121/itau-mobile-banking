@@ -22,7 +22,8 @@ set +a
 : "${GCP_REGION:?Missing GCP_REGION in .env}"
 : "${APP_NAME:?Missing APP_NAME in .env}"
 : "${SERVICE_ACCOUNT_NAME:?Missing SERVICE_ACCOUNT_NAME in .env}"
-: "${GEMINI_MODEL:?Missing GEMINI_MODEL in .env}"
+: "${GEMINI_MODEL:=gemini-3.7-flash}"
+: "${GEMINI_LIVE_MODEL:=gemini-2.0-flash-exp}"
 : "${IAP_ALLOWED_DOMAINS:=google.com}"
 
 # Determine IAP Allowed Member for GCP IAM (defaulting to current gcloud user if unspecified)
@@ -187,7 +188,7 @@ DEPLOY_CMD=(
   --no-invoker-iam-check
   --no-allow-unauthenticated
   --ingress="all"
-  --set-env-vars="^@^GCP_PROJECT=${GCP_PROJECT}@GCP_REGION=${GCP_REGION}@GEMINI_MODEL=${GEMINI_MODEL}@APP_ENV=${PROD_ENV:-production}@DEBUG=false@IAP_ALLOWED_DOMAINS=${IAP_ALLOWED_DOMAINS}@PROJECT_NUMBER=${PROJECT_NUMBER}"
+  --set-env-vars="^@^GCP_PROJECT=${GCP_PROJECT}@GCP_REGION=${GCP_REGION}@GEMINI_MODEL=${GEMINI_MODEL}@GEMINI_LIVE_MODEL=${GEMINI_LIVE_MODEL}@APP_ENV=${PROD_ENV:-production}@DEBUG=false@IAP_ALLOWED_DOMAINS=${IAP_ALLOWED_DOMAINS}@PROJECT_NUMBER=${PROJECT_NUMBER}"
   --project="${GCP_PROJECT}"
   --quiet
 )

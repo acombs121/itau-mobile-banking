@@ -19,25 +19,32 @@ An intelligent, real-time banking security and proactive alerts platform for **B
 
 ## Executive & Architectural Overview
 
-The **Itaú Banking Alerts Platform** intercepts high-risk transactions (such as out-of-pattern Pix payments, night-time limit overrides, and anomalous IP geolocations) in sub-200ms and coordinates proactive resolution through an interactive mobile banking app and multimodal AI assistant.
+The **Itaú Banking Alerts Platform** coordinates proactive financial intelligence and security resolution through a high-performance, dual-engine AI architecture:
+
+1. **Gemini Live Multimodal WebSocket API** (`gemini-2.0-flash-exp` / Live Preview):
+   - **Real-Time Voice Streaming**: Bidirectional 16kHz PCM microphone audio streaming and low-latency 24kHz audio synthesis (`Aoede` persona).
+   - **Autonomous Function Calling**: Sub-second dispatching of banking sub-agents (`get_account_info`, `sweep_cdb`, `activate_travel_mode`, `get_card_benefits`, `refinance_open_finance`).
+2. **Gemini Enterprise Agent Platform REST API** (`gemini-3.7-flash`):
+   - **High-Order Analytical Reasoning**: Deep JSON schema validation, risk evaluation, and multi-turn financial decisioning.
 
 ```
        [ Itaú Cardholder (Browser/Mobile) ]
                         │
                         ▼  (IAP Protected / X-Goog-IAP-JWT-Assertion)
-        ┌──────────────────────────────┐
-        │       Google Cloud Run       │
-        │  (FastAPI Backend + Vite UI) │
-        └──────────────┬───────────────┘
-                       │
-         ┌─────────────┴─────────────┐
-         │                           │
-         ▼                           ▼
-┌──────────────────┐       ┌──────────────────────────────┐
-│  Itaú Guard AI   │       │   Gemini Enterprise Agent    │
-│  Decision Graph  │       │       Platform (ADC)         │
-│ (BACEN MED Rules)│       │      (gemini-3.7-flash)      │
-└──────────────────┘       └──────────────────────────────┘
+        ┌────────────────────────────────────────────────────────┐
+        │                    Google Cloud Run                    │
+        │              (FastAPI Backend + React UI)              │
+        └──────────────┬──────────────────────────┬──────────────┘
+                       │                          │
+           (Sub-Agent Tool Triggers)   (Bidirectional Live Audio / REST)
+                       │                          │
+                       ▼                          ▼
+        ┌──────────────────────────┐   ┌──────────────────────────────┐
+        │      Itaú Guard AI       │   │   Gemini Enterprise Agent    │
+        │     Decision Graph       │   │        Platform (ADC)        │
+        │    (BACEN MED Rules)     │   │  • Live: gemini-2.0-flash-exp│
+        └──────────────────────────┘   │  • REST: gemini-3.7-flash    │
+                                       └──────────────────────────────┘
 ```
 
 ---
