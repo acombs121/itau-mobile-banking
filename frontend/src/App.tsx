@@ -165,11 +165,48 @@ export const App: React.FC = () => {
         }
       }));
     }
-    // 2. Specific Checking Account Query
+    // 2. Multi-Account / All Accounts Query -> Card with Multiple Accounts (Open Finance & Itaú)
+    else if (
+      q.includes('accounts') || q.includes('my accounts') || q.includes('all accounts') || q.includes('what accounts') ||
+      q.includes('multiple accounts') || q.includes('contas') || q.includes('minhas contas') || q.includes('todas as contas') ||
+      q.includes('quais contas') || q.includes('quais são as minhas contas')
+    ) {
+      setActiveRunningAgentId('account_info_agent');
+      setActiveDynamicCardId('account_info_agent');
+      setActiveScenario('account_info');
+      setAgentStates(prev => ({
+        ...prev,
+        account_info_agent: {
+          status: 'running',
+          lastRun: nowTime,
+          liveResult: {
+            account_id: "ITAU-7749-00912",
+            customer: "Roberto Silva",
+            total_consolidated_liquid_patrimony_brl: 463950.20,
+            itau_accounts: {
+              checking_balance_brl: 48950.20,
+              cdb_di_balance_brl: 85000.00,
+              mastercard_black_available_limit_brl: 72569.50,
+              total_itau_liquid_brl: 133950.20
+            },
+            open_finance_connected_assets: {
+              btg_pactual_checking_liquidity_brl: 120000.00,
+              xp_investimentos_fixed_income_brl: 210000.00,
+              total_external_liquid_brl: 330000.00,
+              external_competitor_debt_brl: 18000.00
+            },
+            scheduled_debits_next_thursday_brl: 38000.00,
+            status: "OPEN_FINANCE_CONSOLIDATED"
+          }
+        }
+      }));
+    }
+    // 2.5 Specific Checking Account Query (Single account, checking specifically)
     else if (
       q.includes('checking') || q.includes('check in') || q.includes('corrente') || 
-      (q.includes('account') && !q.includes('card') && !q.includes('credit') && !q.includes('saving') && !q.includes('cdb')) ||
-      (q.includes('conta') && !q.includes('cartão') && !q.includes('investimento') && !q.includes('cdb'))
+      (q.includes('checking balance')) ||
+      (q.includes('account') && !q.includes('accounts') && !q.includes('card') && !q.includes('credit') && !q.includes('saving') && !q.includes('cdb')) ||
+      (q.includes('conta') && !q.includes('contas') && !q.includes('cartão') && !q.includes('investimento') && !q.includes('cdb'))
     ) {
       setActiveRunningAgentId('account_info_agent');
       setActiveDynamicCardId('balance_checking');
@@ -425,19 +462,17 @@ export const App: React.FC = () => {
     if (actionType === 'get_account_info' || actionType === 'view_statements' || actionType === 'view_limits') {
       setActiveRunningAgentId('account_info_agent');
       const qt = customPayload?.query_type || (customPayload as any)?.args?.query_type;
-      let targetCardId = 'balance_checking';
-      if (qt === 'cdb_investments' || qt === 'savings') {
+      let targetCardId = 'account_info_agent';
+      if (qt === 'checking' || qt === 'checking_account') {
+        targetCardId = 'balance_checking';
+      } else if (qt === 'cdb_investments' || qt === 'savings') {
         targetCardId = 'balance_cdb';
       } else if (qt === 'card_limits' || qt === 'card') {
         targetCardId = 'balance_card';
       } else if (qt === 'scheduled_debits') {
         targetCardId = 'scheduled_payments';
-      } else if (qt === 'consolidated_open_finance') {
-        targetCardId = 'account_info_agent';
       } else {
-        targetCardId = (activeDynamicCardId === 'balance_cdb' || activeDynamicCardId === 'balance_card' || activeDynamicCardId === 'scheduled_payments' || activeDynamicCardId === 'account_info_agent')
-          ? activeDynamicCardId
-          : 'balance_checking';
+        targetCardId = 'account_info_agent';
       }
       setActiveDynamicCardId(targetCardId);
       setActiveScenario('account_info');

@@ -73,16 +73,17 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
       onActionClick(toolName, undefined, { ...toolPayload, query_type: toolArgs?.query_type });
       if (toolName === 'get_account_info') {
         const qt = toolArgs?.query_type;
-        if (qt === 'cdb_investments' || qt === 'savings') {
+        if (qt === 'checking' || qt === 'checking_account') {
+          setActiveCardId('balance_checking');
+        } else if (qt === 'cdb_investments' || qt === 'savings') {
           setActiveCardId('balance_cdb');
         } else if (qt === 'card_limits' || qt === 'card') {
           setActiveCardId('balance_card');
         } else if (qt === 'scheduled_debits') {
           setActiveCardId('scheduled_payments');
-        } else if (qt === 'consolidated_open_finance') {
-          setActiveCardId('account_info_agent');
         } else {
-          setActiveCardId('balance_checking');
+          // Default: card with multiple accounts & consolidated balances
+          setActiveCardId('account_info_agent');
         }
       }
       else if (toolName === 'sweep_cdb') setActiveCardId('cash_flow_forecast_agent');
@@ -438,8 +439,8 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                 <div className={`flex items-center justify-between mb-3 pb-2 border-b ${isDark ? 'border-white/[0.06]' : 'border-slate-100'}`}>
                   <div className="flex items-center gap-2">
                     <Building2 className="w-3.5 h-3.5 opacity-70" />
-                    <span className={`text-[10.5px] font-mono font-bold tracking-wide uppercase ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
-                      {currentLang === 'en' ? 'CONSOLIDATED POSITION' : 'POSIÇÃO CONSOLIDADA'}
+                    <span className={`text-[11px] font-sans font-bold tracking-wider uppercase ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
+                      {currentLang === 'en' ? 'MY ACCOUNTS & CONSOLIDATED POSITION' : 'MINHAS CONTAS & POSIÇÃO CONSOLIDADA'}
                     </span>
                   </div>
                   <button 
@@ -452,14 +453,14 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                   </button>
                 </div>
 
-                <div className="space-y-2 text-xs">
+                <div className="space-y-2 text-xs font-sans">
                   {/* Total Liquid Patrimony Hero Box */}
                   <div className={`p-2.5 rounded-[10px] ${isDark ? 'bg-white/[0.04] border border-white/[0.08]' : 'bg-slate-50 border border-slate-200'}`}>
                     <div className="flex items-center justify-between">
                       <span className={`text-[10px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Total Consolidated Liquid Assets' : 'Patrimônio Líquido Consolidado'}</span>
-                      <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded font-semibold ${isDark ? 'bg-white/10 text-white/80' : 'bg-slate-200 text-slate-700'}`}>{currentLang === 'en' ? '3 Connected Banks' : '3 Bancos Conectados'}</span>
+                      <span className={`text-[9px] font-sans px-1.5 py-0.5 rounded font-semibold ${isDark ? 'bg-white/10 text-white/80' : 'bg-slate-200 text-slate-700'}`}>{currentLang === 'en' ? '3 Connected Banks' : '3 Bancos Conectados'}</span>
                     </div>
-                    <span className={`text-xl font-bold font-mono ${isDark ? 'text-white' : 'text-slate-900'}`}>R$ 463.950,20</span>
+                    <span className={`text-2xl font-black font-sans tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>R$ 463.950,20</span>
                   </div>
 
                   {/* Itaú Balances Breakdown */}
@@ -469,11 +470,11 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                     </div>
                     <div className={`p-1.5 px-2 rounded-[6px] flex justify-between items-center text-[11px] ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}>
                       <span className={isDark ? 'text-white/70' : 'text-slate-600'}>{currentLang === 'en' ? 'Checking Account' : 'Conta Corrente'}</span>
-                      <span className="font-mono font-semibold">R$ 48.950,20</span>
+                      <span className="font-sans font-bold">R$ 48.950,20</span>
                     </div>
                     <div className={`p-1.5 px-2 rounded-[6px] flex justify-between items-center text-[11px] ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}>
                       <span className={isDark ? 'text-white/70' : 'text-slate-600'}>CDB DI (100% CDI)</span>
-                      <span className="font-mono font-semibold">R$ 85.000,00</span>
+                      <span className="font-sans font-bold">R$ 85.000,00</span>
                     </div>
                   </div>
 
@@ -484,11 +485,11 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                     </div>
                     <div className={`p-1.5 px-2 rounded-[6px] flex justify-between items-center text-[11px] ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}>
                       <span className={isDark ? 'text-white/70' : 'text-slate-600'}>BTG Pactual (Liquidez)</span>
-                      <span className="font-mono font-semibold">R$ 120.000,00</span>
+                      <span className="font-sans font-bold">R$ 120.000,00</span>
                     </div>
                     <div className={`p-1.5 px-2 rounded-[6px] flex justify-between items-center text-[11px] ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}>
                       <span className={isDark ? 'text-white/70' : 'text-slate-600'}>XP Investimentos (Tesouro / Selic)</span>
-                      <span className="font-mono font-semibold">R$ 210.000,00</span>
+                      <span className="font-sans font-bold">R$ 210.000,00</span>
                     </div>
                   </div>
 
@@ -496,7 +497,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                   <div className={`p-2 rounded-[8px] flex items-center justify-between text-[11px] mt-1.5 ${isDark ? 'bg-amber-500/10 border border-amber-500/20 text-amber-300' : 'bg-amber-50 border border-amber-200 text-amber-800'}`}>
                     <div>
                       <span className="text-[9.5px] font-bold block">{currentLang === 'en' ? 'Competitor Debt Detected' : 'Dívida no Concorrente'}</span>
-                      <span className="font-mono font-bold">R$ 18.000,00 (11,2% a.m.)</span>
+                      <span className="font-sans font-bold">R$ 18.000,00 (11,2% a.m.)</span>
                     </div>
                     <button
                       onClick={() => onActionClick('refinance_open_finance')}
