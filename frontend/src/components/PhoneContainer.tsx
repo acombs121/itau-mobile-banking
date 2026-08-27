@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { QrCode, ArrowUpRight, ArrowDownLeft, CreditCard, Mic, MicOff, X, Check, ShieldCheck, Plane, TrendingUp, HelpCircle, ShieldPlus, Car, MapPin, Calendar, Building2, ChevronRight } from 'lucide-react';
+import { QrCode, ArrowUpRight, ArrowDownLeft, CreditCard, Mic, MicOff, X, Check, ShieldCheck, Plane, TrendingUp, ShieldPlus, Car, MapPin, Calendar, Building2, ChevronRight } from 'lucide-react';
 import { BankingProfile } from '../types/banking';
 import { ScenarioId } from '../types/itau_concierge';
 import { Language, translations } from '../i18n/translations';
@@ -68,16 +68,22 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
     stopMicrophone,
   } = useGeminiLive({
     lang: currentLang,
-    onToolCall: (toolName, _toolArgs, toolPayload) => {
-      console.log("Executing sub-agent tool call:", toolName, toolPayload);
-      onActionClick(toolName, undefined, toolPayload);
+    onToolCall: (toolName, toolArgs, toolPayload) => {
+      console.log("Executing sub-agent tool call:", toolName, toolArgs, toolPayload);
+      onActionClick(toolName, undefined, { ...toolPayload, query_type: toolArgs?.query_type });
       if (toolName === 'get_account_info') {
-        // Preserve specific sub-balance or scheduled payments card if already active
-        setActiveCardId(prev => (
-          (prev?.startsWith('balance_') || prev === 'scheduled_payments' || prev === 'balance_scheduled_payments')
-            ? prev
-            : 'account_info_agent'
-        ));
+        const qt = toolArgs?.query_type;
+        if (qt === 'cdb_investments' || qt === 'savings') {
+          setActiveCardId('balance_cdb');
+        } else if (qt === 'card_limits' || qt === 'card') {
+          setActiveCardId('balance_card');
+        } else if (qt === 'scheduled_debits') {
+          setActiveCardId('scheduled_payments');
+        } else if (qt === 'consolidated_open_finance') {
+          setActiveCardId('account_info_agent');
+        } else {
+          setActiveCardId('balance_checking');
+        }
       }
       else if (toolName === 'sweep_cdb') setActiveCardId('cash_flow_forecast_agent');
       else if (toolName === 'activate_travel_mode') setActiveCardId('travel_shield_agent');
@@ -161,7 +167,8 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
             <div className={`grid grid-cols-4 gap-1.5 text-center text-[11px] font-medium ${isDark ? 'text-white/80' : 'text-slate-700'}`}>
               <div 
                 onClick={() => {
-                  setActiveCardId('balance_clarification');
+                  onActionClick('get_account_info');
+                  setActiveCardId('balance_checking');
                 }}
                 className={`flex flex-col items-center gap-1 py-1 rounded-[8px] transition-colors cursor-pointer ${isDark ? 'hover:bg-white/[0.05]' : 'hover:bg-white shadow-sm'}`}
               >
@@ -212,82 +219,8 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
           {/* Dynamic Center Canvas: Optically Positioned In-Canvas Agent Cards or Watermark */}
           <div className={`flex-1 w-full px-4 pt-3 pb-2 flex flex-col justify-start items-center min-h-0 overflow-y-auto custom-scrollbar font-arimo ${isDark ? 'bg-transparent' : 'bg-slate-50/40'}`}>
             
-            {/* 0. Balance Clarification Interactive Card (Shown when user asks general balance, BEFORE specifying account) */}
-            {activeCardId === 'balance_clarification' ? (
-              <div className={`w-full rounded-[16px] p-4 border animate-fadeIn shadow-2xl relative ${
-                isDark ? 'bg-[#15151A] border-brand-orange/30 text-white' : 'bg-white border-brand-orange/30 text-slate-900 shadow-lg'
-              }`}>
-                <div className="flex items-center justify-between mb-2.5">
-                  <div className="flex items-center gap-2">
-                    <HelpCircle className="w-3.5 h-3.5 text-brand-orange" />
-                    <span className="text-[10.5px] font-mono font-bold tracking-wide uppercase text-brand-orange">
-                      {currentLang === 'en' ? 'BALANCE INQUIRY' : 'CONSULTA DE SALDO'}
-                    </span>
-                  </div>
-                  <button 
-                    onClick={() => setActiveCardId(null)}
-                    className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${
-                      isDark ? 'text-white/40 hover:text-white hover:bg-white/10' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
-                    }`}
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-
-                <p className={`text-xs mb-3 ${isDark ? 'text-white/80' : 'text-slate-700'}`}>
-                  {currentLang === 'en' 
-                    ? 'Which balance would you like to check?' 
-                    : 'Qual saldo você deseja consultar?'}
-                </p>
-
-                <div className="space-y-1.5">
-                  <button
-                    onClick={() => {
-                      onActionClick('get_account_info');
-                      setActiveCardId('balance_checking');
-                    }}
-                    className={`w-full text-left p-2.5 rounded-[10px] border transition-all text-xs font-medium flex items-center justify-between ${
-                      isDark 
-                        ? 'bg-white/[0.04] border-white/10 hover:bg-brand-orange/10 hover:border-brand-orange/40 text-white' 
-                        : 'bg-slate-50 border-slate-200 hover:bg-orange-50 hover:border-brand-orange/40 text-slate-800'
-                    }`}
-                  >
-                    <span>1. {currentLang === 'en' ? 'Checking Account' : 'Conta Corrente'}</span>
-                    <span className="text-[10px] opacity-60 font-mono">CC • 00912</span>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      onActionClick('get_account_info');
-                      setActiveCardId('balance_cdb');
-                    }}
-                    className={`w-full text-left p-2.5 rounded-[10px] border transition-all text-xs font-medium flex items-center justify-between ${
-                      isDark 
-                        ? 'bg-white/[0.04] border-white/10 hover:bg-brand-orange/10 hover:border-brand-orange/40 text-white' 
-                        : 'bg-slate-50 border-slate-200 hover:bg-orange-50 hover:border-brand-orange/40 text-slate-800'
-                    }`}
-                  >
-                    <span>2. {currentLang === 'en' ? 'Savings & CDB DI' : 'Investimentos CDB DI'}</span>
-                    <span className="text-[10px] opacity-60 font-mono">100% CDI</span>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      onActionClick('get_account_info');
-                      setActiveCardId('balance_card');
-                    }}
-                    className={`w-full text-left p-2.5 rounded-[10px] border transition-all text-xs font-medium flex items-center justify-between ${
-                      isDark 
-                        ? 'bg-white/[0.04] border-white/10 hover:bg-brand-orange/10 hover:border-brand-orange/40 text-white' 
-                        : 'bg-slate-50 border-slate-200 hover:bg-orange-50 hover:border-brand-orange/40 text-slate-800'
-                    }`}
-                  >
-                    <span>3. {currentLang === 'en' ? 'Mastercard Black Card' : 'Cartão Mastercard Black'}</span>
-                    <span className="text-[10px] opacity-60 font-mono">•••• 8841</span>
-                  </button>
-                </div>
-              </div>
-            ) : activeCardId === 'balance_checking' ? (
+            {/* 1. Specific Checking Balance Card */}
+            {activeCardId === 'balance_checking' ? (
               /* Specific Checking Balance Card */
               <div className={`w-full rounded-[16px] p-4 border animate-fadeIn shadow-2xl relative ${
                 isDark ? 'bg-[#15151A] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-lg'

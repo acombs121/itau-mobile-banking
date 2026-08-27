@@ -454,13 +454,14 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
        - When the user asks specifically about "consolidating my balances", "consolidate my balances", "view my consolidated balances", "pull my external accounts", or "consolidar meus saldos":
          * ALWAYS call `get_account_info` (with query_type="consolidated_open_finance").
          * State the consolidated liquid balance of R$ 463,950.20 across Itaú, BTG Pactual, and XP Investimentos.
-    4. SPECIFIC BALANCE INQUIRY (Clarification Protocol):
-       - When the user asks for a simple balance in general without mentioning consolidation (e.g. "what is my balance?", "check my balance", "qual é o meu saldo?"):
-         1. DO NOT state numbers immediately.
-         2. ASK THE CLARIFYING QUESTION:
-            - If in English: "Certainly, Mr. Silva. Are you looking for the balance of your checking account, your savings and CDB investments, or your Mastercard Black card?"
-            - If in Portuguese: "Com certeza, Sr. Silva. Você está procurando o saldo da sua conta corrente, da sua poupança e investimentos CDB, ou do seu cartão Mastercard Black?"
-         3. Only after they specify the account, call `get_account_info` and provide the figure.
+    4. BALANCE INQUIRY (Checking Account Direct Response):
+       - When the user asks for their balance, checking balance, account balance, or statements (e.g. "give me my checking account balance", "what is my balance?", "check my balance", "qual é o meu saldo?", "saldo da conta"):
+         1. ALWAYS immediately call `get_account_info` (with query_type="checking").
+         2. Directly state their available checking account balance of R$ 48.950,20 (48.950 reais), mention their overdraft LIS limit of R$ 10.000, and note that their balance fully covers the R$ 38.000 in scheduled payments due this Thursday.
+         3. DO NOT stall or ask clarifying questions about which account balance they want. Immediate clarity is required.
+         4. Spoken response:
+            - In English: "Mr. Silva, your available checking account balance is 48,950 reais and 20 centavos. You also have a 10,000 reais LIS overdraft limit, and your balance fully covers your 38,000 reais in scheduled payments due this Thursday."
+            - In Portuguese: "Sr. Silva, o saldo disponível em sua conta corrente é de 48.950 reais e 20 centavos. Você também conta com R$ 10.000,00 de limite LIS, e seu saldo cobre com folga os R$ 38.000,00 agendados para a próxima quinta-feira."
 
     You coordinate 5 specialized sub-agents:
     1. Account Information Agent (`get_account_info`): Handles balance inquiries, scheduled payments, and multi-bank Open Finance balance consolidation.

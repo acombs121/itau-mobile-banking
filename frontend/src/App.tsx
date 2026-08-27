@@ -166,7 +166,11 @@ export const App: React.FC = () => {
       }));
     }
     // 2. Specific Checking Account Query
-    else if (q.includes('checking') || q.includes('corrente') || (q.includes('conta') && !q.includes('cartão') && !q.includes('investimento') && !q.includes('cdb'))) {
+    else if (
+      q.includes('checking') || q.includes('check in') || q.includes('corrente') || 
+      (q.includes('account') && !q.includes('card') && !q.includes('credit') && !q.includes('saving') && !q.includes('cdb')) ||
+      (q.includes('conta') && !q.includes('cartão') && !q.includes('investimento') && !q.includes('cdb'))
+    ) {
       setActiveRunningAgentId('account_info_agent');
       setActiveDynamicCardId('balance_checking');
       setAgentStates(prev => ({
@@ -311,10 +315,24 @@ export const App: React.FC = () => {
         }
       }));
     }
-    // 7. Generic Balance Query -> Show Clarification Prompt (Do not leak numbers prematurely!)
+    // 7. Generic Balance Query -> Directly Show Checking Account Balance
     else if (q.includes('balance') || q.includes('saldo') || q.includes('extrato') || q.includes('statement')) {
       setActiveRunningAgentId('account_info_agent');
-      setActiveDynamicCardId('balance_clarification');
+      setActiveDynamicCardId('balance_checking');
+      setAgentStates(prev => ({
+        ...prev,
+        account_info_agent: {
+          status: 'running',
+          lastRun: nowTime,
+          liveResult: {
+            account_type: "CHECKING_ACCOUNT",
+            checking_balance_brl: 48950.20,
+            lis_limit_brl: 10000.00,
+            scheduled_debits_next_thursday_brl: 38000.00,
+            status: "QUERY_COMPLETE"
+          }
+        }
+      }));
     }
     // 8. Cash Flow & Yield Forecasting
     else if (q.includes('ticket') || q.includes('passagem') || q.includes('lisbon') || q.includes('lisboa') || q.includes('forecast') || q.includes('previsão') || q.includes('shortfall') || q.includes('sweep') || q.includes('resgate')) {
@@ -406,11 +424,22 @@ export const App: React.FC = () => {
 
     if (actionType === 'get_account_info' || actionType === 'view_statements' || actionType === 'view_limits') {
       setActiveRunningAgentId('account_info_agent');
-      setActiveDynamicCardId(prev => (
-        (prev?.startsWith('balance_') || prev === 'scheduled_payments' || prev === 'balance_scheduled_payments')
-          ? prev
-          : 'account_info_agent'
-      ));
+      const qt = customPayload?.query_type || (customPayload as any)?.args?.query_type;
+      let targetCardId = 'balance_checking';
+      if (qt === 'cdb_investments' || qt === 'savings') {
+        targetCardId = 'balance_cdb';
+      } else if (qt === 'card_limits' || qt === 'card') {
+        targetCardId = 'balance_card';
+      } else if (qt === 'scheduled_debits') {
+        targetCardId = 'scheduled_payments';
+      } else if (qt === 'consolidated_open_finance') {
+        targetCardId = 'account_info_agent';
+      } else {
+        targetCardId = (activeDynamicCardId === 'balance_cdb' || activeDynamicCardId === 'balance_card' || activeDynamicCardId === 'scheduled_payments' || activeDynamicCardId === 'account_info_agent')
+          ? activeDynamicCardId
+          : 'balance_checking';
+      }
+      setActiveDynamicCardId(targetCardId);
       setActiveScenario('account_info');
       
       const payloadData = customPayload || {
