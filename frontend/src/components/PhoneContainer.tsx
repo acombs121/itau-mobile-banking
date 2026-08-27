@@ -292,10 +292,10 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
               <div className={`w-full rounded-[16px] p-4 border animate-fadeIn shadow-2xl relative ${
                 isDark ? 'bg-[#15151A] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-lg'
               }`}>
-                <div className="flex items-center justify-between mb-3">
+                <div className={`flex items-center justify-between mb-3 pb-2 border-b ${isDark ? 'border-white/[0.06]' : 'border-slate-100'}`}>
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-brand-orange"></span>
-                    <span className="text-[10.5px] font-mono font-bold tracking-wide uppercase text-brand-orange">
+                    <Building2 className="w-3.5 h-3.5 opacity-70" />
+                    <span className={`text-[10.5px] font-mono font-bold tracking-wide uppercase ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
                       {currentLang === 'en' ? 'CHECKING ACCOUNT' : 'CONTA CORRENTE'}
                     </span>
                   </div>
@@ -413,10 +413,10 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
               <div className={`w-full rounded-[16px] p-4 border animate-fadeIn shadow-2xl relative ${
                 isDark ? 'bg-[#15151A] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-lg'
               }`}>
-                <div className="flex items-center justify-between mb-3">
+                <div className={`flex items-center justify-between mb-3 pb-2 border-b ${isDark ? 'border-white/[0.06]' : 'border-slate-100'}`}>
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-brand-orange"></span>
-                    <span className="text-[10.5px] font-mono font-bold tracking-wide uppercase text-brand-orange">
+                    <TrendingUp className="w-3.5 h-3.5 opacity-70" />
+                    <span className={`text-[10.5px] font-mono font-bold tracking-wide uppercase ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
                       {currentLang === 'en' ? 'CDB DI INVESTMENTS' : 'INVESTIMENTOS CDB DI'}
                     </span>
                   </div>
@@ -502,11 +502,11 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
               <div className={`w-full rounded-[16px] p-3.5 border animate-fadeIn shadow-2xl relative ${
                 isDark ? 'bg-[#15151A] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-lg'
               }`}>
-                <div className="flex items-center justify-between mb-2.5">
+                <div className={`flex items-center justify-between mb-3 pb-2 border-b ${isDark ? 'border-white/[0.06]' : 'border-slate-100'}`}>
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-brand-orange"></span>
-                    <span className="text-[10px] font-mono font-bold tracking-wide uppercase text-brand-orange">
-                      {currentLang === 'en' ? 'CONSOLIDATED POSITION • OPEN FINANCE' : 'POSIÇÃO CONSOLIDADA • OPEN FINANCE'}
+                    <Building2 className="w-3.5 h-3.5 opacity-70" />
+                    <span className={`text-[10.5px] font-mono font-bold tracking-wide uppercase ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
+                      {currentLang === 'en' ? 'CONSOLIDATED POSITION' : 'POSIÇÃO CONSOLIDADA'}
                     </span>
                   </div>
                   <button 
@@ -578,12 +578,12 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
             ) : activeCardId === 'cash_flow_forecast_agent' ? (
               /* Cash Flow & Yield Optimization Dynamic Card */
               <div className={`w-full rounded-[16px] p-4 border animate-fadeIn shadow-2xl relative ${
-                isDark ? 'bg-[#15151A] border-brand-orange/40 text-white' : 'bg-white border-brand-orange/40 text-slate-900 shadow-lg'
+                isDark ? 'bg-[#15151A] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-lg'
               }`}>
-                <div className="flex items-center justify-between mb-2.5">
+                <div className={`flex items-center justify-between mb-3 pb-2 border-b ${isDark ? 'border-white/[0.06]' : 'border-slate-100'}`}>
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-brand-orange"></span>
-                    <span className="text-[10px] font-mono font-bold tracking-wide uppercase text-brand-orange">
+                    <Calendar className="w-3.5 h-3.5 opacity-70" />
+                    <span className={`text-[10.5px] font-mono font-bold tracking-wide uppercase ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
                       {currentLang === 'en' ? 'CASH FLOW & YIELD OPTIMIZER' : 'PREVISÃO DE SALDO & YIELD'}
                     </span>
                   </div>
@@ -606,31 +606,45 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
 
                   <div className={`p-2 rounded-[8px] ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
                     <span className={`text-[10px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Yield Strategy' : 'Estratégia de Rendimento'}</span>
-                    <span className={`font-semibold ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>R$ 85k {currentLang === 'en' ? 'earning 100% CDI until 06:00 BRT' : 'rendendo 100% CDI até 06:00'}</span>
+                    <span className={`font-semibold ${isDark ? 'text-white' : 'text-slate-800'}`}>R$ 85k {currentLang === 'en' ? 'earning 100% CDI until 06:00 BRT' : 'rendendo 100% CDI até 06:00'}</span>
                   </div>
 
-                  <button
-                    onClick={() => onActionClick('sweep_cdb')}
-                    className={`w-full py-2 px-3 rounded-[8px] font-bold text-xs flex items-center justify-center gap-1.5 transition-all mt-1 ${
-                      isCdbSweepScheduled
-                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                        : 'bg-brand-orange hover:bg-brand-orange-hover text-white shadow-md'
-                    }`}
-                  >
-                    {isCdbSweepScheduled ? <Check className="w-3.5 h-3.5" /> : <TrendingUp className="w-3.5 h-3.5" />}
-                    <span>{isCdbSweepScheduled ? (currentLang === 'en' ? 'Sweep Scheduled' : 'Resgate Agendado') : (currentLang === 'en' ? 'Schedule CDB Sweep (R$ 15k)' : 'Agendar Resgate CDB (R$ 15k)')}</span>
-                  </button>
+                  {isCdbSweepScheduled ? (
+                    <div className={`w-full py-2.5 px-3 rounded-[8px] border text-xs flex items-center justify-between mt-1 ${
+                      isDark ? 'bg-white/[0.03] border-white/10' : 'bg-slate-50 border-slate-200'
+                    }`}>
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 rounded-full bg-emerald-500/15 flex items-center justify-center flex-shrink-0">
+                          <Check className="w-2.5 h-2.5 text-emerald-400" />
+                        </div>
+                        <span className={`font-semibold ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
+                          {currentLang === 'en' ? 'CDB Sweep Scheduled' : 'Resgate CDB Agendado'}
+                        </span>
+                      </div>
+                      <span className="font-mono text-[11px] text-emerald-400 font-semibold">
+                        {currentLang === 'en' ? 'R$ 15k on Thu' : 'R$ 15k na Quinta'}
+                      </span>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => onActionClick('sweep_cdb')}
+                      className="w-full py-2.5 px-4 rounded-[8px] font-semibold text-xs flex items-center justify-center gap-2 bg-brand-orange hover:bg-brand-orange-hover text-white shadow-sm transition-all mt-1"
+                    >
+                      <TrendingUp className="w-3.5 h-3.5" />
+                      <span>{currentLang === 'en' ? 'Schedule CDB Sweep (R$ 15k)' : 'Agendar Resgate CDB (R$ 15k)'}</span>
+                    </button>
+                  )}
                 </div>
               </div>
             ) : activeCardId === 'travel_shield_agent' ? (
               /* Travel Shield Dynamic Card */
               <div className={`w-full rounded-[16px] p-4 border animate-fadeIn shadow-2xl relative ${
-                isDark ? 'bg-[#15151A] border-brand-orange/40 text-white' : 'bg-white border-brand-orange/40 text-slate-900 shadow-lg'
+                isDark ? 'bg-[#15151A] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-lg'
               }`}>
-                <div className="flex items-center justify-between mb-2.5">
+                <div className={`flex items-center justify-between mb-3 pb-2 border-b ${isDark ? 'border-white/[0.06]' : 'border-slate-100'}`}>
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-brand-orange"></span>
-                    <span className="text-[10px] font-mono font-bold tracking-wide uppercase text-brand-orange">
+                    <Plane className="w-3.5 h-3.5 opacity-70" />
+                    <span className={`text-[10.5px] font-mono font-bold tracking-wide uppercase ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
                       {currentLang === 'en' ? 'TRAVEL SHIELD & FRAUD DEFENSE' : 'AVISO VIAGEM & ANTIFRAUDE'}
                     </span>
                   </div>
@@ -660,21 +674,35 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                     </div>
                     <div className={`p-2 rounded-[8px] ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}>
                       <span className={`text-[9px] block ${isDark ? 'text-white/40' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Declines' : 'Recusas'}</span>
-                      <span className={`font-semibold ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>{currentLang === 'en' ? 'Pre-Suppressed' : 'Suprimidas'}</span>
+                      <span className="font-semibold font-mono text-[11px] text-emerald-400">{currentLang === 'en' ? 'Pre-Suppressed' : 'Suprimidas'}</span>
                     </div>
                   </div>
 
-                  <button
-                    onClick={() => onActionClick('activate_travel_mode')}
-                    className={`w-full py-2 px-3 rounded-[8px] font-bold text-xs flex items-center justify-center gap-1.5 transition-all mt-1 ${
-                      isTravelModeActive
-                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                        : 'bg-brand-orange hover:bg-brand-orange-hover text-white shadow-md'
-                    }`}
-                  >
-                    {isTravelModeActive ? <Check className="w-3.5 h-3.5" /> : <Plane className="w-3.5 h-3.5" />}
-                    <span>{isTravelModeActive ? (currentLang === 'en' ? 'Travel Shield Active' : 'Aviso de Viagem Ativo') : (currentLang === 'en' ? 'Confirm Travel Notice' : 'Confirmar Aviso de Viagem')}</span>
-                  </button>
+                  {isTravelModeActive ? (
+                    <div className={`w-full py-2.5 px-3 rounded-[8px] border text-xs flex items-center justify-between mt-1 ${
+                      isDark ? 'bg-white/[0.03] border-white/10' : 'bg-slate-50 border-slate-200'
+                    }`}>
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 rounded-full bg-emerald-500/15 flex items-center justify-center flex-shrink-0">
+                          <Check className="w-2.5 h-2.5 text-emerald-400" />
+                        </div>
+                        <span className={`font-semibold ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
+                          {currentLang === 'en' ? 'Travel Shield Active' : 'Aviso de Viagem Ativo'}
+                        </span>
+                      </div>
+                      <span className="font-mono text-[11px] text-emerald-400 font-semibold">
+                        {currentLang === 'en' ? 'Limit: R$ 50k' : 'Limite: R$ 50k'}
+                      </span>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => onActionClick('activate_travel_mode')}
+                      className="w-full py-2.5 px-4 rounded-[8px] font-semibold text-xs flex items-center justify-center gap-2 bg-brand-orange hover:bg-brand-orange-hover text-white shadow-sm transition-all mt-1"
+                    >
+                      <Plane className="w-3.5 h-3.5" />
+                      <span>{currentLang === 'en' ? 'Confirm Travel Notice' : 'Confirmar Aviso de Viagem'}</span>
+                    </button>
+                  )}
 
                   {/* Proactive Card Benefits Action Button */}
                   {isTravelModeActive && (
@@ -697,10 +725,10 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
               <div className={`w-full rounded-[16px] p-4 border animate-fadeIn shadow-2xl relative ${
                 isDark ? 'bg-[#15151A] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-lg'
               }`}>
-                <div className="flex items-center justify-between mb-2.5">
+                <div className={`flex items-center justify-between mb-3 pb-2 border-b ${isDark ? 'border-white/[0.06]' : 'border-slate-100'}`}>
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-brand-orange"></span>
-                    <span className="text-[10px] font-mono font-bold tracking-wide uppercase text-brand-orange">
+                    <CreditCard className="w-3.5 h-3.5 opacity-70" />
+                    <span className={`text-[10.5px] font-mono font-bold tracking-wide uppercase ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
                       {currentLang === 'en' ? 'MASTERCARD BLACK BENEFITS' : 'BENEFÍCIOS MASTERCARD BLACK'}
                     </span>
                   </div>
@@ -742,14 +770,14 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
               </div>
             ) : activeCardId === 'open_finance_optimizer' ? (
               /* Open Finance Rate Comparison & Yield Arbitrage Dynamic Card */
-              <div className={`w-full rounded-[16px] p-3.5 border animate-fadeIn shadow-2xl relative ${
+              <div className={`w-full rounded-[16px] p-4 border animate-fadeIn shadow-2xl relative ${
                 isDark ? 'bg-[#15151A] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-lg'
               }`}>
-                <div className="flex items-center justify-between mb-2">
+                <div className={`flex items-center justify-between mb-3 pb-2 border-b ${isDark ? 'border-white/[0.06]' : 'border-slate-100'}`}>
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-brand-orange"></span>
-                    <span className="text-[10px] font-mono font-bold tracking-wide uppercase text-brand-orange">
-                      {currentLang === 'en' ? 'BEST RATES & YIELD ARBITRAGE' : 'MELHORES TAXAS & ARBITRAGEM OPEN FINANCE'}
+                    <TrendingUp className="w-3.5 h-3.5 opacity-70" />
+                    <span className={`text-[10.5px] font-mono font-bold tracking-wide uppercase ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
+                      {currentLang === 'en' ? 'OPEN FINANCE ARBITRAGE' : 'ARBITRAGEM OPEN FINANCE'}
                     </span>
                   </div>
                   <button 
@@ -762,73 +790,113 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                   </button>
                 </div>
 
-                <div className="space-y-2 text-xs">
+                <div className="space-y-2.5 text-xs">
                   {/* 1. Debt Interest Rate Comparison */}
-                  <div className={`p-2.5 rounded-[10px] space-y-1.5 ${isDark ? 'bg-white/[0.03] border border-white/[0.06]' : 'bg-slate-50 border border-slate-200'}`}>
-                    <div className="flex items-center justify-between">
-                      <span className={`text-[9.5px] font-bold uppercase tracking-wider ${isDark ? 'text-white/70' : 'text-slate-600'}`}>
-                        {currentLang === 'en' ? 'Credit & Debt Rate Optimization' : 'Taxa de Dívidas & Crédito (R$ 18.000)'}
+                  <div className={`p-3 rounded-[10px] space-y-2 ${isDark ? 'bg-white/[0.03] border border-white/[0.06]' : 'bg-slate-50 border border-slate-200'}`}>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className={`text-xs font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                        {currentLang === 'en' ? 'Debt Refinancing' : 'Refinanciamento de Dívida'}
                       </span>
-                      <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400">
+                      <span className="text-[10px] font-mono font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 whitespace-nowrap">
                         {currentLang === 'en' ? 'Save R$ 14,280' : 'Economia R$ 14.280'}
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2 text-[11px] pt-0.5">
-                      <div className={`p-1.5 rounded-[6px] ${isDark ? 'bg-white/[0.02]' : 'bg-white'}`}>
-                        <span className={`text-[9px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'You Pay (Competitor)' : 'Você Paga (Concorrente)'}</span>
-                        <span className="font-mono font-bold text-red-400">11,20% a.m.</span>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className={`p-2 rounded-[6px] ${isDark ? 'bg-white/[0.02]' : 'bg-white'}`}>
+                        <span className={`text-[9px] block uppercase font-mono tracking-wider ${isDark ? 'text-white/40' : 'text-slate-400'}`}>
+                          {currentLang === 'en' ? 'Competitor' : 'Concorrente'}
+                        </span>
+                        <span className={`font-mono text-xs ${isDark ? 'text-white/60' : 'text-slate-600'}`}>
+                          11,20% a.m.
+                        </span>
                       </div>
-                      <div className={`p-1.5 rounded-[6px] ${isDark ? 'bg-white/[0.02]' : 'bg-white'}`}>
-                        <span className={`text-[9px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Itaú Sob Medida' : 'Itaú Sob Medida'}</span>
-                        <span className={`font-mono font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>1,69% a.m.</span>
+                      <div className={`p-2 rounded-[6px] ${isDark ? 'bg-white/[0.02]' : 'bg-white'}`}>
+                        <span className={`text-[9px] block uppercase font-mono tracking-wider ${isDark ? 'text-white/40' : 'text-slate-400'}`}>
+                          Itaú Sob Medida
+                        </span>
+                        <span className={`font-mono text-xs font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                          1,69% a.m.
+                        </span>
                       </div>
                     </div>
-                    <div className="text-[10px] flex items-center justify-between pt-0.5 border-t border-white/[0.05]">
-                      <span className={isDark ? 'text-white/60' : 'text-slate-500'}>{currentLang === 'en' ? 'Rate Spread / Monthly Savings' : 'Diferença de Taxa / Ganho Mensal'}</span>
-                      <span className="font-mono font-semibold text-emerald-400">-9,51% a.m. (R$ 680,40/mês)</span>
+
+                    <div className={`text-[10.5px] flex items-center justify-between pt-2 border-t ${isDark ? 'border-white/[0.06]' : 'border-slate-200'}`}>
+                      <span className={isDark ? 'text-white/50' : 'text-slate-500'}>
+                        {currentLang === 'en' ? 'Monthly Savings' : 'Economia Mensal'}
+                      </span>
+                      <span className="font-mono font-medium text-emerald-400 whitespace-nowrap">
+                        -9,51% a.m. (R$ 680,40/mês)
+                      </span>
                     </div>
                   </div>
 
                   {/* 2. Savings & Fixed Income Yield Comparison */}
-                  <div className={`p-2.5 rounded-[10px] space-y-1.5 ${isDark ? 'bg-white/[0.03] border border-white/[0.06]' : 'bg-slate-50 border border-slate-200'}`}>
-                    <div className="flex items-center justify-between">
-                      <span className={`text-[9.5px] font-bold uppercase tracking-wider ${isDark ? 'text-white/70' : 'text-slate-600'}`}>
-                        {currentLang === 'en' ? 'Savings & Yield Difference' : 'Rendimento & Poupança (R$ 330.000)'}
+                  <div className={`p-3 rounded-[10px] space-y-2 ${isDark ? 'bg-white/[0.03] border border-white/[0.06]' : 'bg-slate-50 border border-slate-200'}`}>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className={`text-xs font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                        {currentLang === 'en' ? 'CDB Yield Difference' : 'Rendimento CDB DI'}
                       </span>
-                      <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400">
+                      <span className="text-[10px] font-mono font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 whitespace-nowrap">
                         {currentLang === 'en' ? '+R$ 5,940 / yr' : '+R$ 5.940 / ano'}
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2 text-[11px] pt-0.5">
-                      <div className={`p-1.5 rounded-[6px] ${isDark ? 'bg-white/[0.02]' : 'bg-white'}`}>
-                        <span className={`text-[9px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Competitor Yield' : 'Rendimento Concorrente'}</span>
-                        <span className="font-mono font-bold text-amber-400">85% do CDI</span>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className={`p-2 rounded-[6px] ${isDark ? 'bg-white/[0.02]' : 'bg-white'}`}>
+                        <span className={`text-[9px] block uppercase font-mono tracking-wider ${isDark ? 'text-white/40' : 'text-slate-400'}`}>
+                          {currentLang === 'en' ? 'Competitor' : 'Concorrente'}
+                        </span>
+                        <span className={`font-mono text-xs ${isDark ? 'text-white/60' : 'text-slate-600'}`}>
+                          85% do CDI
+                        </span>
                       </div>
-                      <div className={`p-1.5 rounded-[6px] ${isDark ? 'bg-white/[0.02]' : 'bg-white'}`}>
-                        <span className={`text-[9px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Itaú CDB DI' : 'Itaú CDB DI'}</span>
-                        <span className={`font-mono font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>100% do CDI</span>
+                      <div className={`p-2 rounded-[6px] ${isDark ? 'bg-white/[0.02]' : 'bg-white'}`}>
+                        <span className={`text-[9px] block uppercase font-mono tracking-wider ${isDark ? 'text-white/40' : 'text-slate-400'}`}>
+                          Itaú CDB DI
+                        </span>
+                        <span className={`font-mono text-xs font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                          100% do CDI
+                        </span>
                       </div>
                     </div>
-                    <div className="text-[10px] flex items-center justify-between pt-0.5 border-t border-white/[0.05]">
-                      <span className={isDark ? 'text-white/60' : 'text-slate-500'}>{currentLang === 'en' ? 'Yield Spread Advantage' : 'Ganho Adicional de Rendimento'}</span>
-                      <span className="font-mono font-semibold text-emerald-400">+15% CDI (Liquidez Diária)</span>
+
+                    <div className={`text-[10.5px] flex items-center justify-between pt-2 border-t ${isDark ? 'border-white/[0.06]' : 'border-slate-200'}`}>
+                      <span className={isDark ? 'text-white/50' : 'text-slate-500'}>
+                        {currentLang === 'en' ? 'Yield Advantage' : 'Ganho Adicional'}
+                      </span>
+                      <span className="font-mono font-medium text-emerald-400 whitespace-nowrap">
+                        +15% CDI (Liquidez Diária)
+                      </span>
                     </div>
                   </div>
 
-                  {/* Refinance Action Button */}
-                  <button
-                    onClick={() => onActionClick('refinance_open_finance')}
-                    className={`w-full py-2 px-3 rounded-[8px] font-bold text-xs flex items-center justify-center gap-1.5 transition-all mt-1 ${
-                      isOpenFinanceRefiDone
-                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                        : 'bg-brand-orange hover:bg-brand-orange-hover text-white shadow-md'
-                    }`}
-                  >
-                    {isOpenFinanceRefiDone ? <Check className="w-3.5 h-3.5" /> : <ShieldCheck className="w-3.5 h-3.5" />}
-                    <span>{isOpenFinanceRefiDone ? (currentLang === 'en' ? 'CCB Issued (R$ 14,280 Saved)' : 'CCB Emitida (R$ 14.280 Salvos)') : (currentLang === 'en' ? 'Issue Digital CCB (Lei 10.931)' : 'Emitir CCB Digital (Lei 10.931)')}</span>
-                  </button>
+                  {/* Refinance Action Button or Confirmed State */}
+                  {isOpenFinanceRefiDone ? (
+                    <div className={`w-full py-2.5 px-3 rounded-[8px] border text-xs flex items-center justify-between ${
+                      isDark ? 'bg-white/[0.03] border-white/10' : 'bg-slate-50 border-slate-200'
+                    }`}>
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 rounded-full bg-emerald-500/15 flex items-center justify-center flex-shrink-0">
+                          <Check className="w-2.5 h-2.5 text-emerald-400" />
+                        </div>
+                        <span className={`font-semibold ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
+                          {currentLang === 'en' ? 'Digital CCB Registered' : 'CCB Digital Registrada'}
+                        </span>
+                      </div>
+                      <span className="font-mono text-[11px] text-emerald-400 font-semibold">
+                        {currentLang === 'en' ? 'R$ 14,280 Saved' : 'R$ 14.280 Salvos'}
+                      </span>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => onActionClick('refinance_open_finance')}
+                      className="w-full py-2.5 px-4 rounded-[8px] font-semibold text-xs flex items-center justify-center gap-2 bg-brand-orange hover:bg-brand-orange-hover text-white shadow-sm transition-all mt-1"
+                    >
+                      <ShieldCheck className="w-4 h-4" />
+                      <span>{currentLang === 'en' ? 'Issue Digital CCB (Law 10,931)' : 'Emitir CCB Digital (Lei 10.931)'}</span>
+                    </button>
+                  )}
                 </div>
               </div>
             ) : (
