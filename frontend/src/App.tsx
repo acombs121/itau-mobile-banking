@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { RotateCcw } from 'lucide-react';
 import { CockpitHeader } from './components/CockpitHeader';
 import { PhoneContainer } from './components/PhoneContainer';
 import { AgentOrchestratorPanel } from './components/AgentOrchestratorPanel';
@@ -99,6 +100,7 @@ export const App: React.FC = () => {
   const [isProcessingAgent, setIsProcessingAgent] = useState<string | null>(null);
   const [activeDynamicCardId, setActiveDynamicCardId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
 
   // Sync lang changes to localStorage
   const handleToggleLang = (newLang: Language) => {
@@ -787,7 +789,7 @@ export const App: React.FC = () => {
         onToggleLang={handleToggleLang}
         theme={theme}
         onToggleTheme={handleToggleTheme}
-        onReset={handleResetDemo}
+        onReset={() => setIsResetConfirmOpen(true)}
         onSaveSession={handleSaveSession}
         isSaving={isSaving}
         activeScenario={activeScenario}
@@ -839,6 +841,58 @@ export const App: React.FC = () => {
 
         </div>
       </main>
+
+      {/* Destructive Action Confirmation Modal */}
+      {isResetConfirmOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div
+            className={`w-full max-w-md p-6 rounded-lg shadow-2xl border transition-colors ${
+              theme === 'dark'
+                ? 'bg-[#18181B] border-white/10 text-white'
+                : 'bg-white border-slate-200 text-slate-900'
+            }`}
+          >
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-[6px] bg-brand-orange/15 flex items-center justify-center flex-shrink-0">
+                <RotateCcw className="w-5 h-5 text-brand-orange" />
+              </div>
+              <h3 className="text-base sm:text-lg font-bold tracking-tight">
+                {translations[currentLang].header.confirmResetTitle}
+              </h3>
+            </div>
+            <p
+              className={`text-xs sm:text-sm mb-6 leading-relaxed ${
+                theme === 'dark' ? 'text-white/70' : 'text-slate-600'
+              }`}
+            >
+              {translations[currentLang].header.confirmResetDescription}
+            </p>
+            <div className="flex items-center justify-end gap-2.5">
+              <button
+                type="button"
+                onClick={() => setIsResetConfirmOpen(false)}
+                className={`px-3.5 py-1.5 text-xs sm:text-sm font-medium rounded-[4px] border transition-colors ${
+                  theme === 'dark'
+                    ? 'border-white/15 text-white/80 hover:bg-white/10'
+                    : 'border-slate-300 text-slate-700 hover:bg-slate-100'
+                }`}
+              >
+                {translations[currentLang].header.cancelAction}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsResetConfirmOpen(false);
+                  handleResetDemo();
+                }}
+                className="px-4 py-1.5 text-xs sm:text-sm font-semibold rounded-[4px] bg-brand-orange text-white hover:bg-brand-orange/90 transition-colors shadow-sm"
+              >
+                {translations[currentLang].header.confirmResetAction}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

@@ -1,9 +1,11 @@
 .env
 .env.*
-*.key.json
-service-account*.json
-credentials*.json
-client_secret*.json
+*.json
+!package.json
+!package-lock.json
+!tsconfig*.json
+!frontend/package*.json
+!frontend/tsconfig*.json
 .git/
 .gitignore
 __pycache__/
@@ -11,6 +13,7 @@ __pycache__/
 *.pyo
 *.pyd
 node_modules/
+frontend/node_modules/
 .venv/
 venv/
 dist/

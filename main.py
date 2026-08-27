@@ -9,7 +9,7 @@ import json
 import base64
 import asyncio
 import logging
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Literal
 from fastapi import FastAPI, Request, HTTPException, Depends, status, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, FileResponse
@@ -40,13 +40,13 @@ try:
     from google.genai import types
     if GCP_PROJECT:
         gemini_client = genai.Client(vertexai=True, project=GCP_PROJECT, location=GCP_REGION)
-        logger.info(f"Connected to Gemini Enterprise Agent Platform in {GCP_PROJECT}:{GCP_REGION}")
+        logger.info(f"Connected to Gemini Enterprise Agent Platform (fka Vertex AI Platform) in {GCP_PROJECT}:{GCP_REGION}")
 except Exception as e:
-    logger.warning(f"Could not initialize native Gemini Enterprise Agent Platform GenAI client (running local mock mode): {e}")
+    logger.warning(f"Could not initialize native Gemini Enterprise Agent Platform (fka Vertex AI Platform) GenAI client (running local mock mode): {e}")
 
 app = FastAPI(
     title="Banco Itaú Mobile Banking & Security Alerts API",
-    description="Backend for Itaú Unibanco AI Concierge and Real-Time Fraud Protection",
+    description="Backend for Itaú Unibanco AI Concierge and Real-Time Fraud Protection powered by Gemini Enterprise Agent Platform (fka Vertex AI Platform)",
     version="1.0.0"
 )
 
@@ -72,7 +72,25 @@ async def add_security_headers(request: Request, call_next):
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "SAMEORIGIN"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "connect-src 'self' ws: wss: https://*.googleapis.com; "
+        "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "font-src 'self' https://fonts.gstatic.com data:; "
+        "img-src 'self' data: https:; "
+        "frame-ancestors 'self';"
+    )
     return response
+
+# Global Exception Handler (Sanitize 500 Responses)
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.exception(f"Unhandled server error on {request.method} {request.url.path}: {exc}")
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={"status": "error", "message": "An internal server error occurred. Please contact security operations."}
+    )
 
 # In-Memory State for Banking Scenario
 BANKING_PROFILE = {
@@ -166,8 +184,17 @@ ACTIVE_ALERTS = [
 ]
 
 # Pydantic Schemas
+ActionType = Literal[
+    "freeze_card",
+    "unfreeze_card",
+    "block_pix",
+    "approve_pix",
+    "adjust_limit",
+    "file_med_dispute"
+]
+
 class BankingActionRequest(BaseModel):
-    action_type: str = Field(..., description="freeze_card, unfreeze_card, block_pix, approve_pix, adjust_limit, file_med_dispute")
+    action_type: ActionType = Field(..., description="freeze_card, unfreeze_card, block_pix, approve_pix, adjust_limit, file_med_dispute")
     target_id: Optional[str] = Field(None, description="Card ID, Alert ID, or Transaction ID")
     parameters: Optional[Dict[str, Any]] = Field(default_factory=dict)
 
@@ -229,8 +256,12 @@ async def execute_banking_action(payload: BankingActionRequest, user: Dict[str, 
         return {"status": "success", "message": "Pix transfer authorized by Cardholder."}
 
     elif action == "adjust_limit":
-        new_limit = payload.parameters.get("new_night_limit", 5000.00)
-        BANKING_PROFILE["pix_night_limit"] = float(new_limit)
+        raw_limit = payload.parameters.get("new_night_limit", 5000.00)
+        try:
+            new_limit = float(raw_limit)
+        except (ValueError, TypeError):
+            raise HTTPException(status_code=400, detail="Invalid new_night_limit value. Must be a numeric amount.")
+        BANKING_PROFILE["pix_night_limit"] = new_limit
         return {"status": "success", "message": f"Night Pix limit updated to R$ {new_limit:,.2f}"}
 
     return {"status": "error", "message": f"Unknown action type '{action}'"}
@@ -685,7 +716,7 @@ async def ai_assistant(payload: AiAssistRequest, user: Dict[str, Any] = Depends(
     return {"response": res["reply"], "model": res["model"]}
 
 @app.get("/api/banking/decision-graph")
-async def get_decision_graph():
+async def get_decision_graph(user: Dict[str, Any] = Depends(get_authenticated_user)):
     """Returns knowledge graph node data for anti-fraud visualizer."""
     nodes = [
         {
@@ -757,7 +788,7 @@ if os.path.isdir("dist"):
 
     @app.get("/{full_path:path}")
     async def serve_spa(full_path: str):
-        if full_path.startswith("api/") or full_path == "health":
+        if full_path.startswith("api/") or full_path == "health" or full_path == "ws" or full_path.startswith("ws/"):
             raise HTTPException(status_code=404, detail="Not Found")
         local_path = os.path.join("dist", full_path)
         if os.path.isfile(local_path):

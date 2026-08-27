@@ -64,7 +64,7 @@ This document records the core architectural patterns, WebSocket audio streaming
 ```
 
 ### 2.2 Audio Output (Gemini Live -> Server -> Browser)
-- Server forwards Gemini Enterprise Agent Platform raw WebSocket frames to the browser.
+- Server forwards Gemini Enterprise Agent Platform (fka Vertex AI Platform) raw WebSocket frames to the browser.
 - Browser extracts `inlineData` (MIME `audio/pcm;rate=24000`), decodes Base64 to `Int16Array`, converts to `Float32Array`, and queues into the Web Audio playback buffer.
 - **Interruption**: If `serverContent.interrupted` is received, immediately stop playback and clear the audio queue.
 
@@ -87,7 +87,7 @@ This document records the core architectural patterns, WebSocket audio streaming
 - **Port**: Configurable via `.env` (`LOCAL_PORT=8090`).
 - **Endpoints**:
   - `GET /health`
-  - `GET /ws/live` (WebSocket endpoint connecting to Gemini Enterprise Agent Platform Live API)
+  - `GET /ws/live` (WebSocket endpoint connecting to Gemini Enterprise Agent Platform (fka Vertex AI Platform) Live API)
   - `POST /api/chat` (Analytical reasoning & text completion fallback)
   - `GET /api/banking/profile` / `POST /api/banking/action` (Banking state and transactions)
   - Static build serving from `dist/` with strict SPA cache-control headers

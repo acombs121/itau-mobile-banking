@@ -21,7 +21,7 @@ set +a
 
 export APP_ENV="local"
 LOCAL_HOST="${LOCAL_HOST:-127.0.0.1}"
-LOCAL_PORT="${LOCAL_PORT:-8080}"
+LOCAL_PORT="${LOCAL_PORT:-8090}"
 
 echo "====================================================================="
 echo " Starting Banco Itaú Banking Alerts Locally"
@@ -38,6 +38,12 @@ cleanup() {
 }
 trap cleanup SIGINT SIGTERM EXIT
 
+# Set up or activate Python virtual environment if available
+if [[ -d ".venv" ]]; then
+  # shellcheck disable=SC1091
+  source .venv/bin/activate
+fi
+
 # Start Python FastAPI Backend (binding strictly to 127.0.0.1)
 echo "Starting Python FastAPI Backend on ${LOCAL_HOST}:${LOCAL_PORT}..."
 python3 -m uvicorn main:app --host "${LOCAL_HOST}" --port "${LOCAL_PORT}" --reload &
@@ -45,8 +51,7 @@ BACKEND_PID=$!
 
 # Start Frontend Dev Server
 echo "Starting Frontend Vite Dev Server..."
-cd frontend
-npm run dev -- --host "${LOCAL_HOST}" &
+(cd frontend && npm run dev -- --host "${LOCAL_HOST}") &
 FRONTEND_PID=$!
 
 wait

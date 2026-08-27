@@ -1,6 +1,6 @@
 # Banco Itaú — Central de Segurança & Alertas Bancários
 
-An intelligent, real-time banking security and proactive alerts platform for **Banco Itaú Unibanco**, built with **Gemini Enterprise Agent Platform (fka Vertex AI Platform)** powered by **`gemini-3.7-flash`** (Analytical Financial Reasoning & Tool Dispatching) and **`gemini-3.5-flash-live-preview`** (Gemini Live Multimodal Voice API), **Python FastAPI**, **React 19**, **Vite**, and **Tailwind CSS**. Deployed securely on **Google Cloud Run** with native **Identity-Aware Proxy (IAP)**.
+An intelligent, real-time banking security and proactive alerts platform for **Banco Itaú Unibanco**, built with **Gemini Enterprise Agent Platform (fka Vertex AI Platform)** powered by **`gemini-3.7-flash`** (Analytical Financial Reasoning & Tool Dispatching) and **`gemini-3.5-flash-live-preview`** (Gemini Live Multimodal Voice API), **Python FastAPI**, **React 19**, **Vite**, **Tailwind CSS**, and **shadcn/ui** design patterns. Deployed securely on **Google Cloud Run** with native **Identity-Aware Proxy (IAP)**.
 
 ---
 
@@ -41,7 +41,7 @@ The **Itaú Banking Alerts Platform** coordinates proactive financial intelligen
                        ▼                          ▼
         ┌──────────────────────────┐   ┌────────────────────────────────┐
         │      Itaú Guard AI       │   │    Gemini Enterprise Agent     │
-        │     Decision Graph       │   │         Platform (ADC)         │
+        │     Decision Graph       │   │ Platform (fka Vertex AI) (ADC) │
         │    (BACEN MED Rules)     │   │ • Models: gemini-3.7-flash     │
         └──────────────────────────┘   │           gemini-3.5-live      │
                                        └────────────────────────────────┘
@@ -96,13 +96,15 @@ chmod +x deploy.sh
 ### Security & Native IAP Architecture
 1. **Authentication Configuration**:
    - **IAM (Service-to-Service)**: **Disabled / Unchecked** (`--no-invoker-iam-check`) so browser end-users do not require `roles/run.invoker`.
-   - **IAP (Browser End-Users)**: **Enabled / Checked** (`--iap`) with `domain:google.com` (or specified domain) programmatically bound to the Cloud Run IAP resource policy.
+   - **IAP (Browser End-Users)**: **Enabled / Checked** (`--iap`) with `domain:google.com` (or specified domain) programmatically bound to the Cloud Run IAP resource policy (`roles/iap.httpsResourceAccessor`), with **Out-of-org user access: Enabled** in Context-Aware Access policies.
+   - **IAP Service Agent Invoker**: `roles/run.invoker` is granted specifically to `service-${PROJECT_NUMBER}@gcp-sa-iap.iam.gserviceaccount.com` so IAP can invoke the underlying Cloud Run service.
 2. **IAP Allowed Domains Requirement**:
-   - The Cloud Run service URL/domain is automatically added under **Allowed Domains** in the IAP Settings panel to authorize OAuth redirects.
+   - The Cloud Run service URL/domain (e.g. `https://${APP_NAME}-<hash>-<region>.a.run.app`) is programmatically added under **Allowed Domains** in the IAP Settings panel via `gcloud iap settings set` to authorize OAuth redirects.
+   - **Console Deep Link**: Verify settings at [Google Cloud IAP Console](https://console.cloud.google.com/security/iap?project=${GCP_PROJECT}) (`Security > Identity-Aware Proxy > Cloud Run > Select itau-banking-alerts > Settings > Allowed domains`).
 3. **Project IAM Policy Compliance**:
    - `domain:google.com` is **NEVER added to GCP Project-level IAM roles** (preventing Domain Restricted Sharing / DRS Org Policy violations).
 4. **Backend JWT Verification**:
-   - FastAPI enforces cryptographically verified `X-Goog-IAP-JWT-Assertion` headers matching `IAP_ALLOWED_DOMAINS` in production (`iap_jwt_middleware.py`).
+   - FastAPI enforces cryptographically verified `X-Goog-IAP-JWT-Assertion` headers matching `IAP_ALLOWED_DOMAINS` in production (`iap_jwt_middleware.py`), falling back to a mock identity in local development (`APP_ENV=local`).
 
 ---
 

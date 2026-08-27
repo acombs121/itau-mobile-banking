@@ -116,7 +116,7 @@ if ! gcloud iam service-accounts describe "${SERVICE_ACCOUNT_EMAIL}" --project="
     --project="${GCP_PROJECT}" --quiet
 fi
 
-# 7. Grant Gemini Enterprise Agent Platform user role to the runtime Service Account (with propagation retry)
+# 7. Grant Gemini Enterprise Agent Platform (fka Vertex AI Platform) user role to the runtime Service Account (with propagation retry)
 echo "--> Granting roles/aiplatform.user to Service Account..."
 for i in {1..5}; do
   if gcloud projects add-iam-policy-binding "${GCP_PROJECT}" \
