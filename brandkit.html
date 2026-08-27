@@ -157,10 +157,46 @@
           <span class="text-[10px] font-mono uppercase tracking-wider text-brand-orange font-bold">Typography Foundations</span>
           <h2 class="text-xl sm:text-2xl font-bold text-white">Named Typefaces & Font Stacks</h2>
         </div>
-        <span class="text-xs text-white/40 font-mono">2 Primary Font Families + OpenType Features</span>
+        <span class="text-xs text-white/40 font-mono">3 Font Families (Itaú Bespoke, Inter, JetBrains Mono) + OpenType Features</span>
       </div>
 
-      <!-- Typeface 1: Inter (Sans) -->
+      <!-- Typeface 0: Official Itaú Bespoke Typeface Family -->
+      <div class="p-6 rounded-[12px] bg-gradient-to-r from-brand-orange/15 via-[#151518] to-[#121215] border border-brand-orange/30 mb-8">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-4 pb-4 border-b border-white/[0.08]">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="w-2 h-2 rounded-full bg-brand-orange animate-pulse"></span>
+              <span class="text-[10.5px] font-mono font-bold uppercase tracking-wider text-brand-orange">Official Bespoke Corporate Font</span>
+            </div>
+            <h3 class="text-2xl font-black text-white tracking-tight">Itaú Display & Itaú Text</h3>
+            <p class="text-xs text-white/70 mt-1 max-w-2xl">
+              Commissioned exclusively for Banco Itaú by <strong>Pentagram</strong> (Marina Willer), typographer <strong>Fábio Lopez</strong>, and <strong>Plau</strong> foundry (with historical foundation by <strong>Dalton Maag</strong>).
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-1 rounded bg-black/60 border border-white/10 text-white/90 text-xs font-mono">
+              Status: <span class="text-emerald-400 font-bold">Enabled in Codebase</span>
+            </span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <div class="p-4 rounded-[8px] bg-black/40 border border-white/[0.06] space-y-2">
+            <span class="font-bold text-white block">Automatic System Font Detection</span>
+            <p class="text-white/60 leading-relaxed text-[11px]">
+              If installed on the client machine (<code class="text-brand-orange font-mono">/Library/Fonts</code> or <code class="text-brand-orange font-mono">C:\Windows\Fonts</code>), the browser automatically selects the true corporate typeface via native <code class="text-white/80 font-mono">local('Itau Display')</code> and <code class="text-white/80 font-mono">local('Itau Text')</code> rules in <code class="text-white/80 font-mono">index.css</code>.
+            </p>
+          </div>
+          <div class="p-4 rounded-[8px] bg-black/40 border border-white/[0.06] space-y-2">
+            <span class="font-bold text-white block">Drop-in Webfont Support</span>
+            <p class="text-white/60 leading-relaxed text-[11px]">
+              Place proprietary <code class="text-emerald-400 font-mono">.woff2</code> files into <code class="text-white/80 font-mono">frontend/public/fonts/</code>. Vite immediately serves them without modifying any components or styles.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Typeface 1: Inter (Sans Fallback) -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start mb-8">
         <div class="lg:col-span-4 p-6 rounded-[12px] bg-[#121215] border border-white/[0.08]">
           <div class="flex items-center justify-between mb-2">

@@ -6,9 +6,20 @@
 
 ## 1. Named Typefaces & Font Stacks
 
-### Primary Interface & Display Typeface: **Inter**
+### Official Bespoke Corporate Typeface: **Itaú Display & Itaú Text**
+- **Commissioned by**: Itaú Unibanco S.A.
+- **Designers**: **Pentagram** (partner Marina Willer), **Fábio Lopez**, and **Plau** foundry (with foundational historical typefaces by **Dalton Maag**).
+- **Distribution**: Proprietary corporate assets (not published on public open-source registries).
+- **Codebase Integration**:
+  - **Auto-Detection**: Declared in `frontend/src/index.css` via `local('Itau Display')` and `local('Itau Text')`. If installed on your macOS or Windows system, the app automatically renders genuine Itaú typography.
+  - **Drop-In Webfonts**: Supported by placing `.woff2` files into `frontend/public/fonts/` (`ItauDisplay-Bold.woff2`, `ItauText-Regular.woff2`, etc.).
+  - **CSS Font Stack**:
+    - Display: `'Itau Display', 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif`
+    - Text & UI: `'Itau Text', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`
+
+### Universal Interface Sans Fallback: **Inter**
 - **Designer**: Rasmus Andersson
-- **Role**: Main interface copy, card headers, navigation, display titles, button text
+- **Role**: Universal fallback interface copy, card headers, navigation, display titles, button text
 - **Characteristics**: Tall x-height, geometric neo-grotesque apertures, neutral corporate authority
 - **Weights Used**:
   - `400` (Regular) — Explanatory copy, disclaimer footnotes
