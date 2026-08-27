@@ -83,7 +83,7 @@ export const translations = {
             name: "Mastercard Black (8841)",
             group: "Meio de Pagamento",
             layer: "Input",
-            color: "#3B82F6",
+            color: "#64748B",
             details: "Limite R$ 85.000,00 • Fatura D+4 R$ 34.150,00"
           },
           {
@@ -241,9 +241,67 @@ export const translations = {
         ]
       },
       {
+        id: 'card_benefits' as ScenarioId,
+        title: "4. Benefícios Mastercard Black & Schengen",
+        shortLabel: "4. Benefícios Black",
+        tag: "MASTERCARD_BLACK_BENEFITS",
+        agentId: "card_benefits_agent",
+        alert: {
+          badge: "Benefícios Exclusivos Personnalité",
+          title: "Proteção Schengen & Salas VIP",
+          description: "Acesso ilimitado à Sala VIP GRU Terminal 3, 4 acessos LoungeKey na Europa e seguro médico Schengen de €30.000 inclusos.",
+          primaryActionLabel: "Ver Benefícios Mastercard Black",
+          primaryActionType: "get_card_benefits",
+          secondaryActionLabel: "Emitir Certificado Schengen",
+          secondaryActionType: "view_schengen_certificate"
+        },
+        telemetryPayload: {
+          card_tier: "Mastercard Black Personnalité",
+          vip_lounge_gru: "UNLIMITED_T3",
+          loungekey_passes_europe: 4,
+          schengen_coverage_eur: 30000.00,
+          rental_car_insurance: "MASTERSEGURO_CDW_LDW_INCLUDED",
+          concierge_active: "24_7_GLOBAL"
+        },
+        graphNodes: [
+          {
+            id: "card_query",
+            name: "Consulta Benefícios Black",
+            group: "Solicitação Cliente",
+            layer: "Input",
+            color: "#64748B",
+            details: "Cliente consulta proteções de viagem para Europa"
+          },
+          {
+            id: "benefit_rules",
+            name: "Regras Mastercard Black",
+            group: "Diretrizes de Cartão",
+            layer: "Policy",
+            color: "#475569",
+            details: "Apólice AIG Schengen €30k e regras LoungeKey GRU/Europa"
+          },
+          {
+            id: "benefit_engine",
+            name: "Elegibilidade Confirmada",
+            group: "Motor de Benefícios",
+            layer: "Decision",
+            color: "#059669",
+            details: "Cartão ativo com cobertura automática válida"
+          },
+          {
+            id: "benefit_ready",
+            name: "Voucher Schengen Emitido",
+            group: "Ação de Salvaguarda",
+            layer: "Output",
+            color: "#059669",
+            details: "Certificado médico Schengen e 4 passes LoungeKey disponíveis"
+          }
+        ]
+      },
+      {
         id: 'open_finance' as ScenarioId,
-        title: "4. Open Finance & Portabilidade de Dívida",
-        shortLabel: "4. Open Finance",
+        title: "5. Open Finance & Portabilidade de Dívida",
+        shortLabel: "5. Open Finance",
         tag: "OPEN_FINANCE_OPTIMIZER",
         agentId: "open_finance_optimizer",
         alert: {
@@ -279,7 +337,7 @@ export const translations = {
             name: "Rating Personnalité (Score 980)",
             group: "Crédito Itaú",
             layer: "Input",
-            color: "#3B82F6",
+            color: "#64748B",
             details: "Linha Itaú Sob Medida pré-aprovada com taxa diferenciada de 1,69% a.m."
           },
           {
@@ -564,7 +622,7 @@ export const translations = {
             name: "Mastercard Black (8841)",
             group: "Payment Instrument",
             layer: "Input",
-            color: "#3B82F6",
+            color: "#64748B",
             details: "Limit R$ 85,000.00 • Scheduled invoice R$ 34,150.00"
           },
           {
@@ -722,9 +780,67 @@ export const translations = {
         ]
       },
       {
+        id: 'card_benefits' as ScenarioId,
+        title: "4. Mastercard Black Benefits & Schengen",
+        shortLabel: "4. Black Benefits",
+        tag: "MASTERCARD_BLACK_BENEFITS",
+        agentId: "card_benefits_agent",
+        alert: {
+          badge: "Exclusive Personnalité Benefits",
+          title: "Schengen Coverage & VIP Lounges",
+          description: "Unlimited VIP lounge access at GRU Terminal 3, 4 LoungeKey passes in Europe, and €30,000 Schengen medical insurance included.",
+          primaryActionLabel: "View Mastercard Black Benefits",
+          primaryActionType: "get_card_benefits",
+          secondaryActionLabel: "Issue Schengen Certificate",
+          secondaryActionType: "view_schengen_certificate"
+        },
+        telemetryPayload: {
+          card_tier: "Mastercard Black Personnalité",
+          vip_lounge_gru: "UNLIMITED_T3",
+          loungekey_passes_europe: 4,
+          schengen_coverage_eur: 30000.00,
+          rental_car_insurance: "MASTERSEGURO_CDW_LDW_INCLUDED",
+          concierge_active: "24_7_GLOBAL"
+        },
+        graphNodes: [
+          {
+            id: "card_query",
+            name: "Black Benefits Query",
+            group: "Client Request",
+            layer: "Input",
+            color: "#64748B",
+            details: "Client inquires about international travel protections"
+          },
+          {
+            id: "benefit_rules",
+            name: "Mastercard Black Rules",
+            group: "Card Guidelines",
+            layer: "Policy",
+            color: "#475569",
+            details: "AIG Schengen €30k policy and GRU/Europe LoungeKey entitlements"
+          },
+          {
+            id: "benefit_engine",
+            name: "Eligibility Confirmed",
+            group: "Benefits Engine",
+            layer: "Decision",
+            color: "#059669",
+            details: "Active card with valid automated travel coverage"
+          },
+          {
+            id: "benefit_ready",
+            name: "Schengen Voucher Issued",
+            group: "Safeguard Action",
+            layer: "Output",
+            color: "#059669",
+            details: "Schengen medical certificate and 4 LoungeKey passes ready"
+          }
+        ]
+      },
+      {
         id: 'open_finance' as ScenarioId,
-        title: "4. Open Finance & Debt Portability",
-        shortLabel: "4. Open Finance",
+        title: "5. Open Finance & Debt Portability",
+        shortLabel: "5. Open Finance",
         tag: "OPEN_FINANCE_OPTIMIZER",
         agentId: "open_finance_optimizer",
         alert: {
@@ -760,7 +876,7 @@ export const translations = {
             name: "Personnalité Rating (Score 980)",
             group: "Itaú Credit",
             layer: "Input",
-            color: "#3B82F6",
+            color: "#64748B",
             details: "Pre-approved Itaú Sob Medida line with preferential rate of 1.69%/mo"
           },
           {

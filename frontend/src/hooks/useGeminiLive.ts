@@ -64,6 +64,7 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
   const isProcessingRef = useRef<boolean>(false);
   const lastAssistantSpokenTimeRef = useRef<number>(0);
   const lastSentQueryRef = useRef<{ text: string; time: number }>({ text: '', time: 0 });
+  const animFrameIdRef = useRef<number | null>(null);
 
   // Initialize or get playback AudioContext
   const getPlaybackContext = useCallback(() => {
@@ -188,6 +189,7 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
     };
 
     ws.onmessage = (event) => {
+      if (typeof event.data !== 'string') return;
       try {
         const data = JSON.parse(event.data);
 
@@ -238,6 +240,7 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
 
     ws.onclose = () => {
       console.log("Gemini Live WebSocket closed");
+      wsRef.current = null;
       setIsConnected(false);
       setIsListening(false);
       setIsSpeaking(false);
@@ -284,6 +287,11 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
     isManuallyStoppedRef.current = true;
     stopAllAudioPlayback();
 
+    if (animFrameIdRef.current) {
+      cancelAnimationFrame(animFrameIdRef.current);
+      animFrameIdRef.current = null;
+    }
+
     if (recognitionRef.current) {
       try { recognitionRef.current.abort(); } catch {}
       recognitionRef.current = null;
@@ -309,6 +317,7 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
     setIsListening(false);
     isSpeakingRef.current = false;
     isProcessingRef.current = false;
+    setAudioLevels([15, 20, 15, 25, 15, 20, 15, 15, 10]);
   }, [stopAllAudioPlayback]);
 
   // Start continuous microphone with acoustic echo suppression
@@ -420,9 +429,9 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
             Math.max(15, avg * 0.5),
           ]);
         }
-        requestAnimationFrame(updateVolume);
+        animFrameIdRef.current = requestAnimationFrame(updateVolume);
       };
-      requestAnimationFrame(updateVolume);
+      animFrameIdRef.current = requestAnimationFrame(updateVolume);
 
       setIsListening(true);
     } catch (err) {
@@ -434,6 +443,10 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
   // Stop microphone
   const stopMicrophone = useCallback(() => {
     isManuallyStoppedRef.current = true;
+    if (animFrameIdRef.current) {
+      cancelAnimationFrame(animFrameIdRef.current);
+      animFrameIdRef.current = null;
+    }
     if (recognitionRef.current) {
       try { recognitionRef.current.abort(); } catch {}
       recognitionRef.current = null;
@@ -447,7 +460,15 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
       mediaStreamRef.current = null;
     }
     setIsListening(false);
+    setAudioLevels([15, 20, 15, 25, 15, 20, 15, 15, 10]);
   }, []);
+
+  // Comprehensive lifecycle cleanup on hook unmount
+  useEffect(() => {
+    return () => {
+      disconnect();
+    };
+  }, [disconnect]);
 
   return {
     isConnected,

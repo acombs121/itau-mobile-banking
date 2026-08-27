@@ -25,6 +25,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . ./
 # Copy built frontend assets from Stage 1
 COPY --from=build-frontend /app/frontend/dist /app/dist
+# Copy presentation HTML documents into dist directory for static serving
+COPY demo_script.html walkthrough.html scenarios.html /app/dist/
 
 # Cloud Run injects $PORT (default 8080); container MUST bind to 0.0.0.0:$PORT
 CMD exec uvicorn main:app --host 0.0.0.0 --port "${PORT:-8080}"

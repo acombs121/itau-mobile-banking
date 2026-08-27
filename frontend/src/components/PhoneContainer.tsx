@@ -4,6 +4,7 @@ import { BankingProfile } from '../types/banking';
 import { IOSNotification, ScenarioId } from '../types/itau_concierge';
 import { Language, translations } from '../i18n/translations';
 import { useGeminiLive } from '../hooks/useGeminiLive';
+import { AudioWaveformVisualizer } from './AudioWaveformVisualizer';
 
 interface PhoneContainerProps {
   profile: BankingProfile;
@@ -27,6 +28,7 @@ interface PhoneContainerProps {
 
 export const PhoneContainer: React.FC<PhoneContainerProps> = ({
   profile,
+  notifications = [],
   currentLang,
   theme,
   activeScenario: _activeScenario,
@@ -148,6 +150,27 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
               </div>
             </div>
           </div>
+
+          {/* iOS Push Notification Toast Banner */}
+          {notifications && notifications.length > 0 && (
+            <div className="px-3 pt-2 pb-1 z-30 animate-slideDown flex-shrink-0">
+              <div className={`p-2.5 rounded-[12px] border shadow-xl flex items-start gap-2.5 ${
+                isDark ? 'bg-[#1C1C22]/95 border-white/10 text-white backdrop-blur-md' : 'bg-white/95 border-slate-200 text-slate-900 shadow-md backdrop-blur-md'
+              }`}>
+                <div className="w-5 h-5 rounded-[5px] bg-brand-orange text-white flex items-center justify-center font-bold text-[9px] flex-shrink-0">
+                  itau
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-semibold tracking-tight uppercase opacity-60">Itaú Personnalité</span>
+                    <span className="text-[9px] font-mono opacity-40">{notifications[0].timestamp || 'agora'}</span>
+                  </div>
+                  <div className="text-xs font-bold truncate mt-0.5">{notifications[0].title}</div>
+                  <div className="text-[10px] opacity-75 truncate">{notifications[0].subtitle}</div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Minimalist In-App Top Bar */}
           <div className={`px-5 pt-3 pb-2.5 border-b flex items-center justify-between flex-shrink-0 ${isDark ? 'border-white/[0.06]' : 'border-slate-100 bg-slate-50/50'}`}>
@@ -922,29 +945,13 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
               </span>
             </div>
 
-            {/* Center Column: Live Audio Waveform (Mathematically centered across the entire container width) */}
-            {isVoiceCallActive && (
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-                <div className="flex items-center gap-1 h-6 px-3 bg-black/40 rounded-full border border-white/10 animate-fadeIn shadow-sm pointer-events-auto">
-                  {audioLevels.slice(0, 9).map((level, i) => (
-                    <div
-                      key={i}
-                      style={{
-                        height: `${Math.max(22, level)}%`,
-                        transition: 'height 0.1s ease-in-out'
-                      }}
-                      className={`w-1 rounded-full ${
-                        isSpeaking
-                          ? 'bg-brand-orange shadow-[0_0_8px_#FF6423]'
-                          : isListening
-                          ? 'bg-brand-orange shadow-[0_0_8px_#FF6423]'
-                          : 'bg-white/20'
-                      }`}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
+            {/* Center Column: Live Audio Waveform (Memoized & isolated from PhoneContainer re-renders) */}
+            <AudioWaveformVisualizer
+              audioLevels={audioLevels}
+              isVoiceCallActive={isVoiceCallActive}
+              isSpeaking={isSpeaking}
+              isListening={isListening}
+            />
 
             {/* Right Column: Mic Trigger Button */}
             <div className="flex items-center justify-end z-10">

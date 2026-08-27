@@ -9,7 +9,7 @@ import json
 import base64
 import asyncio
 import logging
-from typing import Optional, Dict, Any, List, Literal
+from typing import Optional, Dict, Any, Literal
 from fastapi import FastAPI, Request, HTTPException, Depends, status, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, FileResponse
@@ -72,10 +72,13 @@ async def add_security_headers(request: Request, call_next):
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "SAMEORIGIN"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "microphone=(self), camera=(), geolocation=()"
+    if os.getenv("APP_ENV", "local").lower() != "local":
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
     response.headers["Content-Security-Policy"] = (
         "default-src 'self'; "
         "connect-src 'self' ws: wss: https://*.googleapis.com; "
-        "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; "
+        "script-src 'self'; "
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
         "font-src 'self' https://fonts.gstatic.com data:; "
         "img-src 'self' data: https:; "
@@ -270,6 +273,74 @@ class ChatRequest(BaseModel):
     message: str
     context: Optional[Dict[str, Any]] = None
     lang: Optional[str] = "pt"
+
+# Modular Tool Execution Registry for Gemini Multimodal Live API
+TOOL_HANDLERS = {
+    "get_account_info": lambda _args: {
+        "customer": "Roberto Silva",
+        "itau_personnalite_accounts": {
+            "checking_balance": "48.950,20 reais",
+            "cdb_di_investments": "85.000,00 reais (100% CDI Liquidez Diaria)",
+            "mastercard_black_available_limit": "72.569,50 reais",
+            "mastercard_black_total_limit": "85.000,00 reais",
+            "mastercard_black_outstanding_balance": "12.430,50 reais",
+            "mastercard_black_next_invoice_due": "28/09/2026",
+            "total_itau_liquid": "133.950,20 reais"
+        },
+        "open_finance_connected_assets": {
+            "btg_pactual_checking_liquidity": "120.000,00 reais",
+            "xp_investimentos_fixed_income": "210.000,00 reais",
+            "total_external_liquid": "330.000,00 reais",
+            "external_competitor_debt": "18.000,00 reais (11,2% a.m.)"
+        },
+        "total_consolidated_liquid_patrimony": "463.950,20 reais",
+        "scheduled_payments_total": "38.000,00 reais para a proxima quinta-feira (25/08)",
+        "scheduled_payments_list": [
+            {"name": "Fatura Mastercard Black", "amount": "34.150,00 reais", "due_date": "Quinta-feira 25/08", "type": "Debito Automatico"},
+            {"name": "Condominio Edificio Jardins", "amount": "3.850,00 reais", "due_date": "Quinta-feira 25/08", "type": "Boleto Agendado"}
+        ],
+        "coverage_status": "SUFICIENTE (Saldo Itaú de 48.950,20 reais cobre os 38.000,00 reais agendados)"
+    },
+    "get_card_benefits": lambda _args: {
+        "card_name": "Itaú Personnalité Mastercard Black",
+        "vip_lounges": "Acesso ilimitado à Sala VIP Mastercard Black no Terminal 3 de Guarulhos + 4 passes LoungeKey na Europa",
+        "medical_insurance": "30.000 euros de cobertura médica internacional Schengen (USD 150.000)",
+        "car_rental": "Masterseguro de Automóveis CDW/LDW incluso",
+        "concierge": "Mastercard Concierge 24 horas"
+    },
+    "activate_travel_mode": lambda _args: {
+        "status": "ATIVO",
+        "destinations": ["Portugal", "Espanha"],
+        "daily_international_pos_limit": "50.000,00 reais",
+        "fraud_suppression": "Bloqueios indevidos em terminais estrangeiros desativados com sucesso"
+    },
+    "sweep_cdb": lambda _args: {
+        "status": "AGENDADO",
+        "sweep_amount": "15.000,00 reais",
+        "scheduled_time": "Quinta-feira 06:00 BRT",
+        "source": "CDB DI Liquidez Diaria",
+        "lis_overdraft_saved": "184,60 reais"
+    },
+    "refinance_open_finance": lambda _args: {
+        "status": "OPEN_FINANCE_RATE_OPTIMIZATION_READY",
+        "debt_refinancing_comparison": {
+            "competitor_debt_balance": "18.000,00 reais",
+            "competitor_interest_rate_paying": "11,20% a.m.",
+            "itau_sob_medida_rate_offered": "1,69% a.m.",
+            "rate_spread_savings": "9,51% a.m.",
+            "monthly_cash_savings": "680,40 reais / mês",
+            "total_contract_savings": "14.280,00 reais",
+            "mechanism": "CCB Digital (Lei 10.931)"
+        },
+        "savings_yield_comparison": {
+            "external_liquid_assets": "330.000,00 reais (BTG + XP)",
+            "competitor_savings_yield": "85% do CDI",
+            "itau_cdb_di_yield_offered": "100% do CDI (Liquidez Diária)",
+            "yield_spread_gain": "+15% do CDI",
+            "projected_annual_yield_increase": "5.940,00 reais / ano"
+        }
+    }
+}
 
 @app.websocket("/ws/live")
 async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
@@ -491,96 +562,42 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
                                             tool_name = fc.name
                                             tool_args = fc.args or {}
                                             logger.info(f"Gemini Live Tool Call: {tool_name} with args: {tool_args}")
-                                            if tool_name == 'get_account_info':
-                                                tool_result_payload = {
-                                                    "customer": "Roberto Silva",
-                                                    "itau_personnalite_accounts": {
-                                                        "checking_balance": "48.950,20 reais",
-                                                        "cdb_di_investments": "85.000,00 reais (100% CDI Liquidez Diaria)",
-                                                        "mastercard_black_available_limit": "72.569,50 reais",
-                                                        "mastercard_black_total_limit": "85.000,00 reais",
-                                                        "mastercard_black_outstanding_balance": "12.430,50 reais",
-                                                        "mastercard_black_next_invoice_due": "28/09/2026",
-                                                        "total_itau_liquid": "133.950,20 reais"
-                                                    },
-                                                    "open_finance_connected_assets": {
-                                                        "btg_pactual_checking_liquidity": "120.000,00 reais",
-                                                        "xp_investimentos_fixed_income": "210.000,00 reais",
-                                                        "total_external_liquid": "330.000,00 reais",
-                                                        "external_competitor_debt": "18.000,00 reais (11,2% a.m.)"
-                                                    },
-                                                    "total_consolidated_liquid_patrimony": "463.950,20 reais",
-                                                    "scheduled_payments_total": "38.000,00 reais para a proxima quinta-feira (25/08)",
-                                                    "scheduled_payments_list": [
-                                                        {"name": "Fatura Mastercard Black", "amount": "34.150,00 reais", "due_date": "Quinta-feira 25/08", "type": "Debito Automatico"},
-                                                        {"name": "Condominio Edificio Jardins", "amount": "3.850,00 reais", "due_date": "Quinta-feira 25/08", "type": "Boleto Agendado"}
-                                                    ],
-                                                    "coverage_status": "SUFICIENTE (Saldo Itaú de 48.950,20 reais cobre os 38.000,00 reais agendados)"
-                                                }
-                                            elif tool_name == 'get_card_benefits':
-                                                tool_result_payload = {
-                                                    "card_name": "Itaú Personnalité Mastercard Black",
-                                                    "vip_lounges": "Acesso ilimitado à Sala VIP Mastercard Black no Terminal 3 de Guarulhos + 4 passes LoungeKey na Europa",
-                                                    "medical_insurance": "30.000 euros de cobertura médica internacional Schengen (USD 150.000)",
-                                                    "car_rental": "Masterseguro de Automóveis CDW/LDW incluso",
-                                                    "concierge": "Mastercard Concierge 24 horas"
-                                                }
-                                            elif tool_name == 'activate_travel_mode':
-                                                tool_result_payload = {
-                                                    "status": "ATIVO",
-                                                    "destinations": ["Portugal", "Espanha"],
-                                                    "daily_international_pos_limit": "50.000,00 reais",
-                                                    "fraud_suppression": "Bloqueios indevidos em terminais estrangeiros desativados com sucesso"
-                                                }
-                                            elif tool_name == 'sweep_cdb':
-                                                tool_result_payload = {
-                                                    "status": "AGENDADO",
-                                                    "sweep_amount": "15.000,00 reais",
-                                                    "scheduled_time": "Quinta-feira 06:00 BRT",
-                                                    "source": "CDB DI Liquidez Diaria",
-                                                    "lis_overdraft_saved": "184,60 reais"
-                                                }
-                                            elif tool_name == 'refinance_open_finance':
-                                                tool_result_payload = {
-                                                    "status": "OPEN_FINANCE_RATE_OPTIMIZATION_READY",
-                                                    "debt_refinancing_comparison": {
-                                                        "competitor_debt_balance": "18.000,00 reais",
-                                                        "competitor_interest_rate_paying": "11,20% a.m.",
-                                                        "itau_sob_medida_rate_offered": "1,69% a.m.",
-                                                        "rate_spread_savings": "9,51% a.m.",
-                                                        "monthly_cash_savings": "680,40 reais / mês",
-                                                        "total_contract_savings": "14.280,00 reais",
-                                                        "mechanism": "CCB Digital (Lei 10.931)"
-                                                    },
-                                                    "savings_yield_comparison": {
-                                                        "external_liquid_assets": "330.000,00 reais (BTG + XP)",
-                                                        "competitor_savings_yield": "85% do CDI",
-                                                        "itau_cdb_di_yield_offered": "100% do CDI (Liquidez Diária)",
-                                                        "yield_spread_gain": "+15% do CDI",
-                                                        "projected_annual_yield_increase": "5.940,00 reais / ano"
-                                                    }
-                                                }
+                                            
+                                            handler = TOOL_HANDLERS.get(tool_name)
+                                            if handler:
+                                                try:
+                                                    tool_result_payload = handler(tool_args)
+                                                except Exception as tool_e:
+                                                    logger.error(f"Error executing tool {tool_name}: {tool_e}")
+                                                    tool_result_payload = {"status": "error", "error": str(tool_e)}
                                             else:
                                                 tool_result_payload = {"status": "success", "result": f"Executed {tool_name} successfully"}
 
                                             # Send tool call event to frontend phone UI
-                                            await websocket.send_json({
-                                                "tool_call": {
-                                                    "name": tool_name,
-                                                    "args": tool_args,
-                                                    "payload": tool_result_payload
-                                                }
-                                            })
+                                            try:
+                                                await websocket.send_json({
+                                                    "tool_call": {
+                                                        "name": tool_name,
+                                                        "args": tool_args,
+                                                        "payload": tool_result_payload
+                                                    }
+                                                })
+                                            except Exception as ws_err:
+                                                logger.warning(f"Failed to send tool_call to client: {ws_err}")
+
                                             # Send tool response confirmation back to Gemini Live
-                                            await session.send_tool_response(
-                                                function_responses=[
-                                                    types.FunctionResponse(
-                                                        name=tool_name,
-                                                        id=fc.id,
-                                                        response=tool_result_payload
-                                                    )
-                                                ]
-                                            )
+                                            try:
+                                                await session.send_tool_response(
+                                                    function_responses=[
+                                                        types.FunctionResponse(
+                                                            name=tool_name,
+                                                            id=fc.id,
+                                                            response=tool_result_payload
+                                                        )
+                                                    ]
+                                                )
+                                            except Exception as gemini_err:
+                                                logger.error(f"Failed to send tool response to Gemini Live: {gemini_err}")
                                 except WebSocketDisconnect:
                                     return
                                 except Exception as chunk_e:
@@ -591,7 +608,16 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
                     except Exception as e:
                         logger.error(f"Error in gemini_to_client task: {e}")
 
-                await asyncio.gather(client_to_gemini(), gemini_to_client())
+                t1 = asyncio.create_task(client_to_gemini())
+                t2 = asyncio.create_task(gemini_to_client())
+                try:
+                    done, pending = await asyncio.wait([t1, t2], return_when=asyncio.FIRST_COMPLETED)
+                    for p in pending:
+                        p.cancel()
+                except Exception as wait_e:
+                    logger.warning(f"Task coordination error: {wait_e}")
+                    t1.cancel()
+                    t2.cancel()
 
         else:
             while True:
@@ -790,7 +816,14 @@ if os.path.isdir("dist"):
     async def serve_spa(full_path: str):
         if full_path.startswith("api/") or full_path == "health" or full_path == "ws" or full_path.startswith("ws/"):
             raise HTTPException(status_code=404, detail="Not Found")
-        local_path = os.path.join("dist", full_path)
+        
+        dist_dir = os.path.abspath("dist")
+        local_path = os.path.abspath(os.path.join(dist_dir, full_path))
+
+        # Path traversal guard: verify path remains inside dist
+        if os.path.commonpath([dist_dir, local_path]) != dist_dir:
+            raise HTTPException(status_code=403, detail="Forbidden")
+
         if os.path.isfile(local_path):
             if full_path.startswith("assets/"):
                 return FileResponse(local_path, headers={"Cache-Control": "public, max-age=31536000, immutable"})

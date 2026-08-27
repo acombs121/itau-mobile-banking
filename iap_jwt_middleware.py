@@ -7,8 +7,8 @@ while allowing local mock authentication when APP_ENV=local.
 """
 import os
 import logging
-from typing import Optional, Dict, Any
-from fastapi import Request, HTTPException, Depends
+from typing import Dict, Any
+from fastapi import Request, HTTPException
 from google.auth.transport import requests
 from google.oauth2 import id_token
 
@@ -20,12 +20,12 @@ IAP_ISSUER = "https://cloud.google.com/iap"
 def get_authenticated_user(request: Request) -> Dict[str, Any]:
     """
     Extracts and verifies the authenticated Google user from IAP JWT headers.
-    When running locally (APP_ENV='local'), returns a mock developer identity.
+    When running locally (APP_ENV='local'), returns a mock developer identity unless IAP_ENABLED_LOCAL is true.
     Enforces that the user belongs to allowed domains configured in IAP_ALLOWED_DOMAINS (defaults to 'google.com').
     """
     app_env = os.getenv("APP_ENV", "local").lower()
 
-    if app_env == "local" or os.getenv("IAP_ENABLED_LOCAL", "false").lower() == "false":
+    if app_env == "local" and os.getenv("IAP_ENABLED_LOCAL", "false").lower() != "true":
         # Local development fallback identity
         return {
             "sub": "local-dev-user-001",
@@ -40,12 +40,15 @@ def get_authenticated_user(request: Request) -> Dict[str, Any]:
         logger.error("Missing X-Goog-IAP-JWT-Assertion header in request.")
         raise HTTPException(status_code=401, detail="Unauthorized: Missing IAP assertion header.")
 
-    project_number = os.getenv("PROJECT_NUMBER")
-    backend_service_id = os.getenv("BACKEND_SERVICE_ID")
-    
     expected_audience = os.getenv("IAP_AUDIENCE")
-    if not expected_audience and project_number and backend_service_id:
-        expected_audience = f"/projects/{project_number}/global/backendServices/{backend_service_id}"
+    if not expected_audience:
+        project_number = os.getenv("PROJECT_NUMBER")
+        backend_service_id = os.getenv("BACKEND_SERVICE_ID")
+        gcp_project = os.getenv("GCP_PROJECT") or os.getenv("GOOGLE_CLOUD_PROJECT")
+        if project_number and backend_service_id:
+            expected_audience = f"/projects/{project_number}/global/backendServices/{backend_service_id}"
+        elif project_number and gcp_project:
+            expected_audience = f"/projects/{project_number}/apps/{gcp_project}"
 
     try:
         claims = id_token.verify_token(
