@@ -28,12 +28,12 @@ logger = logging.getLogger("itau_backend")
 
 APP_NAME = os.getenv("APP_NAME", "itau-banking-alerts")
 APP_ENV = os.getenv("APP_ENV", "local")
-GCP_PROJECT = os.getenv("GCP_PROJECT", "edgar-rag-demo")
+GCP_PROJECT = os.getenv("GCP_PROJECT")
 GCP_REGION = os.getenv("GCP_REGION", "us-central1")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-live-preview")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.7-flash")
 GEMINI_LIVE_MODEL = os.getenv("GEMINI_LIVE_MODEL", "gemini-3.5-flash-live-preview")
 
-# Initialize Gemini Enterprise Agent Platform client natively via ADC
+# Initialize Gemini Enterprise Agent Platform (fka Vertex AI Platform) client natively via ADC
 gemini_client = None
 try:
     from google import genai
@@ -42,7 +42,7 @@ try:
         gemini_client = genai.Client(vertexai=True, project=GCP_PROJECT, location=GCP_REGION)
         logger.info(f"Connected to Gemini Enterprise Agent Platform in {GCP_PROJECT}:{GCP_REGION}")
 except Exception as e:
-    logger.warning(f"Could not initialize native Vertex AI GenAI client (running local mock mode): {e}")
+    logger.warning(f"Could not initialize native Gemini Enterprise Agent Platform GenAI client (running local mock mode): {e}")
 
 app = FastAPI(
     title="Banco Itaú Mobile Banking & Security Alerts API",
@@ -244,7 +244,7 @@ class ChatRequest(BaseModel):
 async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
     """
     Bidirectional WebSocket connection to Gemini Multimodal Live API
-    (gemini-live-2.5-flash-native-audio on Vertex AI).
+    on Gemini Enterprise Agent Platform (fka Vertex AI Platform).
     Accepts 16kHz PCM audio or text from browser, streams back 24kHz PCM audio,
     text transcripts, and tool execution events.
     """

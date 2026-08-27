@@ -3,18 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>American Express Travel Concierge — Application Walkthrough</title>
+  <title>Banco Itaú — Central de Segurança & Alertas Bancários | Application Walkthrough</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400..700;1,400..700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --amex-navy: #00175A;
-      --amex-blue: #006FCF;
-      --amex-light-blue: #E8F1FA;
-      --amex-gold: #C09C5D;
-      --amex-dark-gold: #967432;
-      --amex-gold-light: #FDF9F0;
+      --brand-orange: #FF6423;
+      --brand-orange-hover: #D2531C;
+      --hero-bg: #070707;
+      --body-bg: #F3F3F3;
+      --surface-card: #FFFFFF;
+      --text-main: #070707;
+      --text-inverse: #FFFFFF;
+      --text-muted: #798B97;
       --slate-900: #0F172A;
       --slate-800: #1E293B;
       --slate-700: #334155;
@@ -29,8 +31,10 @@
       --emerald-50: #ECFDF5;
       --rose-600: #E11D48;
       --rose-50: #FFF1F2;
-      --amber-600: #D97706;
-      --amber-50: #FFFBEB;
+      --itau-blue: #003399;
+      --itau-blue-light: #EBF3FF;
+      --radius-btn: 4px;
+      --radius-card: 8px;
     }
 
     * {
@@ -40,9 +44,9 @@
     }
 
     body {
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      background-color: var(--slate-100);
-      color: var(--slate-800);
+      font-family: 'Arimo', 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: var(--body-bg);
+      color: var(--text-main);
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
     }
@@ -51,16 +55,15 @@
       font-family: 'JetBrains Mono', monospace;
     }
 
-    /* Top Navigation Bar */
     .top-bar {
-      background: linear-gradient(135deg, var(--amex-navy) 0%, #002244 100%);
+      background: var(--hero-bg);
       color: var(--white);
-      padding: 1.25rem 2rem;
-      border-bottom: 3px solid var(--amex-gold);
+      padding: 1rem 2rem;
+      border-bottom: 2px solid var(--brand-orange);
       position: sticky;
       top: 0;
       z-index: 100;
-      box-shadow: 0 4px 12px rgba(0, 23, 90, 0.2);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
     }
 
     .top-bar-inner {
@@ -80,125 +83,113 @@
     }
 
     .brand-logo {
-      background: var(--white);
-      color: var(--amex-blue);
+      background: var(--brand-orange);
+      color: var(--white);
       font-weight: 900;
-      font-size: 1rem;
+      font-size: 1.1rem;
       padding: 0.35rem 0.75rem;
-      border-radius: 4px;
+      border-radius: var(--radius-btn);
       letter-spacing: 0.5px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
     }
 
     .brand-text h1 {
-      font-size: 1.25rem;
+      font-size: 1.2rem;
       font-weight: 700;
       letter-spacing: -0.01em;
+      color: var(--white);
     }
 
     .brand-text p {
       font-size: 0.78rem;
-      color: var(--amex-gold);
+      color: var(--text-muted);
       font-weight: 500;
     }
 
     .ste-badge {
-      background: rgba(192, 156, 93, 0.2);
-      border: 1px solid var(--amex-gold);
-      color: var(--amex-gold-light);
-      padding: 0.4rem 0.85rem;
-      border-radius: 9999px;
+      background: rgba(255, 100, 35, 0.15);
+      border: 1px solid var(--brand-orange);
+      color: var(--brand-orange);
       font-size: 0.75rem;
       font-weight: 600;
-      display: inline-flex;
+      padding: 0.4rem 0.85rem;
+      border-radius: var(--radius-btn);
+      display: flex;
       align-items: center;
       gap: 0.4rem;
     }
 
-    /* Hero / Persona Tabs */
     .hero-tabs-container {
-      background: var(--white);
-      border-bottom: 1px solid var(--slate-200);
-      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+      background: #111114;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 1.5rem 2rem;
     }
 
     .hero-tabs-inner {
       max-width: 1300px;
       margin: 0 auto;
-      padding: 1.5rem 2rem 0;
-    }
-
-    .walkthrough-header {
-      margin-bottom: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
     }
 
     .walkthrough-header h2 {
-      font-size: 1.75rem;
-      font-weight: 800;
-      color: var(--amex-navy);
-      margin-bottom: 0.35rem;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 0.25rem;
     }
 
     .walkthrough-header p {
-      font-size: 0.95rem;
-      color: var(--slate-600);
+      font-size: 0.92rem;
+      color: #A0AEC0;
       max-width: 900px;
     }
 
     .tab-buttons {
       display: flex;
-      gap: 1rem;
+      gap: 0.75rem;
+      flex-wrap: wrap;
     }
 
     .tab-btn {
-      appearance: none;
-      border: none;
-      background: transparent;
-      padding: 1rem 1.75rem;
-      font-family: inherit;
-      font-size: 1rem;
+      background: #1C1C21;
+      color: #A0AEC0;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 0.75rem 1.5rem;
+      border-radius: var(--radius-btn);
+      font-size: 0.95rem;
       font-weight: 600;
-      color: var(--slate-500);
       cursor: pointer;
-      border-bottom: 3px solid transparent;
-      display: inline-flex;
+      display: flex;
       align-items: center;
-      gap: 0.65rem;
+      gap: 0.6rem;
       transition: all 0.2s ease;
     }
 
     .tab-btn:hover {
-      color: var(--amex-blue);
-      background: var(--slate-50);
-      border-top-left-radius: 6px;
-      border-top-right-radius: 6px;
-    }
-
-    .tab-btn.active {
-      color: var(--amex-navy);
-      border-bottom-color: var(--amex-blue);
-      background: var(--amex-light-blue);
-      border-top-left-radius: 6px;
-      border-top-right-radius: 6px;
-    }
-
-    .tab-btn .badge {
-      font-size: 0.72rem;
-      padding: 0.2rem 0.55rem;
-      border-radius: 9999px;
-      background: var(--slate-200);
-      color: var(--slate-700);
-    }
-
-    .tab-btn.active .badge {
-      background: var(--amex-blue);
+      background: #27272F;
       color: var(--white);
     }
 
-    /* Main Container */
+    .tab-btn.active {
+      background: var(--brand-orange);
+      color: var(--white);
+      border-color: var(--brand-orange);
+      box-shadow: 0 4px 12px rgba(255, 100, 35, 0.3);
+    }
+
+    .tab-btn .badge {
+      background: rgba(0, 0, 0, 0.35);
+      font-size: 0.75rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: var(--radius-btn);
+      font-weight: 500;
+    }
+
     .main-wrapper {
       max-width: 1300px;
-      margin: 2rem auto 4rem;
+      margin: 2rem auto;
       padding: 0 2rem;
     }
 
@@ -208,91 +199,88 @@
 
     .tab-content.active {
       display: block;
-      animation: fadeIn 0.3s ease-in-out;
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(6px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Section Cards */
     .card {
       background: var(--white);
-      border-radius: 12px;
+      border-radius: var(--radius-card);
       border: 1px solid var(--slate-200);
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-      padding: 2rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
       margin-bottom: 2rem;
+      overflow: hidden;
     }
 
     .card-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding-bottom: 1.25rem;
-      margin-bottom: 1.5rem;
+      padding: 1.25rem 1.75rem;
       border-bottom: 1px solid var(--slate-200);
+      background: var(--slate-50);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       flex-wrap: wrap;
-      gap: 0.75rem;
+      gap: 0.5rem;
     }
 
     .card-title {
-      font-size: 1.35rem;
+      font-size: 1.15rem;
       font-weight: 700;
-      color: var(--amex-navy);
+      color: var(--slate-900);
       display: flex;
       align-items: center;
-      gap: 0.65rem;
+      gap: 0.6rem;
+    }
+
+    .card-title span {
+      background: var(--brand-orange);
+      color: var(--white);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.2rem 0.55rem;
+      border-radius: var(--radius-btn);
+    }
+
+    .card-body {
+      padding: 1.75rem;
     }
 
     .tag {
       font-size: 0.75rem;
       font-weight: 600;
-      padding: 0.3rem 0.75rem;
-      border-radius: 6px;
+      padding: 0.25rem 0.65rem;
+      border-radius: var(--radius-btn);
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
 
-    .tag-blue { background: var(--amex-light-blue); color: var(--amex-blue); border: 1px solid rgba(0,111,207,0.2); }
-    .tag-gold { background: var(--amex-gold-light); color: var(--amex-dark-gold); border: 1px solid rgba(192,156,93,0.3); }
-    .tag-green { background: var(--emerald-50); color: var(--emerald-600); border: 1px solid rgba(5,150,105,0.2); }
-    .tag-rose { background: var(--rose-50); color: var(--rose-600); border: 1px solid rgba(225,29,72,0.2); }
+    .tag-orange { background: #FFF0EB; color: #D2531C; border: 1px solid #FFD0C0; }
+    .tag-blue { background: var(--itau-blue-light); color: var(--itau-blue); border: 1px solid #BFDBFE; }
+    .tag-green { background: var(--emerald-50); color: var(--emerald-600); border: 1px solid #A7F3D0; }
 
-    /* Grids & Layouts */
     .grid-2 {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      grid-template-columns: 1fr 1fr;
       gap: 1.5rem;
       margin-top: 1.25rem;
     }
 
     .grid-3 {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      grid-template-columns: repeat(3, 1fr);
       gap: 1.25rem;
-      margin-top: 1.25rem;
-    }
-
-    .grid-4 {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1rem;
       margin-top: 1.25rem;
     }
 
     .sub-card {
       background: var(--slate-50);
       border: 1px solid var(--slate-200);
-      border-radius: 8px;
-      padding: 1.35rem;
+      border-radius: var(--radius-card);
+      padding: 1.25rem;
     }
 
     .sub-card h4 {
-      font-size: 1.05rem;
+      font-size: 0.95rem;
       font-weight: 700;
-      color: var(--slate-800);
+      color: var(--slate-900);
       margin-bottom: 0.5rem;
       display: flex;
       align-items: center;
@@ -300,246 +288,85 @@
     }
 
     .sub-card p {
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       color: var(--slate-600);
-      margin-bottom: 0.75rem;
+      line-height: 1.5;
     }
 
-    /* Metric Boxes */
-    .metric-box {
-      background: linear-gradient(180deg, var(--white) 0%, var(--slate-50) 100%);
-      border: 1px solid var(--slate-200);
-      border-radius: 8px;
-      padding: 1.25rem;
-      text-align: center;
-      border-top: 4px solid var(--amex-blue);
-    }
-
-    .metric-box.gold { border-top-color: var(--amex-gold); }
-    .metric-box.green { border-top-color: var(--emerald-600); }
-    .metric-box.rose { border-top-color: var(--rose-600); }
-
-    .metric-val {
-      font-size: 1.85rem;
-      font-weight: 800;
-      color: var(--amex-navy);
-      margin-bottom: 0.25rem;
-    }
-
-    .metric-label {
-      font-size: 0.8rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      color: var(--slate-500);
-      letter-spacing: 0.5px;
-    }
-
-    .metric-sub {
-      font-size: 0.75rem;
-      color: var(--slate-600);
-      margin-top: 0.35rem;
-    }
-
-    /* Lists */
-    ul.ste-list, ol.ste-list {
-      padding-left: 1.5rem;
-      margin-top: 0.75rem;
-      margin-bottom: 1rem;
-    }
-
-    ul.ste-list li, ol.ste-list li {
-      font-size: 0.92rem;
-      color: var(--slate-700);
-      margin-bottom: 0.5rem;
-    }
-
-    /* Tables */
-    .table-container {
-      overflow-x: auto;
-      margin-top: 1rem;
-      margin-bottom: 1.5rem;
-      border: 1px solid var(--slate-200);
-      border-radius: 8px;
-    }
-
-    table {
+    .data-table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.9rem;
-      text-align: left;
-      background: var(--white);
+      margin-top: 1rem;
+      font-size: 0.88rem;
     }
 
-    thead {
-      background: var(--slate-50);
+    .data-table th {
+      background: var(--slate-100);
+      color: var(--slate-700);
+      font-weight: 700;
+      text-align: left;
+      padding: 0.75rem 1rem;
       border-bottom: 2px solid var(--slate-200);
     }
 
-    th {
-      padding: 0.85rem 1rem;
-      font-weight: 700;
-      color: var(--amex-navy);
-      font-size: 0.82rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    td {
-      padding: 0.85rem 1rem;
+    .data-table td {
+      padding: 0.75rem 1rem;
       border-bottom: 1px solid var(--slate-200);
-      color: var(--slate-700);
-      vertical-align: top;
+      color: var(--slate-800);
     }
 
-    tr:last-child td {
-      border-bottom: none;
+    .data-table tr:hover {
+      background: #F8FAFC;
     }
 
-    tr:hover td {
-      background: var(--slate-50);
-    }
-
-    /* Code Blocks */
-    .code-block {
-      background: var(--slate-900);
-      color: var(--slate-100);
-      border-radius: 8px;
+    .code-box {
+      background: #111114;
+      color: #E2E8F0;
       padding: 1.25rem;
-      margin: 1rem 0;
-      overflow-x: auto;
+      border-radius: var(--radius-card);
       font-size: 0.85rem;
-      line-height: 1.5;
-      border: 1px solid var(--slate-700);
-    }
-
-    .code-header {
-      color: var(--amex-gold);
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      margin-bottom: 0.5rem;
-      border-bottom: 1px solid var(--slate-700);
-      padding-bottom: 0.35rem;
+      overflow-x: auto;
+      margin-top: 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .inline-code {
-      background: var(--slate-200);
-      color: var(--amex-navy);
+      background: var(--slate-100);
+      color: var(--slate-800);
       padding: 0.15rem 0.4rem;
-      border-radius: 4px;
+      border-radius: var(--radius-btn);
       font-size: 0.85em;
+      border: 1px solid var(--slate-300);
     }
 
-    /* Visual Architecture Flow */
-    .flow-container {
-      background: var(--slate-900);
-      color: var(--white);
-      padding: 1.75rem;
-      border-radius: 10px;
-      margin: 1.5rem 0;
-      border: 1px solid var(--slate-700);
-    }
-
-    .flow-steps {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .flow-step {
-      display: flex;
-      align-items: flex-start;
-      gap: 1rem;
-      background: rgba(255,255,255,0.05);
-      padding: 1rem;
-      border-radius: 8px;
-      border-left: 4px solid var(--amex-blue);
-    }
-
-    .flow-step.gold .step-number { background: var(--amex-gold); color: var(--slate-900); }
-    .flow-step.gold { border-left-color: var(--amex-gold); }
-    .flow-step.green .step-number { background: var(--emerald-600); }
-    .flow-step.green { border-left-color: var(--emerald-600); }
-
-    .step-number {
-      background: var(--amex-blue);
-      color: var(--white);
-      font-weight: 800;
-      font-size: 0.85rem;
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .step-body h5 {
-      font-size: 0.95rem;
-      font-weight: 700;
-      margin-bottom: 0.25rem;
-      color: var(--white);
-    }
-
-    .step-body p {
-      font-size: 0.85rem;
-      color: var(--slate-300);
-      margin: 0;
-    }
-
-    /* Alert Boxes */
-    .alert-box {
-      border-radius: 8px;
-      padding: 1.15rem 1.35rem;
-      margin: 1.25rem 0;
+    .callout {
+      border-left: 4px solid var(--brand-orange);
+      background: #FFF8F5;
+      padding: 1rem 1.25rem;
+      border-radius: 0 var(--radius-btn) var(--radius-btn) 0;
+      margin-top: 1.25rem;
       font-size: 0.9rem;
-      display: flex;
-      align-items: flex-start;
-      gap: 0.85rem;
+      color: var(--slate-800);
     }
 
-    .alert-info {
-      background: var(--amex-light-blue);
-      border-left: 4px solid var(--amex-blue);
-      color: #003870;
+    .callout-blue {
+      border-left-color: var(--itau-blue);
+      background: var(--itau-blue-light);
     }
 
-    .alert-warning {
-      background: var(--amber-50);
-      border-left: 4px solid var(--amber-600);
-      color: #78350F;
-    }
-
-    .alert-success {
-      background: var(--emerald-50);
-      border-left: 4px solid var(--emerald-600);
-      color: #064E3B;
-    }
-
-    /* Footer */
     footer {
-      background: var(--amex-navy);
-      color: var(--slate-300);
-      padding: 2rem;
-      font-size: 0.85rem;
-      border-top: 1px solid var(--slate-700);
       text-align: center;
-    }
-
-    footer a {
-      color: var(--amex-gold);
-      text-decoration: none;
-    }
-
-    footer a:hover {
-      text-decoration: underline;
+      padding: 2.5rem 0;
+      color: var(--slate-500);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--slate-200);
+      margin-top: 3rem;
     }
 
     @media (max-width: 768px) {
       .top-bar { padding: 1rem; }
       .main-wrapper { padding: 0 1rem; }
-      .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
       .tab-btn { padding: 0.75rem 1rem; font-size: 0.9rem; }
     }
   </style>
@@ -550,14 +377,14 @@
   <header class="top-bar">
     <div class="top-bar-inner">
       <div class="brand-title">
-        <div class="brand-logo">AMEX</div>
+        <div class="brand-logo">itau</div>
         <div class="brand-text">
-          <h1>American Express Travel & Platinum Concierge</h1>
-          <p>Real-Time Multimodal Voice AI Experience</p>
+          <h1>Banco Itaú — Central de Segurança & Alertas Bancários</h1>
+          <p>Intelligent Security & Real-Time Proactive Alerts Platform</p>
         </div>
       </div>
       <div class="ste-badge">
-        <span>✓</span> ASD-STE100 Simplified Technical English
+        ASD-STE100 Simplified Technical English
       </div>
     </div>
   </header>
@@ -566,17 +393,17 @@
   <nav class="hero-tabs-container">
     <div class="hero-tabs-inner">
       <div class="walkthrough-header">
-        <h2>Application Walkthrough & Reference Manual</h2>
-        <p>This manual explains the architecture, business flow, and code structure of the American Express Voice AI Concierge. Select your persona below to read the specific walkthrough.</p>
+        <h2>Application Walkthrough & Technical Reference</h2>
+        <p>This technical manual documents the architecture, autonomous sub-agent orchestration, and operational security model of the Itaú AI Banking Concierge. Select your persona below to view the dedicated guide.</p>
       </div>
       <div class="tab-buttons">
         <button class="tab-btn active" onclick="switchPersonaTab('dev-tab', this)">
-          <span>👨‍💻</span> New Developer Guide
+          Developer Guide
           <span class="badge">Architecture & Code</span>
         </button>
         <button class="tab-btn" onclick="switchPersonaTab('exec-tab', this)">
-          <span>👔</span> Business Executive Guide
-          <span class="badge">Strategy & ROI</span>
+          Executive Guide
+          <span class="badge">Strategy & Value</span>
         </button>
       </div>
     </div>
@@ -585,457 +412,172 @@
   <!-- Main Content Body -->
   <main class="main-wrapper">
 
-    <!-- ========================================================================= -->
-    <!-- TAB 1: NEW DEVELOPER GUIDE                                                -->
-    <!-- ========================================================================= -->
+    <!-- TAB 1: DEVELOPER GUIDE -->
     <section id="dev-tab" class="tab-content active">
 
       <!-- Dev Card 1: System Overview & Architecture -->
       <div class="card">
         <div class="card-header">
           <div class="card-title">
-            <span>1.0</span> System Overview & End-to-End Architecture
+            <span>1.0</span> System Architecture & Core Stack
           </div>
-          <span class="tag tag-blue">Full-Stack Design</span>
+          <span class="tag tag-orange">Full-Stack Cloud Run</span>
         </div>
+        <div class="card-body">
+          <p>The application is a full-stack real-time proactive banking platform containerized as a multi-stage Docker image and hosted on <strong>Google Cloud Run</strong> with native <strong>Identity-Aware Proxy (IAP)</strong>.</p>
 
-        <p>The application is a full-stack real-time voice system. The browser captures microphone audio. The browser streams raw audio over a WebSocket to an Express Node.js server. The Express server proxies the audio stream directly to Google Gemini Multimodal Live API on Vertex AI. Gemini processes the audio and returns synthesized voice audio and structured tool calls.</p>
-
-        <!-- Visual Flow of Audio & Events -->
-        <div class="flow-container">
-          <div class="code-header">REAL-TIME BIDIRECTIONAL STREAMING PIPELINE</div>
-          <div class="flow-steps">
-            <div class="flow-step">
-              <div class="step-number">1</div>
-              <div class="step-body">
-                <h5>Audio Capture in Browser (Client-Side)</h5>
-                <p>An AudioContext worklet records user speech at 16,000 Hz single-channel PCM format. Base64 chunks stream across the WebSocket every 200 milliseconds.</p>
-              </div>
+          <div class="grid-3">
+            <div class="sub-card">
+              <h4>1. Frontend Tier (React 19 + Vite)</h4>
+              <p>Responsive client with Swiss typographic hierarchy, dark/light theme switching, and live audio PCM capture & playback at 16kHz / 24kHz.</p>
             </div>
-            <div class="flow-step gold">
-              <div class="step-number">2</div>
-              <div class="step-body">
-                <h5>WebSocket Proxy (server.js)</h5>
-                <p>The Node.js server receives the client stream at <span class="inline-code">/ws/live</span>. It signs Google Cloud credentials with GoogleAuth and proxies data to Gemini Live on Vertex AI.</p>
-              </div>
+            <div class="sub-card">
+              <h4>2. Backend Tier (Python FastAPI)</h4>
+              <p>Asynchronous REST API, cryptographic IAP JWT verification middleware (<span class="inline-code">iap_jwt_middleware.py</span>), and strict cache-control SPA static asset serving.</p>
             </div>
-            <div class="flow-step green">
-              <div class="step-number">3</div>
-              <div class="step-body">
-                <h5>Gemini Live Model & Sub-Agent Tool Execution</h5>
-                <p>Gemini executes registered tool calls (such as flight rebooking, hotel layover booking, and dining vouchers). It returns 24,000 Hz PCM audio to the browser for instant playback.</p>
-              </div>
+            <div class="sub-card">
+              <h4>3. AI Platform (Gemini Enterprise Agent Platform)</h4>
+              <p>Native ADC connection to <span class="inline-code">gemini-3.7-flash</span> for structured financial reasoning and <span class="inline-code">gemini-3.5-flash-live-preview</span> for low-latency bidirectional voice & tool calling.</p>
             </div>
           </div>
-        </div>
 
-        <div class="grid-3">
-          <div class="sub-card">
-            <h4>⚡ Latency Target</h4>
-            <p>Glass-to-glass audio latency stays under 400 milliseconds. Audio playback starts immediately when the model generates sound chunks.</p>
-          </div>
-          <div class="sub-card">
-            <h4>🛑 Voice Interruption</h4>
-            <p>The system supports instant voice interruption. When the user speaks, the client stops audio playback and flushes the queue immediately.</p>
-          </div>
-          <div class="sub-card">
-            <h4>🛡️ Fallback Resilience</h4>
-            <p>If the Vertex AI connection fails or an API times out, local sub-agent simulators execute tools with pre-loaded configuration data.</p>
+          <div class="callout">
+            <strong>Security & Zero Hardcoding Policy:</strong> No GCP Project IDs, Regions, or service account keys are hardcoded. Local development listens on <span class="inline-code">127.0.0.1:8090</span> via ADC, while Cloud Run uses attached Service Account credentials (<span class="inline-code">roles/aiplatform.user</span>).
           </div>
         </div>
       </div>
 
-      <!-- Dev Card 2: Codebase Structure & Key Files -->
+      <!-- Dev Card 2: 5 Autonomous Sub-Agents -->
       <div class="card">
         <div class="card-header">
           <div class="card-title">
-            <span>2.0</span> Codebase Directory Structure & File Map
+            <span>2.0</span> 5 Specialized Sub-Agents & Tool Declarations
           </div>
-          <span class="tag tag-gold">File Navigation</span>
+          <span class="tag tag-blue">Autonomous Tool Calling</span>
         </div>
+        <div class="card-body">
+          <p>Gemini dispatches structured tool declarations to trigger reactive UI updates in the Mobile Phone shell and the Multi-Agent Telemetry panel:</p>
 
-        <p>The repository contains clean separation between the backend proxy, the audio client library, the user interface components, and data configurations.</p>
-
-        <div class="table-container">
-          <table>
+          <table class="data-table">
             <thead>
               <tr>
-                <th>File Path</th>
-                <th>Component / Role</th>
-                <th>Description</th>
+                <th>Agent Identifier</th>
+                <th>Function Tool Name</th>
+                <th>Domain Responsibility & Regulatory Rule</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td><span class="inline-code">server.js</span></td>
-                <td>Backend Server & WebSocket Proxy</td>
-                <td>Express 5 server. Handles GoogleAuth token generation, static file serving, and the Vertex AI Gemini Live WebSocket proxy on port 8081.</td>
+                <td><strong>Account Info Agent</strong></td>
+                <td><span class="inline-code">get_account_info</span></td>
+                <td>Consolidates checking, CDB DI, Mastercard Black limit, and multi-bank Open Finance balances (R$ 463.950,20).</td>
               </tr>
               <tr>
-                <td><span class="inline-code">lib/GeminiLiveClient.ts</span></td>
-                <td>Audio Streaming Client</td>
-                <td>Manages browser microphone capture, 16kHz PCM downsampling, WebSocket connection, incoming audio decoding, and mute controls.</td>
+                <td><strong>Cash Flow & Yield Forecasting</strong></td>
+                <td><span class="inline-code">sweep_cdb</span></td>
+                <td>Simulates future debits (R$ 38.000 Thursday) and schedules automatic R$ 15.000 transfer from CDB DI to eliminate overdraft interest.</td>
               </tr>
               <tr>
-                <td><span class="inline-code">lib/AudioUtils.ts</span></td>
-                <td>Audio Encoding / Decoding</td>
-                <td>Provides helper functions to convert raw Float32 audio arrays to 16-bit PCM binary strings and Base64 buffers.</td>
+                <td><strong>Travel Notice & Card Shield</strong></td>
+                <td><span class="inline-code">activate_travel_mode</span></td>
+                <td>Registers Portugal & Spain travel notice, elevates international POS limit to R$ 50.000, and suppresses false declines.</td>
               </tr>
               <tr>
-                <td><span class="inline-code">components/AmexTravelConcierge.tsx</span></td>
-                <td>Primary Concierge Experience</td>
-                <td>Main React interface for American Express Travel. Manages flight disruption state, tool declarations, push notifications, and sub-agents.</td>
+                <td><strong>Mastercard Black Benefits</strong></td>
+                <td><span class="inline-code">get_card_benefits</span></td>
+                <td>Activates GRU Terminal 3 VIP Lounge, 4 worldwide LoungeKey passes, and €30.000 Schengen medical insurance.</td>
               </tr>
               <tr>
-                <td><span class="inline-code">components/AmexPlatinumConcierge.tsx</span></td>
-                <td>Lifestyle & Resy Concierge</td>
-                <td>Dedicated view for Platinum lifestyle perks: Global Dining Access by Resy, By Invitation Only events, and Saks credits.</td>
-              </tr>
-              <tr>
-                <td><span class="inline-code">components/AmexDecisionGraph.tsx</span></td>
-                <td>Knowledge Graph Visualizer</td>
-                <td>Interactive 2D force-directed graph. Shows active decision nodes, disruption events, card member policies, and Cypher queries.</td>
-              </tr>
-              <tr>
-                <td><span class="inline-code">config.ts</span></td>
-                <td>Brand Configuration</td>
-                <td>Defines American Express color tokens (Navy <span class="inline-code">#00175A</span>, Blue <span class="inline-code">#006FCF</span>, Gold <span class="inline-code">#C09C5D</span>), logos, and page titles.</td>
-              </tr>
-              <tr>
-                <td><span class="inline-code">public/data/configuration/</span></td>
-                <td>Mock Datasets & Profiles</td>
-                <td>JSON configuration files for Card Member profiles (<span class="inline-code">amex_guest.json</span>) and sub-agent inventory (<span class="inline-code">amex_agents.json</span>).</td>
+                <td><strong>Open Finance Optimizer</strong></td>
+                <td><span class="inline-code">refinance_open_finance</span></td>
+                <td>Refinances R$ 18.000 competitor credit debt (11.2%/mo down to 1.69%/mo via Lei 10.931 digital CCB, saving R$ 14.280) and optimizes savings yield (+15% CDI).</td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
 
-      <!-- Dev Card 3: Gemini Live Tools & Function Calling -->
+      <!-- Dev Card 3: Local Development & Deployment -->
       <div class="card">
         <div class="card-header">
           <div class="card-title">
-            <span>3.0</span> Sub-Agent Tools & Function Calling Engine
+            <span>3.0</span> Local Development & Automated Deployment
           </div>
-          <span class="tag tag-green">API & Tool Schema</span>
+          <span class="tag tag-green">POSIX-Safe Scripts</span>
         </div>
+        <div class="card-body">
+          <p>Developers can test locally with strict parity or deploy automatically using parameterized shell scripts:</p>
 
-        <p>The Gemini Live agent coordinates multiple sub-agents through structured tool declarations. The model inspects member state and automatically triggers appropriate sub-agent tools during the voice call.</p>
+          <div class="code-box">
+# 1. Local Development Parity Runner (FastAPI on :8090, Vite on :5173)
+cp example.env .env
+./run_local.sh
 
-        <div class="grid-2">
-          <div>
-            <h4 style="margin-bottom:0.5rem; color:var(--amex-navy);">Core Registered Tool Declarations</h4>
-            <ul class="ste-list">
-              <li><strong>get_guest_profile:</strong> Reads card member tier, upcoming trip details, and active travel disruption alerts.</li>
-              <li><strong>rebook_flight_itinerary:</strong> Holds and issues priority alternate flights with waived airline change fees.</li>
-              <li><strong>book_chicago_layover_hotel:</strong> Reserves immediate airport accommodations during severe weather delays.</li>
-              <li><strong>issue_disruption_dining_voucher:</strong> Creates and issues a $100 American Express dining credit voucher.</li>
-              <li><strong>adjust_hotel_reservation:</strong> Adjusts check-in dates at destination hotels and waives modification fees.</li>
-              <li><strong>update_transfer_schedule:</strong> Reschedules private chauffeur airport pickups to match new arrival times.</li>
-              <li><strong>book_dining_reservation:</strong> Reserves tables through Global Dining Access by Resy.</li>
-              <li><strong>end_conversation:</strong> Concludes the voice call session cleanly and confirms all bookings.</li>
-            </ul>
+# 2. Automated Google Cloud Run Deployment with Native IAP
+./deploy.sh
+
+# 3. Clean Resource Teardown
+./destroy.sh
           </div>
 
-          <div>
-            <div class="code-block">
-              <div class="code-header">SAMPLE TOOL EXECUTION PAYLOAD (JSON)</div>
-<pre>{
-  "name": "rebook_flight_itinerary",
-  "args": {
-    "flight_number": "Delta DL 448 (Non-stop)",
-    "departure_time": "Friday 8:15 AM",
-    "cabin_class": "First Class (Platinum Protection)",
-    "fee_waiver": "100% Amex Protection Applied"
-  }
-}</pre>
-            </div>
-            <div class="alert-box alert-success">
-              <span>✓</span>
-              <div>
-                <strong>Deterministic UI Updates:</strong> When a tool executes, <span class="inline-code">AmexTravelConcierge.tsx</span> updates the React itinerary state, triggers an iOS push alert, and highlights the corresponding node in the Decision Graph.
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Dev Card 4: Local Setup & Step-by-Step Instructions -->
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">
-            <span>4.0</span> Step-by-Step Developer Setup Instructions
-          </div>
-          <span class="tag tag-blue">Setup Guide</span>
-        </div>
-
-        <p>Follow these instructions to run and test the application on your local machine.</p>
-
-        <ol class="ste-list">
-          <li>
-            <strong>Clone the repository:</strong>
-            <div class="code-block">git clone git@github.com:cloud-ai-transformation-team/ihg-concierge.git<br>cd ihg-concierge</div>
-          </li>
-          <li>
-            <strong>Switch to the American Express branch:</strong>
-            <div class="code-block">git checkout amex-travel</div>
-          </li>
-          <li>
-            <strong>Install dependencies and build the frontend:</strong>
-            <div class="code-block">npm install<br>npm run build</div>
-          </li>
-          <li>
-            <strong>Start the production server:</strong>
-            <div class="code-block">node server.js</div>
-          </li>
-          <li>
-            <strong>Open the browser:</strong> Open <a href="http://localhost:8081" target="_blank" style="color:var(--amex-blue); font-weight:600;">http://localhost:8081</a>. Allow microphone access when prompted. Click the blue telephone icon to start a live voice conversation.
-          </li>
-        </ol>
-      </div>
-
-      <!-- Dev Card 5: Backend Data Architecture, Determinism & Database Layer -->
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">
-            <span>5.0</span> Backend Data Architecture, Determinism & Database Layer
-          </div>
-          <span class="tag tag-rose">Data & Persistence</span>
-        </div>
-
-        <p>This section explains how data storage, data determinism, and backend persistence operate across the system.</p>
-
-        <div class="grid-2">
-          <div class="sub-card">
-            <h4>📁 Is a Database Used?</h4>
-            <p>No external database engine (such as PostgreSQL, MySQL, MongoDB, or Firestore) runs in this demo application.</p>
-            <p>The backend stores application state in local JSON files and in-memory browser memory. Node.js file system methods (<span class="inline-code">fs.readFileSync</span>, <span class="inline-code">fs.writeFileSync</span>) manage session persistence on the local disk.</p>
-          </div>
-
-          <div class="sub-card">
-            <h4>🎯 Deterministic vs. Dynamic Elements</h4>
-            <p><strong>Deterministic Data:</strong> Member profiles, disruption records, flight hold inventories, hotel options, and policy rules reside in static JSON files in <span class="inline-code">public/data/configuration/</span>.</p>
-            <p><strong>Dynamic AI:</strong> Gemini Live dynamically understands speech, decides tool calls, and generates audio responses in real time over the WebSocket connection.</p>
-          </div>
-        </div>
-
-        <h4 style="margin-top:1.5rem; margin-bottom:0.5rem; color:var(--amex-navy);">Backend Data Flow & Storage Structure</h4>
-        <div class="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>Data Domain</th>
-                <th>Storage Method in Prototype</th>
-                <th>Deterministic Rules</th>
-                <th>Production Architecture Path</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>Card Member Profile</strong></td>
-                <td><span class="inline-code">public/data/configuration/amex_guest.json</span></td>
-                <td>Fixed profile data (David Miller, Platinum/Centurion tier, flight AA 1482 alert).</td>
-                <td>Cloud Spanner / Core Banking Member API</td>
-              </tr>
-              <tr>
-                <td><strong>Sub-Agent Inventory</strong></td>
-                <td><span class="inline-code">public/data/configuration/amex_agents.json</span></td>
-                <td>Fixed flight hold options (Delta DL 448) and hotel inventory (LGA Airport Marriott).</td>
-                <td>Sabre / Amadeus GDS & Partner Hotel APIs</td>
-              </tr>
-              <tr>
-                <td><strong>Session Persistence</strong></td>
-                <td><span class="inline-code">public/data/amex_session_run.json</span> via <span class="inline-code">POST /api/amex-session</span></td>
-                <td>Saves active itinerary items and completed sub-agent task timestamps.</td>
-                <td>Redis / Cloud Memorystore Session Cache</td>
-              </tr>
-              <tr>
-                <td><strong>Knowledge Graph</strong></td>
-                <td>JavaScript Object Model in <span class="inline-code">AmexDecisionGraph.tsx</span></td>
-                <td>Simulates Cypher queries (<span class="inline-code">MATCH (m:CardMember)...</span>) with fixed node logic.</td>
-                <td>Neo4j Enterprise or Amazon Neptune Graph DB</td>
-              </tr>
-              <tr>
-                <td><strong>Policy & Vouchers</strong></td>
-                <td>Hardcoded tool parameter limits in React & JSON schemas</td>
-                <td>Guarantees exact $100 dining credit limit and 100% fee waiver rule.</td>
-                <td>Enterprise Rules Engine (Drools / Cloud Rules)</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="alert-box alert-info">
-          <span>💡</span>
-          <div>
-            <strong>Why Hybrid Determinism is Critical:</strong> High-risk banking and travel applications cannot permit autonomous AI models to invent prices or modify customer records without strict controls. In this architecture, Gemini Live generates conversational voice fluidly, but all transactional actions execute through rigid, deterministic tool schemas.
+          <div class="callout callout-blue">
+            <strong>IAP Settings Configuration:</strong> <span class="inline-code">deploy.sh</span> automatically configures <span class="inline-code">gcloud iap settings set</span> to register the Cloud Run domain under Allowed Domains, authorizing OAuth browser redirects.
           </div>
         </div>
       </div>
 
     </section>
 
-    <!-- ========================================================================= -->
-    <!-- TAB 2: BUSINESS EXECUTIVE GUIDE                                           -->
-    <!-- ========================================================================= -->
+    <!-- TAB 2: EXECUTIVE GUIDE -->
     <section id="exec-tab" class="tab-content">
 
-      <!-- Exec Card 1: Executive Summary & Value Proposition -->
+      <!-- Exec Card 1: Strategic Vision -->
       <div class="card">
         <div class="card-header">
           <div class="card-title">
-            <span>1.0</span> Executive Summary & Business Value Proposition
+            <span>1.0</span> Strategic Value & Personnalité Client Experience
           </div>
-          <span class="tag tag-gold">Executive Summary</span>
+          <span class="tag tag-orange">Executive Summary</span>
         </div>
+        <div class="card-body">
+          <p>The <strong>Banco Itaú AI Concierge</strong> transforms traditional reactive banking into proactive, high-touch wealth advisory for affluent <em>Itaú Personnalité</em> clients.</p>
 
-        <p>The <strong>American Express Travel & Platinum Concierge</strong> is a real-time voice artificial intelligence platform. It transforms high-stress travel disruptions into premium brand loyalty moments for high-net-worth Platinum and Centurion Card Members.</p>
-
-        <div class="grid-4">
-          <div class="metric-box">
-            <div class="metric-val">&lt; 90s</div>
-            <div class="metric-label">Average Call Time</div>
-            <div class="metric-sub">Reduced from 14 minutes</div>
-          </div>
-          <div class="metric-box green">
-            <div class="metric-val">88%</div>
-            <div class="metric-label">Automated Resolution</div>
-            <div class="metric-sub">Zero human agent intervention</div>
-          </div>
-          <div class="metric-box gold">
-            <div class="metric-val">&lt; 400ms</div>
-            <div class="metric-label">Voice Response Latency</div>
-            <div class="metric-sub">Natural conversational flow</div>
-          </div>
-          <div class="metric-box rose">
-            <div class="metric-val">+32 pt</div>
-            <div class="metric-label">Card Member NPS</div>
-            <div class="metric-sub">During severe weather events</div>
-          </div>
-        </div>
-
-        <div class="alert-box alert-info" style="margin-top:1.5rem;">
-          <span>💡</span>
-          <div>
-            <strong>The Core Business Problem:</strong> When severe weather strikes, thousands of travelers call the concierge simultaneously. Traditional phone queues exceed 45 minutes, frustrating premium card members and driving up contact center costs. This AI solution handles multiple intents in a single two-minute voice call with zero wait time.
-          </div>
-        </div>
-      </div>
-
-      <!-- Exec Card 2: The Critical Customer Journey (CUJ) -->
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">
-            <span>2.0</span> The Severe Weather Disruption Scenario (2-Minute CUJ)
-          </div>
-          <span class="tag tag-blue">Customer Experience</span>
-        </div>
-
-        <p>This scenario demonstrates how the system protects a Platinum Card Member during a critical travel disruption (Flight AA 1482 cancelled due to severe weather ground stop at LGA).</p>
-
-        <div class="flow-container">
-          <div class="code-header">THE 2-MINUTE PLATINUM RESOLUTION FLOW</div>
-          <div class="flow-steps">
-            <div class="flow-step">
-              <div class="step-number">1</div>
-              <div class="step-body">
-                <h5>Proactive Disruption Alert & Greeting</h5>
-                <p>The system detects the cancelled flight. When Card Member David Miller calls, the AI greets him by name and acknowledges the cancellation immediately.</p>
-              </div>
+          <div class="grid-2">
+            <div class="sub-card">
+              <h4>Autonomous Overdraft Prevention</h4>
+              <p>Rather than charging penal overdraft rates (LIS), the system identifies upcoming liquidity shortfalls and schedules zero-friction CDB DI sweeps so funds earn 100% CDI until the exact millisecond of debit clearance.</p>
             </div>
-            <div class="flow-step gold">
-              <div class="step-number">2</div>
-              <div class="step-body">
-                <h5>Simultaneous Multi-Service Coordination</h5>
-                <p>In one natural sentence, David asks for a new flight tomorrow morning, a hotel near the airport tonight, dinner, and a rescheduled Miami chauffeur pickup.</p>
-              </div>
-            </div>
-            <div class="flow-step green">
-              <div class="step-number">3</div>
-              <div class="step-body">
-                <h5>Automated Sub-Agent Execution & Policy Application</h5>
-                <p>The AI rebooks First Class on Delta DL 448 (100% change fee waived), reserves the LGA Airport Marriott, issues a $100 dining credit, updates the Miami hotel check-in date, and reschedules the chauffeur.</p>
-              </div>
-            </div>
-            <div class="flow-step">
-              <div class="step-number">4</div>
-              <div class="step-body">
-                <h5>Instant Confirmation & Mobile Push Delivery</h5>
-                <p>The AI confirms the full itinerary and closes the call in under 90 seconds. Push alerts and digital vouchers deliver directly to David's phone.</p>
-              </div>
+            <div class="sub-card">
+              <h4>Open Finance Rate Arbitrage</h4>
+              <p>Leveraging Brazil's Open Finance ecosystem, the concierge detects expensive debt held at competitor institutions (11.20%/month) and refinances it into pre-approved Itaú Sob Medida credit (1.69%/month), saving clients over R$ 14.000 in interest.</p>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Exec Card 3: Financial ROI & Cost Efficiency -->
+      <!-- Exec Card 2: Regulatory Compliance -->
       <div class="card">
         <div class="card-header">
           <div class="card-title">
-            <span>3.0</span> Financial Impact, ROI & Operating Efficiency
+            <span>2.0</span> Regulatory Compliance & Anti-Fraud Architecture
           </div>
-          <span class="tag tag-green">Financial Impact</span>
+          <span class="tag tag-blue">BACEN & LGPD Compliance</span>
         </div>
-
-        <div class="grid-2">
-          <div class="sub-card">
-            <h4>📉 Operating Cost Reductions</h4>
-            <ul class="ste-list">
-              <li><strong>Contact Center Deflection:</strong> Deflects 85%+ of standard disruption rebooking calls from Tier-3 human concierge desks.</li>
-              <li><strong>Handling Cost:</strong> Reduces per-incident servicing cost from $24.50 (human agent) to less than $0.45 (AI voice stream).</li>
-              <li><strong>Penalty Elimination:</strong> Automatically enforces negotiated partner fee waivers across airlines and Fine Hotels + Resorts®.</li>
-            </ul>
+        <div class="card-body">
+          <div class="grid-3">
+            <div class="sub-card">
+              <h4>BACEN Resolução 147 (MED)</h4>
+              <p>Instant precautionary hold and automated dispute mechanism for high-risk Pix transactions exhibiting geographical and VPN anomalies.</p>
+            </div>
+            <div class="sub-card">
+              <h4>Lei 10.931 / Digital CCB</h4>
+              <p>Legally enforceable digital Cédula de Crédito Bancário generation for instant debt consolidation and balance portability.</p>
+            </div>
+            <div class="sub-card">
+              <h4>Identity-Aware Security</h4>
+              <p>Enterprise grade authentication powered by Google Cloud Identity-Aware Proxy (IAP) and cryptographic JWT token inspection.</p>
+            </div>
           </div>
-
-          <div class="sub-card">
-            <h4>📈 Member Retention & Incremental Revenue</h4>
-            <ul class="ste-list">
-              <li><strong>Annual Fee Retention:</strong> Protects $695 annual Platinum fee renewals by delivering world-class service during crises.</li>
-              <li><strong>Partner Ecosystem Spend:</strong> Drives booking volume into Resy partner restaurants and American Express Travel hotels.</li>
-              <li><strong>Centurion Upgrades:</strong> Identifies high-spend travelers eligible for invitation to the Centurion® Card program.</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <!-- Exec Card 4: Governance, Security & Scalability -->
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">
-            <span>4.0</span> Enterprise Governance, Security & Brand Safety
-          </div>
-          <span class="tag tag-gold">Enterprise Controls</span>
-        </div>
-
-        <p>The platform meets American Express enterprise compliance and data protection standards.</p>
-
-        <div class="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>Governance Pillar</th>
-                <th>Standard Implementation</th>
-                <th>Business Benefit</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>Data Privacy (PCI-DSS & SOC2)</strong></td>
-                <td>Zero cardholder primary account numbers (PAN) are spoken or logged in voice transcripts. Tokens mask all payment records.</td>
-                <td>Prevents data exposure and complies with financial industry regulations.</td>
-              </tr>
-              <tr>
-                <td><strong>Brand Safety & Hallucination Guardrails</strong></td>
-                <td>The agent only takes actions through verified sub-agent tool schemas with deterministic inventory checks.</td>
-                <td>Eliminates fictitious flight bookings or incorrect policy promises.</td>
-              </tr>
-              <tr>
-                <td><strong>Seamless Human Escalation</strong></td>
-                <td>Complex exceptions instantly transfer to physical concierge desks with pre-populated transcripts and member context.</td>
-                <td>Guarantees zero customer abandonment for high-priority VIP requests.</td>
-              </tr>
-            </tbody>
-          </table>
         </div>
       </div>
 
@@ -1043,33 +585,22 @@
 
   </main>
 
-  <!-- Footer -->
   <footer>
-    <p>American Express Travel & Platinum Concierge — Built with Google Gemini Multimodal Live API on Vertex AI</p>
-    <p style="margin-top:0.35rem; color:var(--slate-500); font-size:0.75rem;">Document compliant with ASD-STE100 Simplified Technical English standards.</p>
+    <p>Banco Itaú Unibanco — Central de Segurança & Alertas Bancários &bull; Built with Gemini Enterprise Agent Platform on Google Cloud Run</p>
   </footer>
 
   <script>
     function switchPersonaTab(tabId, buttonElement) {
-      // Hide all tabs
-      document.querySelectorAll('.tab-content').forEach(function(content) {
-        content.classList.remove('active');
+      document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
       });
-
-      // Deactivate all buttons
-      document.querySelectorAll('.tab-btn').forEach(function(btn) {
+      document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.remove('active');
       });
-
-      // Activate selected tab & button
-      const targetContent = document.getElementById(tabId);
-      if (targetContent) {
-        targetContent.classList.add('active');
-      }
-      if (buttonElement) {
-        buttonElement.classList.add('active');
-      }
+      document.getElementById(tabId).classList.add('active');
+      buttonElement.classList.add('active');
     }
   </script>
+
 </body>
 </html>

@@ -1,5 +1,9 @@
 .env
 .env.*
+*.key.json
+service-account*.json
+credentials*.json
+client_secret*.json
 .git/
 .gitignore
 __pycache__/

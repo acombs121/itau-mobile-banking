@@ -64,7 +64,7 @@ This document records the core architectural patterns, WebSocket audio streaming
 ```
 
 ### 2.2 Audio Output (Gemini Live -> Server -> Browser)
-- Server forwards Vertex AI raw WebSocket frames to the browser.
+- Server forwards Gemini Enterprise Agent Platform raw WebSocket frames to the browser.
 - Browser extracts `inlineData` (MIME `audio/pcm;rate=24000`), decodes Base64 to `Int16Array`, converts to `Float32Array`, and queues into the Web Audio playback buffer.
 - **Interruption**: If `serverContent.interrupted` is received, immediately stop playback and clear the audio queue.
 
@@ -82,15 +82,15 @@ This document records the core architectural patterns, WebSocket audio streaming
 
 ---
 
-## 4. Backend (`server.js`) Architecture
-- **Framework**: Express 5 + WebSocket (`ws`) + `@google/genai` + `google-auth-library`.
-- **Port**: Configurable (e.g. `8081` or `3000`).
+## 4. Backend (`main.py`) Architecture
+- **Framework**: Python 3.11+ FastAPI + WebSocket + `google-genai` (ADC).
+- **Port**: Configurable via `.env` (`LOCAL_PORT=8090`).
 - **Endpoints**:
   - `GET /health`
-  - `GET /ws/live` (WebSocket upgrade proxying to Vertex AI Live endpoint)
-  - `POST /api/ai` (Assistant text/JSON completion fallback)
-  - `GET /api/account` / `POST /api/account/action` (Banking state and transactions)
-  - Static build serving from `dist/`
+  - `GET /ws/live` (WebSocket endpoint connecting to Gemini Enterprise Agent Platform Live API)
+  - `POST /api/chat` (Analytical reasoning & text completion fallback)
+  - `GET /api/banking/profile` / `POST /api/banking/action` (Banking state and transactions)
+  - Static build serving from `dist/` with strict SPA cache-control headers
 
 ---
 

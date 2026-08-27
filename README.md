@@ -1,6 +1,6 @@
 # Banco Itaú — Central de Segurança & Alertas Bancários
 
-An intelligent, real-time banking security and proactive alerts platform for **Banco Itaú Unibanco**, built with **Gemini Enterprise Agent Platform (fka Vertex AI Platform)** powered by **`gemini-3.5-flash-live-preview`** (Gemini Live Multimodal Voice & Function Calling API), **Python FastAPI**, **React 19**, **Vite**, and **Tailwind CSS**. Deployed securely on **Google Cloud Run** with native **Identity-Aware Proxy (IAP)**.
+An intelligent, real-time banking security and proactive alerts platform for **Banco Itaú Unibanco**, built with **Gemini Enterprise Agent Platform (fka Vertex AI Platform)** powered by **`gemini-3.7-flash`** (Analytical Financial Reasoning & Tool Dispatching) and **`gemini-3.5-flash-live-preview`** (Gemini Live Multimodal Voice API), **Python FastAPI**, **React 19**, **Vite**, and **Tailwind CSS**. Deployed securely on **Google Cloud Run** with native **Identity-Aware Proxy (IAP)**.
 
 ---
 
@@ -19,12 +19,12 @@ An intelligent, real-time banking security and proactive alerts platform for **B
 
 ## Executive & Architectural Overview
 
-The **Itaú Banking Alerts Platform** coordinates proactive financial intelligence and security resolution through a unified **`gemini-3.5-flash-live-preview`** architecture:
+The **Itaú Banking Alerts Platform** coordinates proactive financial intelligence and security resolution through a unified Gemini architecture:
 
 1. **Gemini Live Multimodal WebSocket API** (`gemini-3.5-flash-live-preview`):
    - **Real-Time Voice Streaming**: Bidirectional 16kHz PCM microphone audio streaming and low-latency 24kHz audio synthesis (`Aoede` persona).
    - **Autonomous Tool Calling**: Sub-second dispatching of banking sub-agents (`get_account_info`, `sweep_cdb`, `activate_travel_mode`, `get_card_benefits`, `refinance_open_finance`) directly driving highlighted agent cards and dynamic mobile canvas state.
-2. **Unified REST Fallback API** (`gemini-3.5-flash-live-preview`):
+2. **Unified REST & Analytical Reasoning API** (`gemini-3.7-flash`):
    - **Analytical Reasoning & Text Chat**: Deep JSON schema validation, risk evaluation, and multi-turn financial decisioning.
 
 ```
@@ -42,8 +42,8 @@ The **Itaú Banking Alerts Platform** coordinates proactive financial intelligen
         ┌──────────────────────────┐   ┌────────────────────────────────┐
         │      Itaú Guard AI       │   │    Gemini Enterprise Agent     │
         │     Decision Graph       │   │         Platform (ADC)         │
-        │    (BACEN MED Rules)     │   │ • Model: gemini-3.5-flash-live-│
-        └──────────────────────────┘   │          preview               │
+        │    (BACEN MED Rules)     │   │ • Models: gemini-3.7-flash     │
+        └──────────────────────────┘   │           gemini-3.5-live      │
                                        └────────────────────────────────┘
 ```
 
