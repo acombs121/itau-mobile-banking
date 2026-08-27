@@ -51,6 +51,22 @@ export const CockpitHeader: React.FC<CockpitHeaderProps> = ({
       {/* Right Controls */}
       <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
         
+        {/* Brand Kit Link */}
+        <a
+          href="/brandkit.html"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`h-9 px-2.5 rounded-[5px] text-xs font-medium border flex items-center gap-1.5 transition-colors flex-shrink-0 ${
+            isDark
+              ? 'border-white/15 text-white/70 hover:text-white hover:bg-white/[0.05]'
+              : 'border-slate-300 text-slate-700 hover:text-black hover:bg-slate-50'
+          }`}
+          title="Open Official Brand Kit & Design System"
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-brand-orange"></span>
+          <span className="hidden sm:inline">Brand Kit</span>
+        </a>
+
         {/* Language Switcher */}
         <div
           className={`h-9 flex items-center rounded-[5px] p-0.5 border box-border transition-colors ${

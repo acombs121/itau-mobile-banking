@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Banco Itaú — Official Brand Kit & Design System (Swiss Executive Edition)</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23FF6423'/><text x='50%' y='62%' dominant-baseline='middle' text-anchor='middle' fill='%23FFFFFF' font-weight='900' font-family='sans-serif' font-size='42'>itau</text></svg>" />
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              orange: '#FF6423',
+              'orange-hover': '#D2531C',
+              dark: '#070707',
+              charcoal: '#0D0D11',
+              surface: '#151518',
+              elevated: '#1C1C22',
+              border: 'rgba(255, 255, 255, 0.08)',
+            },
+            semantic: {
+              green: '#059669',
+              'green-light': '#10B981'
+            }
+          },
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'Inter', 'Arial', 'sans-serif'],
+            mono: ['"JetBrains Mono"', '"SF Mono"', 'Monaco', 'Consolas', 'monospace']
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      background-color: #070707;
+      color: #f8fafc;
+      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 3px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+    .color-card:hover .copy-badge {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-brand-orange selection:text-white custom-scrollbar">
+
+  <!-- Top Header Navigation -->
+  <header class="w-full h-16 border-b border-white/[0.08] bg-[#0D0D11]/90 backdrop-blur-md sticky top-0 z-50 px-6 sm:px-12 flex items-center justify-between">
+    <div class="flex items-center gap-3.5">
+      <div class="w-8 h-8 rounded-[8px] bg-brand-orange text-white font-black text-sm flex items-center justify-center tracking-tight shadow-md flex-shrink-0">
+        itau
+      </div>
+      <div class="h-4 w-[1px] bg-white/15"></div>
+      <span class="text-sm font-semibold tracking-tight text-white/90">
+        Banco Itaú Personnalité — Official Brand Kit & Design System
+      </span>
+      <span class="hidden md:inline-block px-2 py-0.5 rounded text-[10px] font-mono uppercase bg-white/[0.06] text-white/60 border border-white/10">
+        Swiss Executive Edition v2.0
+      </span>
+    </div>
+
+    <!-- Quick Navigation Links -->
+    <div class="flex items-center gap-3">
+      <a href="/scenarios.html" class="hidden sm:inline-block text-xs text-white/70 hover:text-white transition-colors">Scenarios</a>
+      <a href="/demo_script.html" class="hidden sm:inline-block text-xs text-white/70 hover:text-white transition-colors">Demo Script</a>
+      <a href="/walkthrough.html" class="hidden sm:inline-block text-xs text-white/70 hover:text-white transition-colors">Architecture</a>
+      <a href="/" class="px-3.5 py-1.5 text-xs font-semibold rounded-[6px] bg-brand-orange hover:bg-brand-orange-hover text-white transition-all flex items-center gap-1.5 shadow-sm">
+        <span>Launch Cockpit &rarr;</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="max-w-6xl w-full mx-auto px-6 pt-10 pb-8 border-b border-white/[0.08]">
+    <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full border border-brand-orange/30 bg-brand-orange/10 text-brand-orange text-xs font-medium mb-4">
+      <span class="w-1.5 h-1.5 rounded-full bg-brand-orange animate-pulse"></span>
+      Official Design Standards • Itaú Personnalité & Itaú Empresas
+    </div>
+    <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white mb-4">
+      The Swiss Banking Design System
+    </h1>
+    <p class="text-sm sm:text-base text-white/70 max-w-3xl leading-relaxed">
+      A comprehensive design system and visual token kit engineered for executive authority, cryptographic clarity, and zero-fatigue high-density financial data. Built on high contrast, strict tabular alignment, mathematical centering, and restrained semantic color.
+    </p>
+
+    <!-- Key Principles Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+      <div class="p-5 rounded-[12px] bg-[#121215] border border-white/[0.08]">
+        <div class="text-[11px] font-mono uppercase tracking-wider text-brand-orange font-bold mb-1">Principle 01</div>
+        <h3 class="text-sm font-bold text-white mb-1.5">Swiss Tabular Precision</h3>
+        <p class="text-xs text-white/60 leading-relaxed">
+          Rigid two-column alignment, zero text wrapping, and mathematical centering. Financial figures use dedicated tabular monospace fonts.
+        </p>
+      </div>
+
+      <div class="p-5 rounded-[12px] bg-[#121215] border border-white/[0.08]">
+        <div class="text-[11px] font-mono uppercase tracking-wider text-brand-orange font-bold mb-1">Principle 02</div>
+        <h3 class="text-sm font-bold text-white mb-1.5">Semantic Color Exclusivity</h3>
+        <p class="text-xs text-white/60 leading-relaxed">
+          Green is strictly semantic for savings and verified status. Core orange represents Itaú brand identity. Extraneous blue and purple are eliminated.
+        </p>
+      </div>
+
+      <div class="p-5 rounded-[12px] bg-[#121215] border border-white/[0.08]">
+        <div class="text-[11px] font-mono uppercase tracking-wider text-brand-orange font-bold mb-1">Principle 03</div>
+        <h3 class="text-sm font-bold text-white mb-1.5">Turn-One Directness</h3>
+        <p class="text-xs text-white/60 leading-relaxed">
+          Executive banking poise requires instant clarity. No questionnaire stalling, no banner toast popups, and no ambiguous multi-step menus.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content Container -->
+  <main class="max-w-6xl w-full mx-auto px-6 py-12 space-y-16">
+
+    <!-- 1. COLOR PALETTE SECTION -->
+    <section id="colors">
+      <div class="flex items-center justify-between mb-6 pb-3 border-b border-white/[0.08]">
+        <div>
+          <span class="text-[10px] font-mono uppercase tracking-wider text-brand-orange font-bold">Token Hierarchy</span>
+          <h2 class="text-xl sm:text-2xl font-bold text-white">Color System & Tokens</h2>
+        </div>
+        <span class="text-xs text-white/40 font-mono">Click any tile to copy hex code</span>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+        <!-- Brand Orange -->
+        <div onclick="copyToClipboard('#FF6423', this)" class="color-card p-4 rounded-[12px] bg-[#151518] border border-white/[0.08] hover:border-brand-orange/50 transition-all cursor-pointer relative group">
+          <div class="h-20 rounded-[8px] bg-[#FF6423] mb-3 shadow-inner flex items-center justify-center">
+            <span class="text-xs font-bold text-white tracking-wide opacity-90">#FF6423</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-white">Itaú Core Orange</span>
+            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-brand-orange/20 text-brand-orange font-bold">Brand</span>
+          </div>
+          <p class="text-[11px] text-white/50 mt-1">Header background, active mic pulse, primary CTAs, active badges</p>
+          <div class="copy-badge absolute top-2 right-2 px-2 py-0.5 text-[9px] font-mono bg-black/80 rounded border border-white/20 text-white opacity-0 transform -translate-y-1 transition-all">Copy Hex</div>
+        </div>
+
+        <!-- Brand Orange Hover -->
+        <div onclick="copyToClipboard('#D2531C', this)" class="color-card p-4 rounded-[12px] bg-[#151518] border border-white/[0.08] hover:border-brand-orange/50 transition-all cursor-pointer relative group">
+          <div class="h-20 rounded-[8px] bg-[#D2531C] mb-3 shadow-inner flex items-center justify-center">
+            <span class="text-xs font-bold text-white tracking-wide opacity-90">#D2531C</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-white">Itaú Dark Orange</span>
+            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/10 text-white/70">Hover</span>
+          </div>
+          <p class="text-[11px] text-white/50 mt-1">Pressed state, button hover, secondary brand emphasis</p>
+          <div class="copy-badge absolute top-2 right-2 px-2 py-0.5 text-[9px] font-mono bg-black/80 rounded border border-white/20 text-white opacity-0 transform -translate-y-1 transition-all">Copy Hex</div>
+        </div>
+
+        <!-- Semantic Green -->
+        <div onclick="copyToClipboard('#059669', this)" class="color-card p-4 rounded-[12px] bg-[#151518] border border-white/[0.08] hover:border-emerald-500/50 transition-all cursor-pointer relative group">
+          <div class="h-20 rounded-[8px] bg-[#059669] mb-3 shadow-inner flex items-center justify-center">
+            <span class="text-xs font-bold text-white tracking-wide opacity-90">#059669</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-white">Semantic Green</span>
+            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">Semantic</span>
+          </div>
+          <p class="text-[11px] text-white/50 mt-1">Net interest saved, positive yields, confirmed safeguard actions</p>
+          <div class="copy-badge absolute top-2 right-2 px-2 py-0.5 text-[9px] font-mono bg-black/80 rounded border border-white/20 text-white opacity-0 transform -translate-y-1 transition-all">Copy Hex</div>
+        </div>
+
+        <!-- Semantic Green Light -->
+        <div onclick="copyToClipboard('#10B981', this)" class="color-card p-4 rounded-[12px] bg-[#151518] border border-white/[0.08] hover:border-emerald-500/50 transition-all cursor-pointer relative group">
+          <div class="h-20 rounded-[8px] bg-[#10B981] mb-3 shadow-inner flex items-center justify-center">
+            <span class="text-xs font-bold text-slate-900 tracking-wide font-mono">#10B981</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-white">Semantic Green Light</span>
+            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">Highlight</span>
+          </div>
+          <p class="text-[11px] text-white/50 mt-1">Hero savings text on dark cards (R$ 14.280,00), verified checks</p>
+          <div class="copy-badge absolute top-2 right-2 px-2 py-0.5 text-[9px] font-mono bg-black/80 rounded border border-white/20 text-white opacity-0 transform -translate-y-1 transition-all">Copy Hex</div>
+        </div>
+
+        <!-- Obsidian Black -->
+        <div onclick="copyToClipboard('#070707', this)" class="color-card p-4 rounded-[12px] bg-[#151518] border border-white/[0.08] hover:border-white/30 transition-all cursor-pointer relative group">
+          <div class="h-20 rounded-[8px] bg-[#070707] border border-white/15 mb-3 shadow-inner flex items-center justify-center">
+            <span class="text-xs font-bold text-white/80 tracking-wide font-mono">#070707</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-white">Obsidian Black</span>
+            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/10 text-white/70">Canvas</span>
+          </div>
+          <p class="text-[11px] text-white/50 mt-1">Deepest canvas background, primary hero section background</p>
+          <div class="copy-badge absolute top-2 right-2 px-2 py-0.5 text-[9px] font-mono bg-black/80 rounded border border-white/20 text-white opacity-0 transform -translate-y-1 transition-all">Copy Hex</div>
+        </div>
+
+        <!-- Charcoal Surface -->
+        <div onclick="copyToClipboard('#0D0D11', this)" class="color-card p-4 rounded-[12px] bg-[#151518] border border-white/[0.08] hover:border-white/30 transition-all cursor-pointer relative group">
+          <div class="h-20 rounded-[8px] bg-[#0D0D11] border border-white/15 mb-3 shadow-inner flex items-center justify-center">
+            <span class="text-xs font-bold text-white/80 tracking-wide font-mono">#0D0D11</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-white">Charcoal Surface</span>
+            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/10 text-white/70">Chassis</span>
+          </div>
+          <p class="text-[11px] text-white/50 mt-1">Smartphone simulator chassis, cockpit sub-panels</p>
+          <div class="copy-badge absolute top-2 right-2 px-2 py-0.5 text-[9px] font-mono bg-black/80 rounded border border-white/20 text-white opacity-0 transform -translate-y-1 transition-all">Copy Hex</div>
+        </div>
+
+        <!-- Card Surface -->
+        <div onclick="copyToClipboard('#151518', this)" class="color-card p-4 rounded-[12px] bg-[#151518] border border-white/[0.08] hover:border-white/30 transition-all cursor-pointer relative group">
+          <div class="h-20 rounded-[8px] bg-[#151518] border border-white/15 mb-3 shadow-inner flex items-center justify-center">
+            <span class="text-xs font-bold text-white/80 tracking-wide font-mono">#151518</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-white">Card Dark Surface</span>
+            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/10 text-white/70">Card</span>
+          </div>
+          <p class="text-[11px] text-white/50 mt-1">In-canvas cards, telemetry logs, scenario cards</p>
+          <div class="copy-badge absolute top-2 right-2 px-2 py-0.5 text-[9px] font-mono bg-black/80 rounded border border-white/20 text-white opacity-0 transform -translate-y-1 transition-all">Copy Hex</div>
+        </div>
+
+        <!-- Slate Neutral -->
+        <div onclick="copyToClipboard('#64748B', this)" class="color-card p-4 rounded-[12px] bg-[#151518] border border-white/[0.08] hover:border-white/30 transition-all cursor-pointer relative group">
+          <div class="h-20 rounded-[8px] bg-[#64748B] mb-3 shadow-inner flex items-center justify-center">
+            <span class="text-xs font-bold text-white tracking-wide font-mono">#64748B</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-white">Slate Monochrome</span>
+            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/10 text-white/70">Competitor</span>
+          </div>
+          <p class="text-[11px] text-white/50 mt-1">Competitor balances, non-Itaú loans, neutral input nodes</p>
+          <div class="copy-badge absolute top-2 right-2 px-2 py-0.5 text-[9px] font-mono bg-black/80 rounded border border-white/20 text-white opacity-0 transform -translate-y-1 transition-all">Copy Hex</div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 2. LOGO & ICON SPECIFICATION -->
+    <section id="logos">
+      <div class="flex items-center justify-between mb-6 pb-3 border-b border-white/[0.08]">
+        <div>
+          <span class="text-[10px] font-mono uppercase tracking-wider text-brand-orange font-bold">Vector Construction</span>
+          <h2 class="text-xl sm:text-2xl font-bold text-white">Official Brand Mark & Logos</h2>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <!-- Interactive Preview -->
+        <div class="lg:col-span-5 space-y-4">
+          <div class="p-8 rounded-[12px] bg-[#121215] border border-white/[0.08] flex flex-col items-center justify-center gap-4">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="w-24 h-24 shadow-2xl rounded-[20px]">
+              <rect width="100" height="100" rx="20" fill="#FF6423"/>
+              <text x="50%" y="62%" dominant-baseline="middle" text-anchor="middle" fill="#FFFFFF" font-weight="900" font-family="'Inter', sans-serif" font-size="42">itau</text>
+            </svg>
+            <div class="text-center">
+              <div class="text-sm font-bold text-white">Itaú Official Glyph</div>
+              <div class="text-xs text-white/50 font-mono">100x100 ViewBox • rx=20 • Font Weight 900</div>
+            </div>
+          </div>
+
+          <!-- Light / Dark Contrast Checks -->
+          <div class="grid grid-cols-2 gap-3">
+            <div class="p-4 rounded-[8px] bg-white text-slate-900 border border-slate-200 flex items-center gap-3">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="w-8 h-8 rounded-[6px] flex-shrink-0">
+                <rect width="100" height="100" rx="20" fill="#FF6423"/>
+                <text x="50%" y="62%" dominant-baseline="middle" text-anchor="middle" fill="#FFFFFF" font-weight="900" font-size="42">itau</text>
+              </svg>
+              <div>
+                <div class="text-xs font-bold">Light Surface</div>
+                <div class="text-[10px] text-slate-500">High contrast 4.8:1</div>
+              </div>
+            </div>
+
+            <div class="p-4 rounded-[8px] bg-[#070707] text-white border border-white/10 flex items-center gap-3">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="w-8 h-8 rounded-[6px] flex-shrink-0">
+                <rect width="100" height="100" rx="20" fill="#FF6423"/>
+                <text x="50%" y="62%" dominant-baseline="middle" text-anchor="middle" fill="#FFFFFF" font-weight="900" font-size="42">itau</text>
+              </svg>
+              <div>
+                <div class="text-xs font-bold">Dark Surface</div>
+                <div class="text-[10px] text-white/50">Vibrant signature</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SVG Code Snippet -->
+        <div class="lg:col-span-7 bg-[#121215] border border-white/[0.08] rounded-[12px] p-5">
+          <div class="flex items-center justify-between pb-3 border-b border-white/[0.06] mb-3">
+            <span class="text-xs font-bold text-white font-mono">SVG Vector Asset (Ready to copy)</span>
+            <button onclick="copyRawCode('svg-code', this)" class="px-2.5 py-1 text-xs font-mono rounded bg-white/[0.06] hover:bg-brand-orange text-white transition-colors">Copy SVG</button>
+          </div>
+          <pre id="svg-code" class="text-xs font-mono text-white/80 overflow-x-auto leading-relaxed">&lt;svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="32" height="32"&gt;
+  &lt;rect width="100" height="100" rx="20" fill="#FF6423"/&gt;
+  &lt;text x="50%" y="62%" dominant-baseline="middle" text-anchor="middle" 
+        fill="#FFFFFF" font-weight="900" 
+        font-family="'Inter', sans-serif" font-size="42"&gt;itau&lt;/text&gt;
+&lt;/svg&gt;</pre>
+
+          <div class="mt-4 pt-3 border-t border-white/[0.06] space-y-2">
+            <div class="text-xs font-bold text-white">Favicon Data URI:</div>
+            <div class="p-2.5 rounded bg-black/50 border border-white/[0.04] text-[11px] font-mono text-white/60 break-all select-all">
+              data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;rect width='100' height='100' rx='20' fill='%23FF6423'/&gt;&lt;text x='50%' y='62%' dominant-baseline='middle' text-anchor='middle' fill='%23FFFFFF' font-weight='900' font-family='sans-serif' font-size='42'&gt;itau&lt;/text&gt;&lt;/svg&gt;
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 3. TYPOGRAPHY SPECIMEN -->
+    <section id="typography">
+      <div class="flex items-center justify-between mb-6 pb-3 border-b border-white/[0.08]">
+        <div>
+          <span class="text-[10px] font-mono uppercase tracking-wider text-brand-orange font-bold">Hierarchy & Type Scale</span>
+          <h2 class="text-xl sm:text-2xl font-bold text-white">Typography System</h2>
+        </div>
+      </div>
+
+      <div class="bg-[#121215] border border-white/[0.08] rounded-[12px] p-6 space-y-6">
+        
+        <!-- Display Hero Metric -->
+        <div class="pb-5 border-b border-white/[0.06] flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
+          <div>
+            <span class="text-[10px] font-mono uppercase tracking-wider text-white/40 block mb-1">Metric Hero • 24px Bold Monospace</span>
+            <div class="text-2xl sm:text-3xl font-bold font-mono text-white tracking-tight">R$ 48.950,20</div>
+          </div>
+          <span class="text-xs font-mono text-white/50">Primary Checking & Investment Balances</span>
+        </div>
+
+        <!-- Section Header -->
+        <div class="pb-5 border-b border-white/[0.06] flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
+          <div>
+            <span class="text-[10px] font-mono uppercase tracking-wider text-white/40 block mb-1">Card Header • 14px SemiBold</span>
+            <div class="text-sm font-semibold text-white">Conta Corrente Personnalité</div>
+          </div>
+          <span class="text-xs font-mono text-white/50">Card titles, dialog headings</span>
+        </div>
+
+        <!-- Monospace System Tag -->
+        <div class="pb-5 border-b border-white/[0.06] flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
+          <div>
+            <span class="text-[10px] font-mono uppercase tracking-wider text-white/40 block mb-1">Monospace Tag • 10.5px Bold +0.05em</span>
+            <div class="text-[10.5px] font-mono font-bold uppercase tracking-wide text-brand-orange">CHECKING ACCOUNT • OPEN FINANCE OPTIMIZER</div>
+          </div>
+          <span class="text-xs font-mono text-white/50">Card categorization tags</span>
+        </div>
+
+        <!-- Tabular Comparison Row -->
+        <div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
+          <div>
+            <span class="text-[10px] font-mono uppercase tracking-wider text-white/40 block mb-1">Tabular Row • 11px Monospace</span>
+            <div class="flex items-center gap-4 text-xs font-mono">
+              <span class="text-slate-400">Competitor: 11,20% a.m.</span>
+              <span class="text-white/20">&rarr;</span>
+              <span class="text-emerald-400 font-bold">Itaú Sob Medida: 1,69% a.m. (Economia R$ 14.280)</span>
+            </div>
+          </div>
+          <span class="text-xs font-mono text-white/50">Rate spreads & currency arithmetic</span>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 4. LIVE COMPONENT SHOWCASE -->
+    <section id="components">
+      <div class="flex items-center justify-between mb-6 pb-3 border-b border-white/[0.08]">
+        <div>
+          <span class="text-[10px] font-mono uppercase tracking-wider text-brand-orange font-bold">Design in Practice</span>
+          <h2 class="text-xl sm:text-2xl font-bold text-white">Live Component Specimens</h2>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <!-- Specimen 1: Checking Account Balance Card -->
+        <div class="p-6 rounded-[16px] bg-[#121215] border border-white/[0.08] space-y-4">
+          <div class="flex items-center justify-between text-xs pb-2 border-b border-white/[0.06]">
+            <span class="text-brand-orange font-mono font-bold uppercase text-[10px]">Component 01</span>
+            <span class="text-white/50">In-Phone Balance Card</span>
+          </div>
+
+          <div class="w-full rounded-[16px] p-4 bg-[#151518] border border-white/10 shadow-2xl space-y-3">
+            <div class="flex items-center justify-between pb-2 border-b border-white/[0.06]">
+              <span class="text-[10.5px] font-mono font-bold tracking-wide uppercase text-white/90">CHECKING ACCOUNT</span>
+              <span class="text-[10px] font-mono text-white/40">CC • 00912</span>
+            </div>
+            <div class="p-3 rounded-[10px] bg-white/[0.03]">
+              <span class="text-[10px] text-white/50 block">Available Balance</span>
+              <span class="text-xl font-bold font-mono text-white">R$ 48.950,20</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2 text-xs font-mono">
+              <div class="p-2 rounded-[8px] bg-white/[0.02]">
+                <span class="text-[9px] text-white/40 block">Overdraft (LIS)</span>
+                <span class="font-semibold text-white/80">R$ 10.000,00</span>
+              </div>
+              <div class="p-2 rounded-[8px] bg-white/[0.02]">
+                <span class="text-[9px] text-white/40 block">Debits Next Thu</span>
+                <span class="font-semibold text-brand-orange">R$ 38.000,00</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Specimen 2: Swiss Open Finance Comparison -->
+        <div class="p-6 rounded-[16px] bg-[#121215] border border-white/[0.08] space-y-4">
+          <div class="flex items-center justify-between text-xs pb-2 border-b border-white/[0.06]">
+            <span class="text-brand-orange font-mono font-bold uppercase text-[10px]">Component 02</span>
+            <span class="text-white/50">Swiss 2-Column Comparison</span>
+          </div>
+
+          <div class="w-full rounded-[16px] p-4 bg-[#151518] border border-white/10 shadow-2xl space-y-3">
+            <div class="flex items-center justify-between pb-2 border-b border-white/[0.06]">
+              <span class="text-[10.5px] font-mono font-bold tracking-wide uppercase text-white/90">DEBT REFINANCING OPTIMIZATION</span>
+              <span class="text-[10px] font-mono text-emerald-400 font-semibold">SAVE R$ 14,280</span>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-2 text-xs font-mono">
+              <!-- Left: Competitor -->
+              <div class="p-2.5 rounded-[8px] bg-white/[0.02] border border-white/[0.05] space-y-1">
+                <span class="text-[9px] uppercase tracking-wider text-slate-400 font-bold block">Current Bank</span>
+                <div class="text-sm font-semibold text-slate-300">R$ 18.000,00</div>
+                <div class="text-[10px] text-slate-400">11,20% a.m. rotativo</div>
+              </div>
+
+              <!-- Right: Itaú Sob Medida -->
+              <div class="p-2.5 rounded-[8px] bg-emerald-500/[0.04] border border-emerald-500/20 space-y-1">
+                <span class="text-[9px] uppercase tracking-wider text-emerald-400 font-bold block">Itaú Sob Medida</span>
+                <div class="text-sm font-bold text-emerald-400">1,69% a.m.</div>
+                <div class="text-[10px] text-emerald-500/80">Economia R$ 680,40/mês</div>
+              </div>
+            </div>
+
+            <button class="w-full py-2 bg-brand-orange text-white text-xs font-bold rounded-[6px] shadow-sm">
+              Refinanciar & Emitir CCB Digital
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Centered Audio Waveform Specimen -->
+      <div class="mt-6 p-6 rounded-[16px] bg-[#121215] border border-white/[0.08]">
+        <div class="flex items-center justify-between text-xs pb-3 border-b border-white/[0.06] mb-4">
+          <span class="text-brand-orange font-mono font-bold uppercase text-[10px]">Component 03</span>
+          <span class="text-white/50">Centered Multimodal Waveform Capsule</span>
+        </div>
+
+        <div class="h-20 bg-[#1C1C22] rounded-[12px] border border-white/10 relative flex items-center justify-between px-4">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-brand-orange"></span>
+            <span class="text-xs font-semibold text-white">Itaú Concierge</span>
+          </div>
+
+          <!-- Centered Capsule -->
+          <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div class="flex items-center gap-1 h-6 px-3 bg-black/40 rounded-full border border-white/10 shadow-sm pointer-events-auto">
+              <div class="w-1 h-2 rounded-full bg-brand-orange shadow-[0_0_8px_#FF6423]"></div>
+              <div class="w-1 h-4 rounded-full bg-brand-orange shadow-[0_0_8px_#FF6423]"></div>
+              <div class="w-1 h-5 rounded-full bg-brand-orange shadow-[0_0_8px_#FF6423]"></div>
+              <div class="w-1 h-3 rounded-full bg-brand-orange shadow-[0_0_8px_#FF6423]"></div>
+              <div class="w-1 h-5 rounded-full bg-brand-orange shadow-[0_0_8px_#FF6423]"></div>
+              <div class="w-1 h-3 rounded-full bg-brand-orange shadow-[0_0_8px_#FF6423]"></div>
+              <div class="w-1 h-4 rounded-full bg-brand-orange shadow-[0_0_8px_#FF6423]"></div>
+            </div>
+          </div>
+
+          <div class="w-8 h-8 rounded-full bg-brand-orange flex items-center justify-center text-white text-xs font-bold">
+            Mic
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. VOICE & SPOKEN PERSONA DIRECTIVES -->
+    <section id="voice">
+      <div class="flex items-center justify-between mb-6 pb-3 border-b border-white/[0.08]">
+        <div>
+          <span class="text-[10px] font-mono uppercase tracking-wider text-brand-orange font-bold">Executive Voice Profile</span>
+          <h2 class="text-xl sm:text-2xl font-bold text-white">Voice & Spoken Persona Directives</h2>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        
+        <div class="p-5 rounded-[12px] bg-[#121215] border border-white/[0.08] space-y-2">
+          <div class="text-xs font-bold text-white flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-brand-orange"></span>
+            Honorific & Respect
+          </div>
+          <p class="text-xs text-white/70 leading-relaxed">
+            ALWAYS address the customer as <strong>"Mr. Silva"</strong> in English and <strong>"Sr. Silva"</strong> in Portuguese. Never use casual first names like "Robert".
+          </p>
+        </div>
+
+        <div class="p-5 rounded-[12px] bg-[#121215] border border-white/[0.08] space-y-2">
+          <div class="text-xs font-bold text-white flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-brand-orange"></span>
+            Currency Pronunciation
+          </div>
+          <p class="text-xs text-white/70 leading-relaxed">
+            NEVER say "dollars" or convert figures. Say <strong>"Reais"</strong> (<code class="text-brand-orange">ray-ICE</code>) or <strong>"Real"</strong> (<code class="text-brand-orange">ray-AL</code>). E.g. "48.950 reais".
+          </p>
+        </div>
+
+        <div class="p-5 rounded-[12px] bg-[#121215] border border-white/[0.08] space-y-2">
+          <div class="text-xs font-bold text-white flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-brand-orange"></span>
+            Brand Pronunciation
+          </div>
+          <p class="text-xs text-white/70 leading-relaxed">
+            Pronounce <strong>"Itaú"</strong> as <code class="text-brand-orange">ee-tah-OO</code> and <strong>"Personnalité"</strong> as <code class="text-brand-orange">pehr-soh-nah-lee-TAY</code>.
+          </p>
+        </div>
+
+        <div class="p-5 rounded-[12px] bg-[#121215] border border-white/[0.08] space-y-2">
+          <div class="text-xs font-bold text-white flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-brand-orange"></span>
+            Executive Brevity & Directness
+          </div>
+          <p class="text-xs text-white/70 leading-relaxed">
+            Directly answer questions on turn 1. Maximum 2–3 sentences per turn. Never stall with multiple-choice questionnaires when asked for balance.
+          </p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 6. DO'S AND DON'TS -->
+    <section id="rules">
+      <div class="flex items-center justify-between mb-6 pb-3 border-b border-white/[0.08]">
+        <div>
+          <span class="text-[10px] font-mono uppercase tracking-wider text-brand-orange font-bold">Brand Guardrails</span>
+          <h2 class="text-xl sm:text-2xl font-bold text-white">System Do's & Don'ts</h2>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <!-- DO's -->
+        <div class="p-6 rounded-[12px] bg-[#121215] border border-emerald-500/20 space-y-3">
+          <div class="flex items-center gap-2 text-emerald-400 font-bold text-sm">
+            <span>&check;</span> Strict Brand Do's
+          </div>
+          <ul class="text-xs text-white/70 space-y-2 list-disc list-inside leading-relaxed">
+            <li><strong>Enforce Swiss Tabular Alignment:</strong> Always align competitor data in clean side-by-side columns.</li>
+            <li><strong>Use Monospace for Numerics:</strong> Currency, percentages, and timestamps must use monospace fonts.</li>
+            <li><strong>Reserve Green for Semantics:</strong> Use green exclusively for net savings, positive spreads, and verified security.</li>
+            <li><strong>Direct First-Turn Responses:</strong> State checking balance (R$ 48.950,20) immediately when queried.</li>
+          </ul>
+        </div>
+
+        <!-- DON'TS -->
+        <div class="p-6 rounded-[12px] bg-[#121215] border border-rose-500/20 space-y-3">
+          <div class="flex items-center gap-2 text-rose-400 font-bold text-sm">
+            <span>&cross;</span> Strict Brand Don'ts
+          </div>
+          <ul class="text-xs text-white/70 space-y-2 list-disc list-inside leading-relaxed">
+            <li><strong>NO Blue:</strong> Do not introduce blue (<code class="text-white/90 font-mono">#003399</code>, <code class="text-white/90 font-mono">#3B82F6</code>) in gradients, buttons, or graphs.</li>
+            <li><strong>NO Purple:</strong> Do not use purple or violet in scenarios or telemetry badges.</li>
+            <li><strong>NO Popups / Toasts:</strong> Do not display sliding push banners over the smartphone interface.</li>
+            <li><strong>NO Questionnaire Menus:</strong> Never present a 1/2/3 multiple-choice clarification card for balance queries.</li>
+          </ul>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="w-full border-t border-white/[0.08] bg-[#070707] py-8 px-6 text-center text-xs text-white/40">
+    <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2">
+        <span class="font-bold text-white">Banco Itaú Personnalité</span>
+        <span>•</span>
+        <span>AI Agentic Banking Architecture</span>
+      </div>
+      <div class="flex items-center gap-4 text-xs">
+        <a href="/" class="hover:text-white transition-colors">Cockpit</a>
+        <a href="/scenarios.html" class="hover:text-white transition-colors">Scenarios</a>
+        <a href="/demo_script.html" class="hover:text-white transition-colors">Demo Script</a>
+        <a href="/walkthrough.html" class="hover:text-white transition-colors">Walkthrough</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function copyToClipboard(text, el) {
+      navigator.clipboard.writeText(text);
+      const badge = el.querySelector('.copy-badge');
+      if (badge) {
+        badge.innerText = 'Copied!';
+        badge.style.opacity = '1';
+        badge.style.transform = 'translateY(0)';
+        setTimeout(() => {
+          badge.innerText = 'Copy Hex';
+          badge.style.opacity = '0';
+          badge.style.transform = 'translateY(-4px)';
+        }, 1500);
+      }
+    }
+
+    function copyRawCode(id, btn) {
+      const el = document.getElementById(id);
+      if (el) {
+        navigator.clipboard.writeText(el.innerText);
+        const orig = btn.innerText;
+        btn.innerText = 'Copied!';
+        btn.classList.add('bg-emerald-600');
+        setTimeout(() => {
+          btn.innerText = orig;
+          btn.classList.remove('bg-emerald-600');
+        }, 1500);
+      }
+    }
+  </script>
+
+</body>
+</html>
