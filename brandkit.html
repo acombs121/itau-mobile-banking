@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Banco Itaú — Official Brand Kit & Design System (Swiss Executive Edition)</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23FF6423'/><text x='50%' y='62%' dominant-baseline='middle' text-anchor='middle' fill='%23FFFFFF' font-weight='900' font-family='sans-serif' font-size='42'>itau</text></svg>" />
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -28,7 +32,7 @@
             }
           },
           fontFamily: {
-            sans: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'Inter', 'Arial', 'sans-serif'],
+            sans: ['"Inter"', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
             mono: ['"JetBrains Mono"', '"SF Mono"', 'Monaco', 'Consolas', 'monospace']
           }
         }
@@ -39,7 +43,8 @@
     body {
       background-color: #070707;
       color: #f8fafc;
-      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-feature-settings: "cv02", "cv03", "cv04", "cv11", "tnum";
     }
     .custom-scrollbar::-webkit-scrollbar {
       width: 6px;
@@ -58,6 +63,10 @@
     .color-card:hover .copy-badge {
       opacity: 1;
       transform: translateY(0);
+    }
+    .font-tabular {
+      font-feature-settings: "tnum";
+      font-variant-numeric: tabular-nums;
     }
   </style>
 </head>
@@ -79,18 +88,24 @@
     </div>
 
     <!-- Quick Navigation Links -->
-    <div class="flex items-center gap-3">
-      <a href="/scenarios.html" class="hidden sm:inline-block text-xs text-white/70 hover:text-white transition-colors">Scenarios</a>
-      <a href="/demo_script.html" class="hidden sm:inline-block text-xs text-white/70 hover:text-white transition-colors">Demo Script</a>
-      <a href="/walkthrough.html" class="hidden sm:inline-block text-xs text-white/70 hover:text-white transition-colors">Architecture</a>
+    <div class="flex items-center gap-4">
+      <nav class="hidden lg:flex items-center gap-4 text-xs font-medium text-white/60">
+        <a href="#typefaces" class="hover:text-white transition-colors">Typefaces</a>
+        <a href="#typography-details" class="hover:text-white transition-colors">Typographic Scale</a>
+        <a href="#colors" class="hover:text-white transition-colors">Colors</a>
+        <a href="#components" class="hover:text-white transition-colors">Components</a>
+        <a href="#voice" class="hover:text-white transition-colors">Voice & Persona</a>
+        <a href="#rules" class="hover:text-white transition-colors">Guardrails</a>
+      </nav>
+      <div class="h-4 w-[1px] bg-white/15 hidden lg:block"></div>
       <a href="/" class="px-3.5 py-1.5 text-xs font-semibold rounded-[6px] bg-brand-orange hover:bg-brand-orange-hover text-white transition-all flex items-center gap-1.5 shadow-sm">
-        <span>Launch Cockpit &rarr;</span>
+        <span>Open Cockpit &rarr;</span>
       </a>
     </div>
   </header>
 
   <!-- Hero Section -->
-  <section class="max-w-6xl w-full mx-auto px-6 pt-10 pb-8 border-b border-white/[0.08]">
+  <section class="max-w-6xl w-full mx-auto px-6 pt-12 pb-10 border-b border-white/[0.08]">
     <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full border border-brand-orange/30 bg-brand-orange/10 text-brand-orange text-xs font-medium mb-4">
       <span class="w-1.5 h-1.5 rounded-full bg-brand-orange animate-pulse"></span>
       Official Design Standards • Itaú Personnalité & Itaú Empresas
@@ -99,7 +114,7 @@
       The Swiss Banking Design System
     </h1>
     <p class="text-sm sm:text-base text-white/70 max-w-3xl leading-relaxed">
-      A comprehensive design system and visual token kit engineered for executive authority, cryptographic clarity, and zero-fatigue high-density financial data. Built on high contrast, strict tabular alignment, mathematical centering, and restrained semantic color.
+      An exhaustive design token and component specification engineered for executive authority, zero-fatigue high-density financial data, and mathematical alignment. Built upon cryptographic clarity, rigorous tabular monospace numerics, and restrained semantic color.
     </p>
 
     <!-- Key Principles Grid -->
@@ -108,7 +123,7 @@
         <div class="text-[11px] font-mono uppercase tracking-wider text-brand-orange font-bold mb-1">Principle 01</div>
         <h3 class="text-sm font-bold text-white mb-1.5">Swiss Tabular Precision</h3>
         <p class="text-xs text-white/60 leading-relaxed">
-          Rigid two-column alignment, zero text wrapping, and mathematical centering. Financial figures use dedicated tabular monospace fonts.
+          Rigid two-column alignment, zero text wrapping, and mathematical centering. All financial numbers enforce tabular proportional figures (<code class="text-brand-orange font-mono">tnum</code>).
         </p>
       </div>
 
@@ -116,7 +131,7 @@
         <div class="text-[11px] font-mono uppercase tracking-wider text-brand-orange font-bold mb-1">Principle 02</div>
         <h3 class="text-sm font-bold text-white mb-1.5">Semantic Color Exclusivity</h3>
         <p class="text-xs text-white/60 leading-relaxed">
-          Green is strictly semantic for savings and verified status. Core orange represents Itaú brand identity. Extraneous blue and purple are eliminated.
+          Green is strictly semantic for savings, yields, and verified states. Core orange is the sole brand signature. Extraneous decorative blues and purples are strictly prohibited.
         </p>
       </div>
 
@@ -124,16 +139,429 @@
         <div class="text-[11px] font-mono uppercase tracking-wider text-brand-orange font-bold mb-1">Principle 03</div>
         <h3 class="text-sm font-bold text-white mb-1.5">Turn-One Directness</h3>
         <p class="text-xs text-white/60 leading-relaxed">
-          Executive banking poise requires instant clarity. No questionnaire stalling, no banner toast popups, and no ambiguous multi-step menus.
+          Executive banking poise requires immediate clarity. No questionnaire stalling, no banner toast popups, and no multi-step menus when an account balance is queried.
         </p>
       </div>
     </div>
   </section>
 
   <!-- Main Content Container -->
-  <main class="max-w-6xl w-full mx-auto px-6 py-12 space-y-16">
+  <main class="max-w-6xl w-full mx-auto px-6 py-12 space-y-20">
 
-    <!-- 1. COLOR PALETTE SECTION -->
+    <!-- ========================================================================= -->
+    <!-- SECTION 1: NAMED TYPEFACES & TYPOGRAPHIC SYSTEM                           -->
+    <!-- ========================================================================= -->
+    <section id="typefaces">
+      <div class="flex items-center justify-between mb-6 pb-3 border-b border-white/[0.08]">
+        <div>
+          <span class="text-[10px] font-mono uppercase tracking-wider text-brand-orange font-bold">Typography Foundations</span>
+          <h2 class="text-xl sm:text-2xl font-bold text-white">Named Typefaces & Font Stacks</h2>
+        </div>
+        <span class="text-xs text-white/40 font-mono">2 Primary Font Families + OpenType Features</span>
+      </div>
+
+      <!-- Typeface 1: Inter (Sans) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start mb-8">
+        <div class="lg:col-span-4 p-6 rounded-[12px] bg-[#121215] border border-white/[0.08]">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-xl font-bold text-white tracking-tight">Inter</h3>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-brand-orange/20 text-brand-orange font-bold">Primary Sans</span>
+          </div>
+          <p class="text-xs text-white/60 leading-relaxed mb-4">
+            Designed by Rasmus Andersson. Geometric neo-grotesque crafted specifically for computer screens. Features tall x-height, contextual alternates, and neutral authority.
+          </p>
+          <div class="space-y-1.5 text-xs font-mono text-white/70">
+            <div class="flex justify-between border-b border-white/[0.04] pb-1">
+              <span class="text-white/40">Weights Used:</span>
+              <span>400, 500, 600, 700, 900</span>
+            </div>
+            <div class="flex justify-between border-b border-white/[0.04] pb-1">
+              <span class="text-white/40">Role:</span>
+              <span>Headings, UI, Body, Buttons</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-white/40">CSS Stack:</span>
+              <span class="text-[10px]">'Inter', -apple-system, sans-serif</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Specimen Display -->
+        <div class="lg:col-span-8 p-6 rounded-[12px] bg-[#151518] border border-white/[0.08] space-y-4">
+          <div class="text-[10px] font-mono uppercase tracking-wider text-white/40">Typeface Specimen: Inter</div>
+          <div class="text-2xl sm:text-3xl font-black text-white tracking-tight">
+            Banco Itaú Personnalité & Itaú Empresas
+          </div>
+          <div class="text-base font-semibold text-white/90">
+            The quick brown fox jumps over the lazy dog. 0123456789 (R$ 48.950,20)
+          </div>
+          <div class="text-sm font-normal text-white/70 leading-relaxed">
+            ÁÉÍÓÚ âêîôû ãõ ç — Gestão de patrimônio, liquidez em CDB DI, proteção internacional Mastercard Black e arbitragem de taxas Open Finance.
+          </div>
+          <div class="pt-3 border-t border-white/[0.06] flex flex-wrap gap-4 text-xs">
+            <span class="font-normal text-white/60">Regular (400)</span>
+            <span class="font-medium text-white/80">Medium (500)</span>
+            <span class="font-semibold text-white">SemiBold (600)</span>
+            <span class="font-bold text-white">Bold (700)</span>
+            <span class="font-black text-brand-orange">Black (900 Logo)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Typeface 2: JetBrains Mono -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div class="lg:col-span-4 p-6 rounded-[12px] bg-[#121215] border border-white/[0.08]">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-xl font-bold font-mono text-white tracking-tight">JetBrains Mono</h3>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">Financial Mono</span>
+          </div>
+          <p class="text-xs text-white/60 leading-relaxed mb-4">
+            A developer & financial typeface designed for extreme readability of dense numbers, symbols, and currency arithmetic. Completely avoids glyph confusion (zero with dot, distinct 1/I/l).
+          </p>
+          <div class="space-y-1.5 text-xs font-mono text-white/70">
+            <div class="flex justify-between border-b border-white/[0.04] pb-1">
+              <span class="text-white/40">Weights Used:</span>
+              <span>400, 500, 600, 700</span>
+            </div>
+            <div class="flex justify-between border-b border-white/[0.04] pb-1">
+              <span class="text-white/40">Role:</span>
+              <span>Balances, Rates, Ledger, Code</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-white/40">CSS Stack:</span>
+              <span class="text-[10px]">'JetBrains Mono', 'SF Mono', mono</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Specimen Display -->
+        <div class="lg:col-span-8 p-6 rounded-[12px] bg-[#151518] border border-white/[0.08] space-y-4 font-mono">
+          <div class="text-[10px] font-mono uppercase tracking-wider text-white/40">Typeface Specimen: JetBrains Mono (Financial Tabular)</div>
+          <div class="text-2xl sm:text-3xl font-bold text-emerald-400 tracking-tight font-tabular">
+            R$ 463.950,20 &bull; +15,0% do CDI &bull; 1,69% a.m.
+          </div>
+          <div class="text-sm font-semibold text-white/90 font-tabular">
+            0123456789 &bull; CC: 7749-00912-8 &bull; CCB: LEI-10931-2026
+          </div>
+          <div class="text-xs text-white/70 leading-relaxed">
+            { "checking": 48950.20, "cdb_di": 85000.00, "debt_saved_brl": 14280.00, "status": "SYNCHRONIZED" }
+          </div>
+          <div class="pt-3 border-t border-white/[0.06] flex flex-wrap gap-4 text-xs">
+            <span class="font-normal text-white/60">Regular (400)</span>
+            <span class="font-medium text-white/80">Medium (500)</span>
+            <span class="font-semibold text-white">SemiBold (600)</span>
+            <span class="font-bold text-brand-orange">Bold (700)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- OpenType Features Callout -->
+      <div class="mt-6 p-4 rounded-[10px] bg-black/40 border border-white/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5">
+          <span class="w-2 h-2 rounded-full bg-brand-orange"></span>
+          <span class="text-xs text-white/90 font-medium">
+            <strong>Mandatory OpenType Feature:</strong> <code class="text-brand-orange font-mono">font-feature-settings: "tnum"</code> (Tabular Numbers)
+          </span>
+        </div>
+        <span class="text-[11px] text-white/50">
+          Enforces uniform character widths across digits 0–9 so columns never jitter during live balance updates.
+        </span>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- SECTION 2: COMPLETE TYPOGRAPHIC SCALE & HIERARCHY DETAILS                 -->
+    <!-- ========================================================================= -->
+    <section id="typography-details">
+      <div class="flex items-center justify-between mb-6 pb-3 border-b border-white/[0.08]">
+        <div>
+          <span class="text-[10px] font-mono uppercase tracking-wider text-brand-orange font-bold">Measurement & Spec</span>
+          <h2 class="text-xl sm:text-2xl font-bold text-white">Typographic Details & Scale Table</h2>
+        </div>
+        <span class="text-xs text-white/40 font-mono">Pixel, Rem, Line-Height, Weight, Tracking</span>
+      </div>
+
+      <div class="overflow-x-auto rounded-[12px] border border-white/[0.08] bg-[#121215]">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-black/50 border-b border-white/[0.08] font-mono text-[11px] text-white/60">
+            <tr>
+              <th class="p-3.5 pl-4">Token Name</th>
+              <th class="p-3.5">Typeface</th>
+              <th class="p-3.5">Size (px / rem)</th>
+              <th class="p-3.5">Weight</th>
+              <th class="p-3.5">Line Height</th>
+              <th class="p-3.5">Tracking</th>
+              <th class="p-3.5">Case</th>
+              <th class="p-3.5 pr-4">Component Application</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-white/[0.04] text-white/80 font-mono text-[11px]">
+            <!-- Hero Metric -->
+            <tr class="hover:bg-white/[0.02] transition-colors">
+              <td class="p-3.5 pl-4 font-bold text-white">--type-hero-metric</td>
+              <td class="p-3.5 text-brand-orange font-bold">JetBrains Mono</td>
+              <td class="p-3.5">24px / 1.5rem</td>
+              <td class="p-3.5">700 (Bold)</td>
+              <td class="p-3.5">1.2 (28.8px)</td>
+              <td class="p-3.5">-0.02em</td>
+              <td class="p-3.5">None</td>
+              <td class="p-3.5 pr-4 text-white/60 font-sans">Primary checking balance (R$ 48.950,20)</td>
+            </tr>
+            <!-- Page Title -->
+            <tr class="hover:bg-white/[0.02] transition-colors">
+              <td class="p-3.5 pl-4 font-bold text-white">--type-display-title</td>
+              <td class="p-3.5 text-white/90">Inter</td>
+              <td class="p-3.5">18px / 1.125rem</td>
+              <td class="p-3.5">700 (Bold)</td>
+              <td class="p-3.5">1.3 (23.4px)</td>
+              <td class="p-3.5">-0.015em</td>
+              <td class="p-3.5">None</td>
+              <td class="p-3.5 pr-4 text-white/60 font-sans">Cockpit main navigation & brand header</td>
+            </tr>
+            <!-- Card Header -->
+            <tr class="hover:bg-white/[0.02] transition-colors">
+              <td class="p-3.5 pl-4 font-bold text-white">--type-card-header</td>
+              <td class="p-3.5 text-white/90">Inter</td>
+              <td class="p-3.5">14px / 0.875rem</td>
+              <td class="p-3.5">600 (SemiBold)</td>
+              <td class="p-3.5">1.35 (18.9px)</td>
+              <td class="p-3.5">-0.01em</td>
+              <td class="p-3.5">None</td>
+              <td class="p-3.5 pr-4 text-white/60 font-sans">In-phone dynamic card titles, item headers</td>
+            </tr>
+            <!-- Monospace System Tag -->
+            <tr class="hover:bg-white/[0.02] transition-colors">
+              <td class="p-3.5 pl-4 font-bold text-white">--type-mono-tag</td>
+              <td class="p-3.5 text-brand-orange font-bold">JetBrains Mono</td>
+              <td class="p-3.5">10.5px / 0.656rem</td>
+              <td class="p-3.5">700 (Bold)</td>
+              <td class="p-3.5">1.4 (14.7px)</td>
+              <td class="p-3.5">+0.05em</td>
+              <td class="p-3.5">UPPERCASE</td>
+              <td class="p-3.5 pr-4 text-white/60 font-sans">Card category badges (CHECKING ACCOUNT)</td>
+            </tr>
+            <!-- Tabular Row Figure -->
+            <tr class="hover:bg-white/[0.02] transition-colors">
+              <td class="p-3.5 pl-4 font-bold text-white">--type-tabular-row</td>
+              <td class="p-3.5 text-emerald-400 font-bold">JetBrains Mono</td>
+              <td class="p-3.5">11px / 0.6875rem</td>
+              <td class="p-3.5">600 (SemiBold)</td>
+              <td class="p-3.5">1.45 (16px)</td>
+              <td class="p-3.5">0.00em (tnum)</td>
+              <td class="p-3.5">None</td>
+              <td class="p-3.5 pr-4 text-white/60 font-sans">Spread comparisons, interest rates, ledger rows</td>
+            </tr>
+            <!-- Standard Body Copy -->
+            <tr class="hover:bg-white/[0.02] transition-colors">
+              <td class="p-3.5 pl-4 font-bold text-white">--type-body-ui</td>
+              <td class="p-3.5 text-white/90">Inter</td>
+              <td class="p-3.5">12px / 0.75rem</td>
+              <td class="p-3.5">400 (Regular)</td>
+              <td class="p-3.5">1.5 (18px)</td>
+              <td class="p-3.5">0.00em</td>
+              <td class="p-3.5">None</td>
+              <td class="p-3.5 pr-4 text-white/60 font-sans">Descriptions, customer advisory sentences</td>
+            </tr>
+            <!-- Micro Caption -->
+            <tr class="hover:bg-white/[0.02] transition-colors">
+              <td class="p-3.5 pl-4 font-bold text-white">--type-caption-micro</td>
+              <td class="p-3.5 text-white/70">Inter</td>
+              <td class="p-3.5">9.5px / 0.59rem</td>
+              <td class="p-3.5">500 (Medium)</td>
+              <td class="p-3.5">1.3 (12.3px)</td>
+              <td class="p-3.5">+0.03em</td>
+              <td class="p-3.5">UPPERCASE</td>
+              <td class="p-3.5 pr-4 text-white/60 font-sans">Timestamps, section headers, metadata labels</td>
+            </tr>
+            <!-- Logotype Glyph -->
+            <tr class="hover:bg-white/[0.02] transition-colors">
+              <td class="p-3.5 pl-4 font-bold text-white">--type-logotype</td>
+              <td class="p-3.5 text-brand-orange font-black">Inter Black</td>
+              <td class="p-3.5">42px / 2.625rem</td>
+              <td class="p-3.5">900 (Black)</td>
+              <td class="p-3.5">1.0 (42px)</td>
+              <td class="p-3.5">-0.04em</td>
+              <td class="p-3.5">lowercase</td>
+              <td class="p-3.5 pr-4 text-white/60 font-sans">Official "itau" vector emblem centered</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- SECTION 3: NAMED COMPONENT CATALOG                                        -->
+    <!-- ========================================================================= -->
+    <section id="components">
+      <div class="flex items-center justify-between mb-6 pb-3 border-b border-white/[0.08]">
+        <div>
+          <span class="text-[10px] font-mono uppercase tracking-wider text-brand-orange font-bold">Component Architecture</span>
+          <h2 class="text-xl sm:text-2xl font-bold text-white">Named Component Catalog</h2>
+        </div>
+        <span class="text-xs text-white/40 font-mono">11 Dedicated Production Components</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        <!-- 1. CockpitHeader -->
+        <div class="p-5 rounded-[12px] bg-[#121215] border border-white/[0.08] flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-brand-orange/15 text-brand-orange font-bold">Layout</span>
+              <span class="text-[10px] font-mono text-white/40">CockpitHeader.tsx</span>
+            </div>
+            <h3 class="text-sm font-bold text-white mb-1.5">CockpitHeader</h3>
+            <p class="text-xs text-white/60 leading-relaxed mb-3">
+              Sticky executive top navigation bar housing the Itaú brand glyph, application title, direct link to Brand Kit, Portuguese/English language toggle, and light/dark theme switch.
+            </p>
+          </div>
+          <div class="pt-3 border-t border-white/[0.06] text-[11px] font-mono text-white/50">
+            Props: currentLang, theme, onReset, onSaveSession
+          </div>
+        </div>
+
+        <!-- 2. PhoneContainer -->
+        <div class="p-5 rounded-[12px] bg-[#121215] border border-white/[0.08] flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-brand-orange/15 text-brand-orange font-bold">Hardware Shell</span>
+              <span class="text-[10px] font-mono text-white/40">PhoneContainer.tsx</span>
+            </div>
+            <h3 class="text-sm font-bold text-white mb-1.5">PhoneContainer</h3>
+            <p class="text-xs text-white/60 leading-relaxed mb-3">
+              Ultra-realistic smartphone simulator chassis. Contains the physical volume/power buttons, Dynamic Island, 5G status bar, customer identity header, quick-actions 4-grid, dynamic canvas host, and bottom concierge dock.
+            </p>
+          </div>
+          <div class="pt-3 border-t border-white/[0.06] text-[11px] font-mono text-white/50">
+            Props: profile, theme, activeScenario, isVoiceCallActive
+          </div>
+        </div>
+
+        <!-- 3. AudioWaveformVisualizer -->
+        <div class="p-5 rounded-[12px] bg-[#121215] border border-white/[0.08] flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-bold">Performance</span>
+              <span class="text-[10px] font-mono text-white/40">AudioWaveformVisualizer.tsx</span>
+            </div>
+            <h3 class="text-sm font-bold text-white mb-1.5">AudioWaveformVisualizer</h3>
+            <p class="text-xs text-white/60 leading-relaxed mb-3">
+              Memoized (<code class="text-brand-orange font-mono">React.memo</code>) 9-bar reactive audio visualizer. Mathematically centered over the bottom dock via <code class="text-white/80 font-mono">absolute inset-0 flex items-center justify-center</code>. Isolates 60 FPS audio level animations from the 1,000-line phone tree.
+            </p>
+          </div>
+          <div class="pt-3 border-t border-white/[0.06] text-[11px] font-mono text-white/50">
+            Props: audioLevels, isSpeaking, isListening
+          </div>
+        </div>
+
+        <!-- 4. AgentOrchestratorPanel -->
+        <div class="p-5 rounded-[12px] bg-[#121215] border border-white/[0.08] flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-brand-orange/15 text-brand-orange font-bold">Cockpit</span>
+              <span class="text-[10px] font-mono text-white/40">AgentOrchestratorPanel.tsx</span>
+            </div>
+            <h3 class="text-sm font-bold text-white mb-1.5">AgentOrchestratorPanel</h3>
+            <p class="text-xs text-white/60 leading-relaxed mb-3">
+              C-Level agentic control panel. Displays scenario buttons, live sub-agent status badges (<code class="text-brand-orange font-mono">Active</code>, <code class="text-emerald-400 font-mono">Completed</code>), interactive decision graph view, and raw JSON telemetry inspector.
+            </p>
+          </div>
+          <div class="pt-3 border-t border-white/[0.06] text-[11px] font-mono text-white/50">
+            Props: activeScenario, agentStates, telemetryLogs
+          </div>
+        </div>
+
+        <!-- 5. CheckingBalanceCard -->
+        <div class="p-5 rounded-[12px] bg-[#121215] border border-white/[0.08] flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/10 text-white font-bold">In-Canvas Card</span>
+              <span class="text-[10px] font-mono text-white/40">balance_checking</span>
+            </div>
+            <h3 class="text-sm font-bold text-white mb-1.5">CheckingBalanceCard</h3>
+            <p class="text-xs text-white/60 leading-relaxed mb-3">
+              Renders immediately when the customer inquires about their balance. Highlights Available Balance (R$ 48.950,20), LIS Overdraft Limit (R$ 10.000,00), and an interactive link to upcoming Thursday debits.
+            </p>
+          </div>
+          <div class="pt-3 border-t border-white/[0.06] text-[11px] font-mono text-white/50">
+            Trigger: "give me my checking account balance", "saldo"
+          </div>
+        </div>
+
+        <!-- 6. ScheduledPaymentsCard -->
+        <div class="p-5 rounded-[12px] bg-[#121215] border border-white/[0.08] flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/10 text-white font-bold">In-Canvas Card</span>
+              <span class="text-[10px] font-mono text-white/40">scheduled_payments</span>
+            </div>
+            <h3 class="text-sm font-bold text-white mb-1.5">ScheduledPaymentsCard</h3>
+            <p class="text-xs text-white/60 leading-relaxed mb-3">
+              Itemized upcoming bills: Mastercard Black invoice (R$ 34.150,00) and Condomínio Edifício Jardins boleto (R$ 3.850,00). Features automated 100% coverage verification badge.
+            </p>
+          </div>
+          <div class="pt-3 border-t border-white/[0.06] text-[11px] font-mono text-white/50">
+            Trigger: "scheduled debits", "contas agendadas"
+          </div>
+        </div>
+
+        <!-- 7. OpenFinanceOptimizerCard -->
+        <div class="p-5 rounded-[12px] bg-[#121215] border border-emerald-500/20 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">Swiss Tabular</span>
+              <span class="text-[10px] font-mono text-white/40">open_finance_optimizer</span>
+            </div>
+            <h3 class="text-sm font-bold text-white mb-1.5">OpenFinanceOptimizerCard</h3>
+            <p class="text-xs text-white/60 leading-relaxed mb-3">
+              Swiss 2-column tabular comparison. Left column displays monochrome competitor revolving debt (11.20%/mo); right column displays Itaú Sob Medida (1.69%/mo) and semantic green contract savings of R$ 14.280,00.
+            </p>
+          </div>
+          <div class="pt-3 border-t border-white/[0.06] text-[11px] font-mono text-emerald-400">
+            CTA: Refinanciar & Emitir CCB Digital (Lei 10.931)
+          </div>
+        </div>
+
+        <!-- 8. CardBenefitsCard -->
+        <div class="p-5 rounded-[12px] bg-[#121215] border border-white/[0.08] flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/10 text-white font-bold">In-Canvas Card</span>
+              <span class="text-[10px] font-mono text-white/40">card_benefits_agent</span>
+            </div>
+            <h3 class="text-sm font-bold text-white mb-1.5">CardBenefitsCard</h3>
+            <p class="text-xs text-white/60 leading-relaxed mb-3">
+              Presents premium Mastercard Black benefits: Unlimited VIP Lounge at GRU T3, 4 European LoungeKey passes, €30.000 Schengen travel medical insurance, and Masterseguro car rental CDW/LDW.
+            </p>
+          </div>
+          <div class="pt-3 border-t border-white/[0.06] text-[11px] font-mono text-white/50">
+            Trigger: "benefits", "sala vip", "seguro schengen"
+          </div>
+        </div>
+
+        <!-- 9. TravelShieldCard -->
+        <div class="p-5 rounded-[12px] bg-[#121215] border border-white/[0.08] flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/10 text-white font-bold">In-Canvas Card</span>
+              <span class="text-[10px] font-mono text-white/40">travel_shield_agent</span>
+            </div>
+            <h3 class="text-sm font-bold text-white mb-1.5">TravelShieldCard</h3>
+            <p class="text-xs text-white/60 leading-relaxed mb-3">
+              Fraud defense confirmation card. Registers active travel notice for Portugal & Spain, elevates daily international POS limit to R$ 50.000, and pre-suppresses false-positive declines.
+            </p>
+          </div>
+          <div class="pt-3 border-t border-white/[0.06] text-[11px] font-mono text-white/50">
+            Trigger: "trip to portugal", "aviso viagem"
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- SECTION 4: COLOR TOKEN PALETTE                                            -->
+    <!-- ========================================================================= -->
     <section id="colors">
       <div class="flex items-center justify-between mb-6 pb-3 border-b border-white/[0.08]">
         <div>
@@ -148,7 +576,7 @@
         <!-- Brand Orange -->
         <div onclick="copyToClipboard('#FF6423', this)" class="color-card p-4 rounded-[12px] bg-[#151518] border border-white/[0.08] hover:border-brand-orange/50 transition-all cursor-pointer relative group">
           <div class="h-20 rounded-[8px] bg-[#FF6423] mb-3 shadow-inner flex items-center justify-center">
-            <span class="text-xs font-bold text-white tracking-wide opacity-90">#FF6423</span>
+            <span class="text-xs font-bold text-white tracking-wide font-mono">#FF6423</span>
           </div>
           <div class="flex items-center justify-between">
             <span class="text-xs font-bold text-white">Itaú Core Orange</span>
@@ -161,7 +589,7 @@
         <!-- Brand Orange Hover -->
         <div onclick="copyToClipboard('#D2531C', this)" class="color-card p-4 rounded-[12px] bg-[#151518] border border-white/[0.08] hover:border-brand-orange/50 transition-all cursor-pointer relative group">
           <div class="h-20 rounded-[8px] bg-[#D2531C] mb-3 shadow-inner flex items-center justify-center">
-            <span class="text-xs font-bold text-white tracking-wide opacity-90">#D2531C</span>
+            <span class="text-xs font-bold text-white tracking-wide font-mono">#D2531C</span>
           </div>
           <div class="flex items-center justify-between">
             <span class="text-xs font-bold text-white">Itaú Dark Orange</span>
@@ -174,7 +602,7 @@
         <!-- Semantic Green -->
         <div onclick="copyToClipboard('#059669', this)" class="color-card p-4 rounded-[12px] bg-[#151518] border border-white/[0.08] hover:border-emerald-500/50 transition-all cursor-pointer relative group">
           <div class="h-20 rounded-[8px] bg-[#059669] mb-3 shadow-inner flex items-center justify-center">
-            <span class="text-xs font-bold text-white tracking-wide opacity-90">#059669</span>
+            <span class="text-xs font-bold text-white tracking-wide font-mono">#059669</span>
           </div>
           <div class="flex items-center justify-between">
             <span class="text-xs font-bold text-white">Semantic Green</span>
@@ -252,245 +680,9 @@
       </div>
     </section>
 
-    <!-- 2. LOGO & ICON SPECIFICATION -->
-    <section id="logos">
-      <div class="flex items-center justify-between mb-6 pb-3 border-b border-white/[0.08]">
-        <div>
-          <span class="text-[10px] font-mono uppercase tracking-wider text-brand-orange font-bold">Vector Construction</span>
-          <h2 class="text-xl sm:text-2xl font-bold text-white">Official Brand Mark & Logos</h2>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        
-        <!-- Interactive Preview -->
-        <div class="lg:col-span-5 space-y-4">
-          <div class="p-8 rounded-[12px] bg-[#121215] border border-white/[0.08] flex flex-col items-center justify-center gap-4">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="w-24 h-24 shadow-2xl rounded-[20px]">
-              <rect width="100" height="100" rx="20" fill="#FF6423"/>
-              <text x="50%" y="62%" dominant-baseline="middle" text-anchor="middle" fill="#FFFFFF" font-weight="900" font-family="'Inter', sans-serif" font-size="42">itau</text>
-            </svg>
-            <div class="text-center">
-              <div class="text-sm font-bold text-white">Itaú Official Glyph</div>
-              <div class="text-xs text-white/50 font-mono">100x100 ViewBox • rx=20 • Font Weight 900</div>
-            </div>
-          </div>
-
-          <!-- Light / Dark Contrast Checks -->
-          <div class="grid grid-cols-2 gap-3">
-            <div class="p-4 rounded-[8px] bg-white text-slate-900 border border-slate-200 flex items-center gap-3">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="w-8 h-8 rounded-[6px] flex-shrink-0">
-                <rect width="100" height="100" rx="20" fill="#FF6423"/>
-                <text x="50%" y="62%" dominant-baseline="middle" text-anchor="middle" fill="#FFFFFF" font-weight="900" font-size="42">itau</text>
-              </svg>
-              <div>
-                <div class="text-xs font-bold">Light Surface</div>
-                <div class="text-[10px] text-slate-500">High contrast 4.8:1</div>
-              </div>
-            </div>
-
-            <div class="p-4 rounded-[8px] bg-[#070707] text-white border border-white/10 flex items-center gap-3">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="w-8 h-8 rounded-[6px] flex-shrink-0">
-                <rect width="100" height="100" rx="20" fill="#FF6423"/>
-                <text x="50%" y="62%" dominant-baseline="middle" text-anchor="middle" fill="#FFFFFF" font-weight="900" font-size="42">itau</text>
-              </svg>
-              <div>
-                <div class="text-xs font-bold">Dark Surface</div>
-                <div class="text-[10px] text-white/50">Vibrant signature</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- SVG Code Snippet -->
-        <div class="lg:col-span-7 bg-[#121215] border border-white/[0.08] rounded-[12px] p-5">
-          <div class="flex items-center justify-between pb-3 border-b border-white/[0.06] mb-3">
-            <span class="text-xs font-bold text-white font-mono">SVG Vector Asset (Ready to copy)</span>
-            <button onclick="copyRawCode('svg-code', this)" class="px-2.5 py-1 text-xs font-mono rounded bg-white/[0.06] hover:bg-brand-orange text-white transition-colors">Copy SVG</button>
-          </div>
-          <pre id="svg-code" class="text-xs font-mono text-white/80 overflow-x-auto leading-relaxed">&lt;svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="32" height="32"&gt;
-  &lt;rect width="100" height="100" rx="20" fill="#FF6423"/&gt;
-  &lt;text x="50%" y="62%" dominant-baseline="middle" text-anchor="middle" 
-        fill="#FFFFFF" font-weight="900" 
-        font-family="'Inter', sans-serif" font-size="42"&gt;itau&lt;/text&gt;
-&lt;/svg&gt;</pre>
-
-          <div class="mt-4 pt-3 border-t border-white/[0.06] space-y-2">
-            <div class="text-xs font-bold text-white">Favicon Data URI:</div>
-            <div class="p-2.5 rounded bg-black/50 border border-white/[0.04] text-[11px] font-mono text-white/60 break-all select-all">
-              data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;rect width='100' height='100' rx='20' fill='%23FF6423'/&gt;&lt;text x='50%' y='62%' dominant-baseline='middle' text-anchor='middle' fill='%23FFFFFF' font-weight='900' font-family='sans-serif' font-size='42'&gt;itau&lt;/text&gt;&lt;/svg&gt;
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- 3. TYPOGRAPHY SPECIMEN -->
-    <section id="typography">
-      <div class="flex items-center justify-between mb-6 pb-3 border-b border-white/[0.08]">
-        <div>
-          <span class="text-[10px] font-mono uppercase tracking-wider text-brand-orange font-bold">Hierarchy & Type Scale</span>
-          <h2 class="text-xl sm:text-2xl font-bold text-white">Typography System</h2>
-        </div>
-      </div>
-
-      <div class="bg-[#121215] border border-white/[0.08] rounded-[12px] p-6 space-y-6">
-        
-        <!-- Display Hero Metric -->
-        <div class="pb-5 border-b border-white/[0.06] flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
-          <div>
-            <span class="text-[10px] font-mono uppercase tracking-wider text-white/40 block mb-1">Metric Hero • 24px Bold Monospace</span>
-            <div class="text-2xl sm:text-3xl font-bold font-mono text-white tracking-tight">R$ 48.950,20</div>
-          </div>
-          <span class="text-xs font-mono text-white/50">Primary Checking & Investment Balances</span>
-        </div>
-
-        <!-- Section Header -->
-        <div class="pb-5 border-b border-white/[0.06] flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
-          <div>
-            <span class="text-[10px] font-mono uppercase tracking-wider text-white/40 block mb-1">Card Header • 14px SemiBold</span>
-            <div class="text-sm font-semibold text-white">Conta Corrente Personnalité</div>
-          </div>
-          <span class="text-xs font-mono text-white/50">Card titles, dialog headings</span>
-        </div>
-
-        <!-- Monospace System Tag -->
-        <div class="pb-5 border-b border-white/[0.06] flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
-          <div>
-            <span class="text-[10px] font-mono uppercase tracking-wider text-white/40 block mb-1">Monospace Tag • 10.5px Bold +0.05em</span>
-            <div class="text-[10.5px] font-mono font-bold uppercase tracking-wide text-brand-orange">CHECKING ACCOUNT • OPEN FINANCE OPTIMIZER</div>
-          </div>
-          <span class="text-xs font-mono text-white/50">Card categorization tags</span>
-        </div>
-
-        <!-- Tabular Comparison Row -->
-        <div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
-          <div>
-            <span class="text-[10px] font-mono uppercase tracking-wider text-white/40 block mb-1">Tabular Row • 11px Monospace</span>
-            <div class="flex items-center gap-4 text-xs font-mono">
-              <span class="text-slate-400">Competitor: 11,20% a.m.</span>
-              <span class="text-white/20">&rarr;</span>
-              <span class="text-emerald-400 font-bold">Itaú Sob Medida: 1,69% a.m. (Economia R$ 14.280)</span>
-            </div>
-          </div>
-          <span class="text-xs font-mono text-white/50">Rate spreads & currency arithmetic</span>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- 4. LIVE COMPONENT SHOWCASE -->
-    <section id="components">
-      <div class="flex items-center justify-between mb-6 pb-3 border-b border-white/[0.08]">
-        <div>
-          <span class="text-[10px] font-mono uppercase tracking-wider text-brand-orange font-bold">Design in Practice</span>
-          <h2 class="text-xl sm:text-2xl font-bold text-white">Live Component Specimens</h2>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-        <!-- Specimen 1: Checking Account Balance Card -->
-        <div class="p-6 rounded-[16px] bg-[#121215] border border-white/[0.08] space-y-4">
-          <div class="flex items-center justify-between text-xs pb-2 border-b border-white/[0.06]">
-            <span class="text-brand-orange font-mono font-bold uppercase text-[10px]">Component 01</span>
-            <span class="text-white/50">In-Phone Balance Card</span>
-          </div>
-
-          <div class="w-full rounded-[16px] p-4 bg-[#151518] border border-white/10 shadow-2xl space-y-3">
-            <div class="flex items-center justify-between pb-2 border-b border-white/[0.06]">
-              <span class="text-[10.5px] font-mono font-bold tracking-wide uppercase text-white/90">CHECKING ACCOUNT</span>
-              <span class="text-[10px] font-mono text-white/40">CC • 00912</span>
-            </div>
-            <div class="p-3 rounded-[10px] bg-white/[0.03]">
-              <span class="text-[10px] text-white/50 block">Available Balance</span>
-              <span class="text-xl font-bold font-mono text-white">R$ 48.950,20</span>
-            </div>
-            <div class="grid grid-cols-2 gap-2 text-xs font-mono">
-              <div class="p-2 rounded-[8px] bg-white/[0.02]">
-                <span class="text-[9px] text-white/40 block">Overdraft (LIS)</span>
-                <span class="font-semibold text-white/80">R$ 10.000,00</span>
-              </div>
-              <div class="p-2 rounded-[8px] bg-white/[0.02]">
-                <span class="text-[9px] text-white/40 block">Debits Next Thu</span>
-                <span class="font-semibold text-brand-orange">R$ 38.000,00</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Specimen 2: Swiss Open Finance Comparison -->
-        <div class="p-6 rounded-[16px] bg-[#121215] border border-white/[0.08] space-y-4">
-          <div class="flex items-center justify-between text-xs pb-2 border-b border-white/[0.06]">
-            <span class="text-brand-orange font-mono font-bold uppercase text-[10px]">Component 02</span>
-            <span class="text-white/50">Swiss 2-Column Comparison</span>
-          </div>
-
-          <div class="w-full rounded-[16px] p-4 bg-[#151518] border border-white/10 shadow-2xl space-y-3">
-            <div class="flex items-center justify-between pb-2 border-b border-white/[0.06]">
-              <span class="text-[10.5px] font-mono font-bold tracking-wide uppercase text-white/90">DEBT REFINANCING OPTIMIZATION</span>
-              <span class="text-[10px] font-mono text-emerald-400 font-semibold">SAVE R$ 14,280</span>
-            </div>
-            
-            <div class="grid grid-cols-2 gap-2 text-xs font-mono">
-              <!-- Left: Competitor -->
-              <div class="p-2.5 rounded-[8px] bg-white/[0.02] border border-white/[0.05] space-y-1">
-                <span class="text-[9px] uppercase tracking-wider text-slate-400 font-bold block">Current Bank</span>
-                <div class="text-sm font-semibold text-slate-300">R$ 18.000,00</div>
-                <div class="text-[10px] text-slate-400">11,20% a.m. rotativo</div>
-              </div>
-
-              <!-- Right: Itaú Sob Medida -->
-              <div class="p-2.5 rounded-[8px] bg-emerald-500/[0.04] border border-emerald-500/20 space-y-1">
-                <span class="text-[9px] uppercase tracking-wider text-emerald-400 font-bold block">Itaú Sob Medida</span>
-                <div class="text-sm font-bold text-emerald-400">1,69% a.m.</div>
-                <div class="text-[10px] text-emerald-500/80">Economia R$ 680,40/mês</div>
-              </div>
-            </div>
-
-            <button class="w-full py-2 bg-brand-orange text-white text-xs font-bold rounded-[6px] shadow-sm">
-              Refinanciar & Emitir CCB Digital
-            </button>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- Centered Audio Waveform Specimen -->
-      <div class="mt-6 p-6 rounded-[16px] bg-[#121215] border border-white/[0.08]">
-        <div class="flex items-center justify-between text-xs pb-3 border-b border-white/[0.06] mb-4">
-          <span class="text-brand-orange font-mono font-bold uppercase text-[10px]">Component 03</span>
-          <span class="text-white/50">Centered Multimodal Waveform Capsule</span>
-        </div>
-
-        <div class="h-20 bg-[#1C1C22] rounded-[12px] border border-white/10 relative flex items-center justify-between px-4">
-          <div class="flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full bg-brand-orange"></span>
-            <span class="text-xs font-semibold text-white">Itaú Concierge</span>
-          </div>
-
-          <!-- Centered Capsule -->
-          <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div class="flex items-center gap-1 h-6 px-3 bg-black/40 rounded-full border border-white/10 shadow-sm pointer-events-auto">
-              <div class="w-1 h-2 rounded-full bg-brand-orange shadow-[0_0_8px_#FF6423]"></div>
-              <div class="w-1 h-4 rounded-full bg-brand-orange shadow-[0_0_8px_#FF6423]"></div>
-              <div class="w-1 h-5 rounded-full bg-brand-orange shadow-[0_0_8px_#FF6423]"></div>
-              <div class="w-1 h-3 rounded-full bg-brand-orange shadow-[0_0_8px_#FF6423]"></div>
-              <div class="w-1 h-5 rounded-full bg-brand-orange shadow-[0_0_8px_#FF6423]"></div>
-              <div class="w-1 h-3 rounded-full bg-brand-orange shadow-[0_0_8px_#FF6423]"></div>
-              <div class="w-1 h-4 rounded-full bg-brand-orange shadow-[0_0_8px_#FF6423]"></div>
-            </div>
-          </div>
-
-          <div class="w-8 h-8 rounded-full bg-brand-orange flex items-center justify-center text-white text-xs font-bold">
-            Mic
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 5. VOICE & SPOKEN PERSONA DIRECTIVES -->
+    <!-- ========================================================================= -->
+    <!-- SECTION 5: VOICE & SPOKEN PERSONA DIRECTIVES                              -->
+    <!-- ========================================================================= -->
     <section id="voice">
       <div class="flex items-center justify-between mb-6 pb-3 border-b border-white/[0.08]">
         <div>
@@ -517,7 +709,7 @@
             Currency Pronunciation
           </div>
           <p class="text-xs text-white/70 leading-relaxed">
-            NEVER say "dollars" or convert figures. Say <strong>"Reais"</strong> (<code class="text-brand-orange">ray-ICE</code>) or <strong>"Real"</strong> (<code class="text-brand-orange">ray-AL</code>). E.g. "48.950 reais".
+            NEVER say "dollars" or convert figures. Say <strong>"Reais"</strong> (<code class="text-brand-orange font-mono">ray-ICE</code>) or <strong>"Real"</strong> (<code class="text-brand-orange font-mono">ray-AL</code>). E.g. "48.950 reais".
           </p>
         </div>
 
@@ -527,7 +719,7 @@
             Brand Pronunciation
           </div>
           <p class="text-xs text-white/70 leading-relaxed">
-            Pronounce <strong>"Itaú"</strong> as <code class="text-brand-orange">ee-tah-OO</code> and <strong>"Personnalité"</strong> as <code class="text-brand-orange">pehr-soh-nah-lee-TAY</code>.
+            Pronounce <strong>"Itaú"</strong> as <code class="text-brand-orange font-mono">ee-tah-OO</code> and <strong>"Personnalité"</strong> as <code class="text-brand-orange font-mono">pehr-soh-nah-lee-TAY</code>.
           </p>
         </div>
 
@@ -537,14 +729,16 @@
             Executive Brevity & Directness
           </div>
           <p class="text-xs text-white/70 leading-relaxed">
-            Directly answer questions on turn 1. Maximum 2–3 sentences per turn. Never stall with multiple-choice questionnaires when asked for balance.
+            Directly answer balance inquiries on turn 1 (stating the R$ 48.950,20 checking balance). Maximum 2–3 sentences per turn. Never stall with questionnaires.
           </p>
         </div>
 
       </div>
     </section>
 
-    <!-- 6. DO'S AND DON'TS -->
+    <!-- ========================================================================= -->
+    <!-- SECTION 6: DO'S AND DON'TS                                                -->
+    <!-- ========================================================================= -->
     <section id="rules">
       <div class="flex items-center justify-between mb-6 pb-3 border-b border-white/[0.08]">
         <div>
@@ -561,8 +755,8 @@
             <span>&check;</span> Strict Brand Do's
           </div>
           <ul class="text-xs text-white/70 space-y-2 list-disc list-inside leading-relaxed">
-            <li><strong>Enforce Swiss Tabular Alignment:</strong> Always align competitor data in clean side-by-side columns.</li>
-            <li><strong>Use Monospace for Numerics:</strong> Currency, percentages, and timestamps must use monospace fonts.</li>
+            <li><strong>Enforce Swiss Tabular Alignment:</strong> Always align competitor data in clean side-by-side columns with zero wrapping.</li>
+            <li><strong>Use Monospace for Numerics:</strong> Currency, percentages, and timestamps must use JetBrains Mono / SF Mono.</li>
             <li><strong>Reserve Green for Semantics:</strong> Use green exclusively for net savings, positive spreads, and verified security.</li>
             <li><strong>Direct First-Turn Responses:</strong> State checking balance (R$ 48.950,20) immediately when queried.</li>
           </ul>
@@ -615,20 +809,6 @@
           badge.innerText = 'Copy Hex';
           badge.style.opacity = '0';
           badge.style.transform = 'translateY(-4px)';
-        }, 1500);
-      }
-    }
-
-    function copyRawCode(id, btn) {
-      const el = document.getElementById(id);
-      if (el) {
-        navigator.clipboard.writeText(el.innerText);
-        const orig = btn.innerText;
-        btn.innerText = 'Copied!';
-        btn.classList.add('bg-emerald-600');
-        setTimeout(() => {
-          btn.innerText = orig;
-          btn.classList.remove('bg-emerald-600');
         }, 1500);
       }
     }

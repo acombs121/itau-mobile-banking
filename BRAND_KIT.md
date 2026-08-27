@@ -1,102 +1,97 @@
-# Banco Itaú — Brand Kit & Design System
+# Banco Itaú — Brand Kit & Design System Specification
 **Version:** 2.0 (Swiss Executive Banking Edition)  
 **Segment:** Itaú Personnalité & Itaú Empresas (AI Autonomous Concierge)
 
 ---
 
-## 1. Brand Identity & Positioning
+## 1. Named Typefaces & Font Stacks
 
-Banco Itaú is Latin America’s premier private financial institution. The **Itaú Personnalité** brand represents high-net-worth wealth management, while **Itaú Empresas** represents corporate and commercial banking.
+### Primary Interface & Display Typeface: **Inter**
+- **Designer**: Rasmus Andersson
+- **Role**: Main interface copy, card headers, navigation, display titles, button text
+- **Characteristics**: Tall x-height, geometric neo-grotesque apertures, neutral corporate authority
+- **Weights Used**:
+  - `400` (Regular) — Explanatory copy, disclaimer footnotes
+  - `500` (Medium) — Subheaders, category metadata
+  - `600` (SemiBold) — Card titles, button text, table column headers
+  - `700` (Bold) — Section titles, cockpit navigation brand mark
+  - `900` (Black) — Itaú vector logotype wordmark
+- **CSS Stack**: `'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`
 
-### Core Visual Principles
-1. **Swiss Financial Precision**: Minimalist, high-density tabular data, rigorous grid alignment, zero text wrapping, and mathematical centering.
-2. **Restraint Over Decoration**: No arbitrary decorative gradients, no gratuitous glow effects, and strictly restrained color usage.
-3. **Semantic Color Exclusivity**:
-   - **Itaú Orange (`#FF6423`)**: Brand signature, active controls, primary focus states, and primary CTAs.
-   - **Semantic Green (`#059669` / `#10B981`)**: Strictly reserved for savings, positive yields, confirmed states, and security affirmations.
-   - **Zero Secondary Blues or Purples**: Competitor figures, neutral nodes, and structural borders must use monochrome slate neutrals (`#64748B`, `#334155`, `#1E293B`).
-
----
-
-## 2. Color Palette & Token System
-
-### Core Palette
-
-| Token | Hex | RGB | Tailwind Class | Role & Usage Rule |
-|:---|:---|:---|:---|:---|
-| **Itaú Core Orange** | `#FF6423` | `rgb(255, 100, 35)` | `bg-brand-orange` / `text-brand-orange` | Primary brand accent, mic active pulse, active sub-agent badge |
-| **Itaú Orange Dark** | `#D2531C` | `rgb(210, 83, 28)` | `bg-brand-orange-dark` | Hover & active pressed state for primary buttons |
-| **Obsidian Black** | `#070707` | `rgb(7, 7, 7)` | `bg-[#070707]` | Deepest canvas background (Dark Mode) |
-| **Charcoal Surface** | `#0D0D11` | `rgb(13, 13, 17)` | `bg-[#0D0D11]` | Phone shell and secondary panels |
-| **Card Surface Dark** | `#151518` | `rgb(21, 21, 24)` | `bg-[#151518]` | Translucent structural cards, cockpit containers |
-| **Card Surface Elevated** | `#1C1C22` | `rgb(28, 28, 34)` | `bg-[#1C1C22]` | Floating bottom bar, modal overlays |
-| **Semantic Green** | `#059669` | `rgb(5, 150, 105)` | `text-emerald-500` / `bg-emerald-500/10` | **Semantic only**: Net interest saved, yields, confirmed status |
-| **Semantic Green Light** | `#10B981` | `rgb(16, 185, 129)` | `text-emerald-400` | Bright highlight on dark cards (e.g. `R$ 14.280,00`) |
-| **Neutral Slate High** | `#F8FAFC` | `rgb(248, 250, 252)` | `text-white` / `text-slate-100` | Primary text and headings |
-| **Neutral Slate Medium** | `#94A3B8` | `rgb(148, 163, 184)` | `text-slate-400` | Secondary labels, descriptions, subheaders |
-| **Neutral Slate Muted** | `#64748B` | `rgb(100, 116, 139)` | `text-slate-500` | Competitor debt balances, input nodes, timestamps |
-| **Hairline Border** | `rgba(255,255,255,0.08)` | — | `border-white/[0.08]` | Thin hairline card borders and structural dividers |
+### Financial Monospace Typeface: **JetBrains Mono**
+- **Designer**: JetBrains Foundry
+- **Role**: All financial numbers, account balances, currency arithmetic, ledger items, telemetry JSON
+- **Characteristics**: Strict tabular proportionality, tall character height, clear distinction between `0` (dotted) and `O`, `1` and `l`
+- **Weights Used**:
+  - `400` (Regular) — Telemetry payloads, code snippets
+  - `600` (SemiBold) — Table rows, rates, spread comparisons
+  - `700` (Bold) — Hero metric balance (`R$ 48.950,20`), monospace category tags
+- **CSS Stack**: `'JetBrains Mono', 'SF Mono', Monaco, Consolas, monospace`
+- **Mandatory OpenType Feature**: `font-feature-settings: "tnum"` (tabular proportional figures)
 
 ---
 
-## 3. Typography & Hierarchy
+## 2. Typographic Scale & Exact Details
 
-### Font Families
-- **Primary Interface**: `'Inter', 'Arimo', -apple-system, BlinkMacSystemFont, sans-serif`
-- **Financial Monospace**: `'JetBrains Mono', 'SF Mono', 'Fira Code', Menlo, monospace`
-
-### Typographic Scale
-
-| Role | Size | Weight | Tracking | Usage |
-|:---|:---|:---|:---|:---|
-| **Metric Hero** | `24px` / `1.5rem` | Bold (700) | `-0.02em` | Main account balance (`R$ 48.950,20`) |
-| **Card Header** | `14px` / `0.875rem` | SemiBold (600) | `-0.01em` | Screen titles, card identification |
-| **Monospace Tag** | `10.5px` / `0.65rem` | Bold (700) | `+0.05em` | `UPPERCASE` tags (`CHECKING ACCOUNT`, `OPEN FINANCE`) |
-| **Body Copy** | `12px` / `0.75rem` | Regular (400) | `normal` | Explanatory sentences, telemetry notes |
-| **Financial Figures**| `11px` / `0.6875rem`| SemiBold (600) | `font-mono` | Currency amounts, rates, credit limits |
-| **Micro Caption** | `9.5px` / `0.6rem` | Medium (500) | `uppercase` | Section categories, timestamps, metadata |
+| Token Name | Typeface | Size (px / rem) | Font Weight | Line Height | Letter Spacing | Case | Component Usage |
+|:---|:---|:---|:---|:---|:---|:---|:---|
+| `--type-hero-metric` | **JetBrains Mono** | `24px` / `1.5rem` | `700` (Bold) | `1.2` (`28.8px`) | `-0.02em` | None | Primary checking balance (`R$ 48.950,20`) |
+| `--type-display-title` | **Inter** | `18px` / `1.125rem` | `700` (Bold) | `1.3` (`23.4px`) | `-0.015em` | None | Cockpit navigation header & main title |
+| `--type-card-header` | **Inter** | `14px` / `0.875rem` | `600` (SemiBold) | `1.35` (`18.9px`) | `-0.01em` | None | In-phone dynamic card titles, item headers |
+| `--type-mono-tag` | **JetBrains Mono** | `10.5px` / `0.656rem` | `700` (Bold) | `1.4` (`14.7px`) | `+0.05em` | `UPPERCASE` | Category badges (`CHECKING ACCOUNT`, `OPEN FINANCE`) |
+| `--type-tabular-row` | **JetBrains Mono** | `11px` / `0.6875rem` | `600` (SemiBold) | `1.45` (`16.0px`) | `0.00em` (`tnum`) | None | Rate spreads, interest savings, tabular rows |
+| `--type-body-ui` | **Inter** | `12px` / `0.75rem` | `400` (Regular) | `1.5` (`18.0px`) | `0.00em` | None | Narrative copy, advisory explanations |
+| `--type-caption-micro`| **Inter** | `9.5px` / `0.59rem` | `500` (Medium) | `1.3` (`12.3px`) | `+0.03em` | `UPPERCASE` | Timestamps, section indicators, metadata labels |
+| `--type-logotype` | **Inter Black** | `42px` / `2.625rem` | `900` (Black) | `1.0` (`42.0px`) | `-0.04em` | `lowercase` | Official `"itau"` vector emblem |
 
 ---
 
-## 4. Logo Construction & App Icons
+## 3. Named Component Catalog
 
-### Square Icon (Vector SVG)
-The Itaú symbol consists of a square with subtle rounded corners (`rx="20"` on a `100x100` viewBox) filled with `#FF6423`, featuring the iconic lowercase bold white wordmark `itau` centered at `50% / 62%`.
+### Application Shell & Layout
+1. **`CockpitHeader`** (`frontend/src/components/CockpitHeader.tsx`):
+   - Executive top navigation bar. Contains the Itaú brand glyph, brand title, direct link to `/brandkit.html`, Portuguese/English language toggle, monochrome theme toggle (dark/light), session reset, and save session controls.
+2. **`PhoneContainer`** (`frontend/src/components/PhoneContainer.tsx`):
+   - Ultra-realistic physical smartphone simulator chassis. Contains the physical volume/power buttons, Dynamic Island, 5G status bar, customer identity header, quick-actions 4-grid, dynamic canvas host, and bottom concierge dock.
+3. **`AudioWaveformVisualizer`** (`frontend/src/components/AudioWaveformVisualizer.tsx`):
+   - Memoized (`React.memo`) 9-bar reactive audio visualizer. Mathematically centered over the bottom dock via `absolute inset-0 flex items-center justify-center`. Isolates 60–120 FPS audio updates from the parent phone tree.
+4. **`AgentOrchestratorPanel`** (`frontend/src/components/AgentOrchestratorPanel.tsx`):
+   - C-Level agentic control panel. Displays scenario buttons, live sub-agent status badges (`Active`, `Completed`), interactive decision graph view, and raw JSON telemetry inspector.
 
-```svg
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="32" height="32">
-  <rect width="100" height="100" rx="20" fill="#FF6423"/>
-  <text x="50%" y="62%" dominant-baseline="middle" text-anchor="middle" fill="#FFFFFF" font-weight="900" font-family="'Inter', sans-serif" font-size="42">itau</text>
-</svg>
-```
-
-### Data URI Favicon
-```html
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23FF6423'/><text x='50%' y='62%' dominant-baseline='middle' text-anchor='middle' fill='%23FFFFFF' font-weight='900' font-family='sans-serif' font-size='42'>itau</text></svg>" />
-```
-
----
-
-## 5. UI Component Rules & Standards
-
-### 1. In-Phone Dynamic Cards
-- **Border Radius**: `rounded-[16px]` for top-level cards, `rounded-[10px]` for hero amount blocks, `rounded-[8px]` for tabular sub-items.
-- **Card Surfaces**: Dark `#151518` with subtle `border-white/10` and `shadow-2xl`. Light mode uses pure `bg-white` with `border-slate-200`.
-- **Close Button**: Standard top-right `X` button with 20x20 circular tap target.
-
-### 2. Live Centered Audio Waveform (`AudioWaveformVisualizer`)
-- **Mathematical Centering**: Wrapped in `absolute inset-0 flex items-center justify-center pointer-events-none z-10`.
-- **Waveform Capsule**: Centered pill `h-6 px-3 bg-black/40 rounded-full border border-white/10`.
-- **Bars**: 9 vertical bars with `transition: height 0.1s ease-in-out`. When speaking or listening, bars illuminate with `bg-brand-orange shadow-[0_0_8px_#FF6423]`. When idle, subdued to `bg-white/20`.
-
-### 3. Open Finance 2-Column Tabular Comparison
-- Competitor debt and rates must appear on the left in clean monochrome neutral tones (`#64748B` / `#94A3B8`).
-- Itaú Sob Medida offer and Net Savings appear on the right with semantic emerald green highlights (`#059669` / `#10B981`).
-- Zero wrapping: All labels and values must fit cleanly on a single line.
+### In-Phone Dynamic Canvas Cards
+5. **`CheckingBalanceCard`** (`balance_checking`):
+   - Renders immediately when the customer inquires about their balance. Highlights Available Balance (`R$ 48.950,20`), LIS Overdraft Limit (`R$ 10.000,00`), and an interactive link to upcoming Thursday debits.
+6. **`ScheduledPaymentsCard`** (`scheduled_payments`):
+   - Itemized upcoming bills: Mastercard Black invoice (`R$ 34.150,00`) and Condomínio Edifício Jardins boleto (`R$ 3.850,00`). Features automated 100% coverage verification check.
+7. **`CdbInvestmentsCard`** (`balance_cdb`):
+   - Highlights daily liquidity balance (`R$ 85.000,00`), 100% CDI yield, and immediate 24/7 liquidity badge.
+8. **`MastercardBlackCard`** (`balance_card`):
+   - Displays available limit (`R$ 72.569,50`), total credit limit (`R$ 85.000,00`), and upcoming invoice due date.
+9. **`CardBenefitsCard`** (`card_benefits_agent`):
+   - Highlights GRU Terminal 3 VIP lounge access, 4 European LoungeKey passes, €30.000 Schengen travel medical insurance, and Masterseguro car rental CDW/LDW.
+10. **`OpenFinanceOptimizerCard`** (`open_finance_optimizer`):
+    - Swiss 2-column tabular comparison. Left column displays monochrome competitor revolving debt (`11.20%/mo`); right column displays Itaú Sob Medida (`1.69%/mo`) and semantic green contract savings of `R$ 14.280,00`.
+11. **`TravelShieldCard`** (`travel_shield_agent`):
+    - Fraud defense confirmation card. Registers active travel notice for Portugal & Spain, elevates daily international POS limit to `R$ 50.000,00`, and pre-suppresses false-positive declines.
 
 ---
 
-## 6. Voice & Persona Guidelines
+## 4. Color Palette & Token System
+
+| Token Name | Hex Code | Role & Usage Rule |
+|:---|:---|:---|
+| **Itaú Core Orange** | `#FF6423` | Primary brand accent, mic active pulse, active sub-agent badge, primary CTAs |
+| **Itaú Dark Orange** | `#D2531C` | Hover & active pressed state for primary buttons |
+| **Obsidian Black** | `#070707` | Deepest canvas background (Dark Mode) |
+| **Charcoal Surface** | `#0D0D11` | Phone simulator hardware chassis & secondary containers |
+| **Card Surface** | `#151518` | Dynamic Canvas cards and telemetry panels (`border-white/[0.08]`) |
+| **Card Elevated** | `#1C1C22` | Floating bottom toolbar and modal overlays |
+| **Semantic Green** | `#059669` / `#10B981` | **Semantic only**: Net interest saved (`R$ 14.280,00`), confirmed status, yields |
+| **Neutral Slate** | `#64748B` / `#94A3B8` | Competitor balances, comparison rows, graph nodes, and timestamps |
+
+---
+
+## 5. Voice & Persona Guidelines
 
 | Dimension | Rule | Example / Pronunciation |
 |:---|:---|:---|
@@ -108,11 +103,11 @@ The Itaú symbol consists of a square with subtle rounded corners (`rx="20"` on 
 
 ---
 
-## 7. Do's and Don'ts
+## 6. Strict Brand Guardrails
 
 ### DO:
 - Maintain strict contrast: white text on dark surfaces, charcoal text on light surfaces.
-- Use `font-mono` for all account numbers, currency figures, and rate percentages.
+- Use `JetBrains Mono` with tabular numerals (`tnum`) for all currency figures, rates, and timestamps.
 - Restrict semantic green exclusively to affirmative status, interest savings, and positive investment spreads.
 - Keep UI cards completely dismissible via standard close targets.
 
