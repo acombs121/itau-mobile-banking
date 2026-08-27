@@ -217,7 +217,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
           </div>
 
           {/* Dynamic Center Canvas: Optically Positioned In-Canvas Agent Cards or Watermark */}
-          <div className={`flex-1 w-full px-4 pt-3 pb-2 flex flex-col justify-start items-center min-h-0 overflow-y-auto custom-scrollbar font-arimo ${isDark ? 'bg-transparent' : 'bg-slate-50/40'}`}>
+          <div className={`flex-1 w-full px-4 pt-3 pb-2 flex flex-col justify-start items-center min-h-0 overflow-y-auto custom-scrollbar font-sans ${isDark ? 'bg-transparent' : 'bg-slate-50/40'}`}>
             
             {/* 1. Specific Checking Balance Card */}
             {activeCardId === 'balance_checking' ? (
@@ -228,7 +228,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                 <div className={`flex items-center justify-between mb-3 pb-2 border-b ${isDark ? 'border-white/[0.06]' : 'border-slate-100'}`}>
                   <div className="flex items-center gap-2">
                     <Building2 className="w-3.5 h-3.5 opacity-70" />
-                    <span className={`text-[10.5px] font-mono font-bold tracking-wide uppercase ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
+                    <span className={`text-[11px] font-sans font-bold tracking-wider uppercase ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
                       {currentLang === 'en' ? 'CHECKING ACCOUNT' : 'CONTA CORRENTE'}
                     </span>
                   </div>
@@ -245,23 +245,23 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                 <div className="space-y-2.5">
                   <div className={`p-3 rounded-[10px] ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
                     <span className={`text-[10px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Available Balance' : 'Saldo Disponível'}</span>
-                    <span className={`text-xl font-bold font-mono ${isDark ? 'text-white' : 'text-slate-900'}`}>R$ 48.950,20</span>
+                    <span className={`text-2xl font-black font-sans tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>R$ 48.950,20</span>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div className={`p-2 rounded-[8px] ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}>
                       <span className={`text-[9px] block ${isDark ? 'text-white/40' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Overdraft (LIS)' : 'Limite LIS'}</span>
-                      <span className={`font-mono font-semibold text-[11px] ${isDark ? 'text-white/80' : 'text-slate-700'}`}>R$ 10.000,00</span>
+                      <span className={`font-sans font-bold text-xs ${isDark ? 'text-white/80' : 'text-slate-700'}`}>R$ 10.000,00</span>
                     </div>
                     <button 
-                      onClick={() => setActiveCardId('scheduled_payments')}
+                       onClick={() => setActiveCardId('scheduled_payments')}
                       className={`p-2 rounded-[8px] text-left transition-all hover:ring-1 hover:ring-brand-orange/40 cursor-pointer ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}
                     >
                       <div className="flex items-center justify-between">
                         <span className={`text-[9px] block ${isDark ? 'text-white/40' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Debits Next Thu' : 'Débitos Quinta'}</span>
                         <ChevronRight className="w-2.5 h-2.5 text-brand-orange/70" />
                       </div>
-                      <span className="font-mono font-semibold text-[11px] text-brand-orange">R$ 38.000,00</span>
+                      <span className="font-sans font-bold text-xs text-brand-orange">R$ 38.000,00</span>
                     </button>
                   </div>
                 </div>
@@ -274,7 +274,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-3.5 h-3.5 opacity-70" />
-                    <span className={`text-[10.5px] font-mono font-bold tracking-wide uppercase ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
+                    <span className={`text-[11px] font-sans font-bold tracking-wider uppercase ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
                       {currentLang === 'en' ? 'SCHEDULED PAYMENTS' : 'PAGAMENTOS AGENDADOS'}
                     </span>
                   </div>
@@ -288,14 +288,14 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                   </button>
                 </div>
 
-                <div className="space-y-2 text-xs">
+                <div className="space-y-2 text-xs font-sans">
                   {/* Total Header Summary */}
                   <div className={`p-2.5 rounded-[10px] flex items-center justify-between ${isDark ? 'bg-white/[0.03] border border-white/[0.05]' : 'bg-slate-50 border border-slate-200'}`}>
                     <div>
                       <span className={`text-[9.5px] block uppercase font-medium ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Total Scheduled for Thursday' : 'Total Agendado para Quinta'}</span>
-                      <span className={`text-xl font-bold font-mono ${isDark ? 'text-white' : 'text-slate-900'}`}>R$ 38.000,00</span>
+                      <span className={`text-2xl font-black font-sans tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>R$ 38.000,00</span>
                     </div>
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-semibold ${isDark ? 'bg-white/[0.06] text-white/70 border border-white/[0.08]' : 'bg-slate-200 text-slate-700'}`}>
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-sans font-semibold ${isDark ? 'bg-white/[0.06] text-white/70 border border-white/[0.08]' : 'bg-slate-200 text-slate-700'}`}>
                       2 {currentLang === 'en' ? 'Debits' : 'Débitos'}
                     </span>
                   </div>
@@ -313,7 +313,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                           <span className={`text-[10px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Auto-debit • Aug 25' : 'Débito Automático • 25/08'}</span>
                         </div>
                       </div>
-                      <span className={`font-mono font-bold text-right ml-2 flex-shrink-0 ${isDark ? 'text-white' : 'text-slate-900'}`}>R$ 34.150,00</span>
+                      <span className={`font-sans font-bold text-right ml-2 flex-shrink-0 ${isDark ? 'text-white' : 'text-slate-900'}`}>R$ 34.150,00</span>
                     </div>
 
                     {/* Item 2: Condomínio Edifício Jardins */}
@@ -327,7 +327,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                           <span className={`text-[10px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Scheduled Boleto • Aug 25' : 'Boleto Agendado • 25/08'}</span>
                         </div>
                       </div>
-                      <span className={`font-mono font-bold text-right ml-2 flex-shrink-0 ${isDark ? 'text-white' : 'text-slate-900'}`}>R$ 3.850,00</span>
+                      <span className={`font-sans font-bold text-right ml-2 flex-shrink-0 ${isDark ? 'text-white' : 'text-slate-900'}`}>R$ 3.850,00</span>
                     </div>
                   </div>
 
@@ -337,7 +337,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                       <Check className="w-3.5 h-3.5 opacity-60" />
                       <span>{currentLang === 'en' ? 'Checking Balance Covers 100%' : 'Saldo em Conta Cobre 100%'}</span>
                     </div>
-                    <span className="font-mono font-semibold">R$ 48.950,20</span>
+                    <span className="font-sans font-bold">R$ 48.950,20</span>
                   </div>
                 </div>
               </div>
@@ -349,7 +349,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                 <div className={`flex items-center justify-between mb-3 pb-2 border-b ${isDark ? 'border-white/[0.06]' : 'border-slate-100'}`}>
                   <div className="flex items-center gap-2">
                     <TrendingUp className="w-3.5 h-3.5 opacity-70" />
-                    <span className={`text-[10.5px] font-mono font-bold tracking-wide uppercase ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
+                    <span className={`text-[11px] font-sans font-bold tracking-wider uppercase ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
                       {currentLang === 'en' ? 'CDB DI INVESTMENTS' : 'INVESTIMENTOS CDB DI'}
                     </span>
                   </div>
@@ -363,10 +363,10 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                   </button>
                 </div>
 
-                <div className="space-y-2.5">
+                <div className="space-y-2.5 font-sans">
                   <div className={`p-3 rounded-[10px] ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
                     <span className={`text-[10px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Daily Liquidity Balance' : 'Saldo com Liquidez Diária'}</span>
-                    <span className={`text-xl font-bold font-mono ${isDark ? 'text-white' : 'text-slate-900'}`}>R$ 85.000,00</span>
+                    <span className={`text-2xl font-black font-sans tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>R$ 85.000,00</span>
                   </div>
 
                   <div className={`p-2.5 rounded-[8px] ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}>
@@ -386,7 +386,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <CreditCard className="w-3.5 h-3.5 text-brand-orange" />
-                    <span className={`text-[10.5px] font-mono font-bold tracking-wide uppercase ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
+                    <span className={`text-[11px] font-sans font-bold tracking-wider uppercase ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
                       Mastercard Black (•••• 8841)
                     </span>
                   </div>
@@ -400,20 +400,20 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                   </button>
                 </div>
 
-                <div className="space-y-2.5">
+                <div className="space-y-2.5 font-sans">
                   <div className={`p-3 rounded-[10px] ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
                     <span className={`text-[10px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Available Limit' : 'Limite Disponível'}</span>
-                    <span className={`text-xl font-bold font-mono ${isDark ? 'text-white' : 'text-slate-900'}`}>R$ 72.569,50</span>
+                    <span className={`text-2xl font-black font-sans tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>R$ 72.569,50</span>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div className={`p-2 rounded-[8px] ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}>
                       <span className={`text-[9px] block ${isDark ? 'text-white/40' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Total Card Limit' : 'Limite Total'}</span>
-                      <span className={`font-mono font-semibold text-[11px] ${isDark ? 'text-white/80' : 'text-slate-700'}`}>R$ 85.000,00</span>
+                      <span className={`font-sans font-bold text-xs ${isDark ? 'text-white/80' : 'text-slate-700'}`}>R$ 85.000,00</span>
                     </div>
                     <div className={`p-2 rounded-[8px] ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}>
                       <span className={`text-[9px] block ${isDark ? 'text-white/40' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Current Bill Due Thu' : 'Fatura Venc. Quinta'}</span>
-                      <span className="font-mono font-semibold text-[11px] text-brand-orange">R$ 34.150,00</span>
+                      <span className="font-sans font-bold text-xs text-brand-orange">R$ 34.150,00</span>
                     </div>
                   </div>
 
@@ -421,11 +421,11 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                   <div className={`p-2.5 rounded-[8px] flex items-center justify-between text-xs ${isDark ? 'bg-white/[0.02] border border-white/[0.05]' : 'bg-slate-50 border border-slate-200'}`}>
                     <div>
                       <span className={`text-[9.5px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Outstanding Balance (Next Bill)' : 'Fatura em Aberto (Próx. Mês)'}</span>
-                      <span className={`font-mono font-bold text-sm ${isDark ? 'text-white' : 'text-slate-900'}`}>R$ 12.430,50</span>
+                      <span className={`font-sans font-bold text-sm ${isDark ? 'text-white' : 'text-slate-900'}`}>R$ 12.430,50</span>
                     </div>
                     <div className="text-right">
                       <span className={`text-[9.5px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Due Date' : 'Vencimento'}</span>
-                      <span className="font-mono font-semibold text-[11.5px] text-brand-orange">{currentLang === 'en' ? 'Sep 28, 2026' : '28/09/2026'}</span>
+                      <span className="font-sans font-bold text-[11.5px] text-brand-orange">{currentLang === 'en' ? 'Sep 28, 2026' : '28/09/2026'}</span>
                     </div>
                   </div>
                 </div>
