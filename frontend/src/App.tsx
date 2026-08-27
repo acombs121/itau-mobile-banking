@@ -4,7 +4,7 @@ import { CockpitHeader } from './components/CockpitHeader';
 import { PhoneContainer } from './components/PhoneContainer';
 import { AgentOrchestratorPanel } from './components/AgentOrchestratorPanel';
 import { BankingProfile } from './types/banking';
-import { SubAgent, SecurityActionItem, IOSNotification, TelemetryLog, ScenarioId } from './types/itau_concierge';
+import { SubAgent, SecurityActionItem, TelemetryLog, ScenarioId } from './types/itau_concierge';
 import { Language, translations } from './i18n/translations';
 
 const DEFAULT_PROFILE: BankingProfile = {
@@ -86,7 +86,6 @@ export const App: React.FC = () => {
   const [profile, setProfile] = useState<BankingProfile>(DEFAULT_PROFILE);
   const subAgents: SubAgent[] = [];
   const [actionItems, setActionItems] = useState<SecurityActionItem[]>([]);
-  const [notifications, setNotifications] = useState<IOSNotification[]>([]);
   const [telemetryLogs, setTelemetryLogs] = useState<TelemetryLog[]>([]);
 
   // Scenario Resolution Flags
@@ -128,20 +127,9 @@ export const App: React.FC = () => {
     setActionItems(translations[currentLang].actionPlan.initialItems);
   }, [currentLang]);
 
-  // Trigger iOS Push Toast
-  const triggerNotification = (title: string, subtitle: string) => {
-    const newNotif: IOSNotification = {
-      id: "notif_" + Date.now(),
-      app: "Itaú Concierge",
-      title,
-      subtitle,
-      icon: "shield",
-      timestamp: currentLang === 'en' ? "Now" : "Agora"
-    };
-    setNotifications([newNotif]);
-    setTimeout(() => {
-      setNotifications(prev => prev.filter(n => n.id !== newNotif.id));
-    }, 5500);
+  // In-phone popups disabled by user preference
+  const triggerNotification = (_title: string, _subtitle: string) => {
+    // Popups suppressed
   };
 
   // User Spoken Query / Intent Detection -> Query-Specific Dynamic Card & Sub-Agent Dispatch
@@ -804,7 +792,6 @@ export const App: React.FC = () => {
           <div className="w-full md:w-[385px] xl:w-[400px] flex-shrink-0 flex justify-center items-center h-full min-h-0">
             <PhoneContainer
               profile={profile}
-              notifications={notifications}
               currentLang={currentLang}
               theme={theme}
               activeScenario={activeScenario}
