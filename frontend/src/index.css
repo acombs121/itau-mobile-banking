@@ -2,6 +2,72 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ========================================================================= */
+/* BANCO ITAÚ BESPOKE TYPEFACE INTEGRATION                                   */
+/* Automatically detects locally installed corporate fonts or /fonts/*.woff2  */
+/* ========================================================================= */
+@font-face {
+  font-family: 'Itau Display';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: 
+    local('Itau Display Bold'), 
+    local('ItauDisplay-Bold'), 
+    local('Itau Display'), 
+    local('ItauDisplay'),
+    url('/fonts/ItauDisplay-Bold.woff2') format('woff2'),
+    url('/fonts/ItauDisplay-Bold.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Itau Display';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: 
+    local('Itau Display Black'), 
+    local('ItauDisplay-Black'), 
+    local('Itau Display ExtraBold'),
+    url('/fonts/ItauDisplay-Black.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Itau Text';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: 
+    local('Itau Text Regular'), 
+    local('ItauText-Regular'), 
+    local('Itau Text'), 
+    local('ItauText'),
+    url('/fonts/ItauText-Regular.woff2') format('woff2'),
+    url('/fonts/ItauText-Regular.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Itau Text';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: 
+    local('Itau Text Medium'), 
+    local('ItauText-Medium'),
+    url('/fonts/ItauText-Medium.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Itau Text';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: 
+    local('Itau Text Bold'), 
+    local('ItauText-Bold'),
+    url('/fonts/ItauText-Bold.woff2') format('woff2');
+}
+
 :root {
   --color-brand-orange: #FF6423;
   --color-hero-bg: #070707;
@@ -10,7 +76,10 @@
   --color-text-inverse: #FFFFFF;
   --color-text-muted: #798B97;
   --color-card-border: rgba(255, 255, 255, 0.2);
-  --font-sans: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  --font-itau-display: 'Itau Display', 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif;
+  --font-itau-text: 'Itau Text', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-sans: var(--font-itau-text);
+  --font-mono: 'JetBrains Mono', 'SF Mono', Monaco, Consolas, monospace;
   --radius-button: 4px;
   --radius-card: 8px;
   --spacing-base: 8px;
@@ -22,6 +91,7 @@ body {
   color: var(--color-text-main);
   margin: 0;
   padding: 0;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11", "tnum";
 }
 
 /* Custom Scrollbar */

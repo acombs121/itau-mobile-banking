@@ -20,8 +20,11 @@ export default {
         'card': '8px',
       },
       fontFamily: {
-        sans: ['Inter', 'Helvetica Neue', 'Arial', 'sans-serif'],
+        itau: ['"Itau Text"', 'Inter', 'Helvetica Neue', 'Arial', 'sans-serif'],
+        itauDisplay: ['"Itau Display"', '"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
+        sans: ['"Itau Text"', 'Inter', 'Helvetica Neue', 'Arial', 'sans-serif'],
         arimo: ['Arimo', 'Helvetica Neue', 'Arial', 'sans-serif'],
+        mono: ['"JetBrains Mono"', '"SF Mono"', 'Monaco', 'Consolas', 'monospace'],
       },
     },
   },
