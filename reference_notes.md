@@ -7,15 +7,13 @@ This document records the core architectural patterns, WebSocket audio streaming
 ## 1. Itaú Unibanco Brand Identity & Design System
 
 ### 1.1 Color Palette
-- **Itaú Signature Orange (Primary)**: `#EC7000` / `#FF6200`
-- **Itaú Deep Navy (Secondary/Header)**: `#003399` / `#002776` / `#0A1C3E`
-- **Itaú Platinum / Dark Gold (Personalité Tier)**: `#C5A869` / `#D4AF37`
-- **Backgrounds**: Light mode `#F4F6F9`, Dark mode `#0A1128`
-- **Status / Alert Colors**:
-  - Fraud / High Risk: `#E11D48` (Crimson)
-  - Pix / Success: `#059669` (Emerald Green)
-  - Warning / Pending: `#D97706` (Amber)
-  - Information: `#006FCF` (Cobalt Blue)
+- **Itaú Signature Orange (Primary Accent)**: `#FF6423` (Hover: `#D2531C`)
+- **Monochrome Neutral Chrome**: `#070707` (Pitch-Black Hero), `#121215` (Charcoal Surface), `#F3F3F3` (Off-White Body)
+- **Palette Restriction**: No blue across interface chrome or cards.
+- **Status / Alert Colors (Strictly Semantic)**:
+  - Fraud / High Risk / Overdraft: `#E11D48` / `#EF4444` (Crimson / Rose)
+  - Success / Active / Safeguarded / Verified / Positive Yield: `#059669` / `#10B981` (Emerald Green, strictly semantic)
+  - Warning / Advisory: `#D97706` / `#F59E0B` (Amber)
 
 ### 1.2 Mobile UI Layout & View Hierarchy
 - **Mobile Phone Shell Container**:

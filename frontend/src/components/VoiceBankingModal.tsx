@@ -95,7 +95,7 @@ export const VoiceBankingModal: React.FC<VoiceBankingModalProps> = ({
             <div>
               <div className="flex items-center gap-1.5 font-bold text-sm text-white">
                 <span>{t.title}</span>
-                <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                <ShieldCheck className="w-4 h-4 text-brand-orange" />
               </div>
               <p className="text-xs text-white/50">{t.subtitle}</p>
             </div>
@@ -117,10 +117,10 @@ export const VoiceBankingModal: React.FC<VoiceBankingModalProps> = ({
                 style={{ height: `${h}%` }}
                 className={`w-1 rounded-full ${
                   isListening
-                    ? 'bg-emerald-400'
+                    ? 'bg-brand-orange shadow-[0_0_8px_#FF6423]'
                     : isProcessing
-                    ? 'bg-brand-orange'
-                    : 'bg-brand-orange shadow-[0_0_8px_#FF6423]'
+                    ? 'bg-brand-orange/70'
+                    : 'bg-brand-orange/40'
                 }`}
               />
             ))}

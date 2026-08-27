@@ -14,8 +14,6 @@ export default {
         'text-main': '#070707',
         'text-inverse': '#FFFFFF',
         'text-muted': '#798B97',
-        'itau-navy': '#003399',
-        'itau-navy-dark': '#002776',
       },
       borderRadius: {
         'btn': '4px',

@@ -152,7 +152,7 @@ export const translations = {
             name: "Diretriz CMN 4.765 (Anti-LIS)",
             group: "Regulação BACEN",
             layer: "Policy",
-            color: "#003399",
+            color: "#475569",
             details: "Prevenção proativa de juros de cheque especial (LIS) com consentimento explícito"
           },
           {
@@ -219,7 +219,7 @@ export const translations = {
             name: "Diretriz de Segurança de Bandeira",
             group: "Regulação Cartões",
             layer: "Policy",
-            color: "#003399",
+            color: "#475569",
             details: "Habilitação geográfica de autorizadores POS/ATM sem exigência de formulário manual"
           },
           {
@@ -287,7 +287,7 @@ export const translations = {
             name: "Marco Legal CCB (Lei 10.931)",
             group: "Regulação Financeira",
             layer: "Policy",
-            color: "#003399",
+            color: "#475569",
             details: "Cédula de Crédito Bancário emitida eletronicamente com liquidação interbancária direta"
           },
           {
@@ -633,7 +633,7 @@ export const translations = {
             name: "CMN Resolution 4.765 (Anti-Overdraft)",
             group: "BACEN Policy",
             layer: "Policy",
-            color: "#003399",
+            color: "#475569",
             details: "Proactive prevention of overdraft (LIS) interest with explicit customer authorization"
           },
           {
@@ -700,7 +700,7 @@ export const translations = {
             name: "Card Network Security Directive",
             group: "Card Regulation",
             layer: "Policy",
-            color: "#003399",
+            color: "#475569",
             details: "Geographic POS/ATM authorization without requiring manual web forms"
           },
           {
@@ -768,7 +768,7 @@ export const translations = {
             name: "CCB Legal Framework (Law 10,931)",
             group: "Financial Regulation",
             layer: "Policy",
-            color: "#003399",
+            color: "#475569",
             details: "Electronic Bank Credit Note issued with direct interbank debt settlement"
           },
           {

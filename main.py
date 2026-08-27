@@ -742,7 +742,7 @@ async def get_decision_graph(user: Dict[str, Any] = Depends(get_authenticated_us
             "name": "BACEN Res. 147 (MED Policy)",
             "group": "Policy",
             "layer": "Policy",
-            "color": "#003399",
+            "color": "#475569",
             "val": 22,
             "details": "Automated precautionary block & 72-hour fraud claim protection"
         },

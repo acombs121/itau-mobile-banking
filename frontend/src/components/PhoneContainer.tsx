@@ -138,7 +138,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
             {/* Dynamic Island Pill */}
             <div className="w-24 h-5 bg-black rounded-full mx-auto -mt-0.5 flex items-center justify-between px-2.5 shadow-inner border border-white/5">
               <div className="w-2.5 h-2.5 rounded-full bg-[#111] border border-white/20"></div>
-              <div className={`w-1.5 h-1.5 rounded-full ${isVoiceCallActive ? 'bg-brand-orange' : 'bg-emerald-500/80'}`}></div>
+              <div className={`w-1.5 h-1.5 rounded-full ${isVoiceCallActive ? 'bg-brand-orange' : 'bg-transparent'}`}></div>
             </div>
 
             <div className="flex items-center gap-1 font-mono text-[10px] font-bold">
@@ -294,8 +294,8 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
               }`}>
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#10B981]"></span>
-                    <span className="text-[10.5px] font-mono font-bold tracking-wide uppercase text-emerald-500">
+                    <span className="w-2 h-2 rounded-full bg-brand-orange"></span>
+                    <span className="text-[10.5px] font-mono font-bold tracking-wide uppercase text-brand-orange">
                       {currentLang === 'en' ? 'CHECKING ACCOUNT' : 'CONTA CORRENTE'}
                     </span>
                   </div>
@@ -411,12 +411,12 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
             ) : activeCardId === 'balance_cdb' ? (
               /* Specific CDB Investments Card */
               <div className={`w-full rounded-[16px] p-4 border animate-fadeIn shadow-2xl relative ${
-                isDark ? 'bg-[#15151A] border-emerald-500/30 text-white' : 'bg-white border-emerald-500/30 text-slate-900 shadow-lg'
+                isDark ? 'bg-[#15151A] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-lg'
               }`}>
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#10B981]"></span>
-                    <span className="text-[10.5px] font-mono font-bold tracking-wide uppercase text-emerald-500">
+                    <span className="w-2 h-2 rounded-full bg-brand-orange"></span>
+                    <span className="text-[10.5px] font-mono font-bold tracking-wide uppercase text-brand-orange">
                       {currentLang === 'en' ? 'CDB DI INVESTMENTS' : 'INVESTIMENTOS CDB DI'}
                     </span>
                   </div>
@@ -433,12 +433,12 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                 <div className="space-y-2.5">
                   <div className={`p-3 rounded-[10px] ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
                     <span className={`text-[10px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Daily Liquidity Balance' : 'Saldo com Liquidez Diária'}</span>
-                    <span className={`text-xl font-bold font-mono ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>R$ 85.000,00</span>
+                    <span className={`text-xl font-bold font-mono ${isDark ? 'text-white' : 'text-slate-900'}`}>R$ 85.000,00</span>
                   </div>
 
                   <div className={`p-2.5 rounded-[8px] ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}>
                     <div className={`flex items-center gap-1.5 text-xs font-semibold ${isDark ? 'text-white/90' : 'text-slate-900'}`}>
-                      <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
+                      <TrendingUp className="w-3.5 h-3.5 text-brand-orange" />
                       <span>{currentLang === 'en' ? 'Yield Rate: 100% of CDI' : 'Rentabilidade: 100% do CDI'}</span>
                     </div>
                     <div className={`text-[10px] mt-0.5 ml-5 ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Immediate withdrawal 24/7 without penalties.' : 'Resgate imediato 24/7 com liquidez diária.'}</div>
@@ -500,12 +500,12 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
             ) : activeCardId === 'account_info_agent' ? (
               /* Consolidated Position Dynamic Card with Open Finance Awareness */
               <div className={`w-full rounded-[16px] p-3.5 border animate-fadeIn shadow-2xl relative ${
-                isDark ? 'bg-[#15151A] border-emerald-500/30 text-white' : 'bg-white border-emerald-500/30 text-slate-900 shadow-lg'
+                isDark ? 'bg-[#15151A] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-lg'
               }`}>
                 <div className="flex items-center justify-between mb-2.5">
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#10B981]"></span>
-                    <span className="text-[10px] font-mono font-bold tracking-wide uppercase text-emerald-500">
+                    <span className="w-2 h-2 rounded-full bg-brand-orange"></span>
+                    <span className="text-[10px] font-mono font-bold tracking-wide uppercase text-brand-orange">
                       {currentLang === 'en' ? 'CONSOLIDATED POSITION • OPEN FINANCE' : 'POSIÇÃO CONSOLIDADA • OPEN FINANCE'}
                     </span>
                   </div>
@@ -524,7 +524,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                   <div className={`p-2.5 rounded-[10px] ${isDark ? 'bg-white/[0.04] border border-white/[0.08]' : 'bg-slate-50 border border-slate-200'}`}>
                     <div className="flex items-center justify-between">
                       <span className={`text-[10px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Total Consolidated Liquid Assets' : 'Patrimônio Líquido Consolidado'}</span>
-                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-semibold">{currentLang === 'en' ? '3 Connected Banks' : '3 Bancos Conectados'}</span>
+                      <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded font-semibold ${isDark ? 'bg-white/10 text-white/80' : 'bg-slate-200 text-slate-700'}`}>{currentLang === 'en' ? '3 Connected Banks' : '3 Bancos Conectados'}</span>
                     </div>
                     <span className={`text-xl font-bold font-mono ${isDark ? 'text-white' : 'text-slate-900'}`}>R$ 463.950,20</span>
                   </div>
@@ -540,13 +540,13 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                     </div>
                     <div className={`p-1.5 px-2 rounded-[6px] flex justify-between items-center text-[11px] ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}>
                       <span className={isDark ? 'text-white/70' : 'text-slate-600'}>CDB DI (100% CDI)</span>
-                      <span className={`font-mono font-semibold ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>R$ 85.000,00</span>
+                      <span className="font-mono font-semibold">R$ 85.000,00</span>
                     </div>
                   </div>
 
                   {/* Open Finance External Connected Institutions */}
                   <div className="space-y-1 pt-1">
-                    <div className="text-[9.5px] font-bold uppercase tracking-wider text-emerald-500 px-1">
+                    <div className="text-[9.5px] font-bold uppercase tracking-wider opacity-60 px-1">
                       {currentLang === 'en' ? 'Open Finance External Assets (R$ 330,000.00)' : 'Open Finance — Ativos Externos (R$ 330.000,00)'}
                     </div>
                     <div className={`p-1.5 px-2 rounded-[6px] flex justify-between items-center text-[11px] ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}>
@@ -695,12 +695,12 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
             ) : activeCardId === 'card_benefits_agent' ? (
               /* Mastercard Black Benefits Dynamic Card */
               <div className={`w-full rounded-[16px] p-4 border animate-fadeIn shadow-2xl relative ${
-                isDark ? 'bg-[#15151A] border-blue-500/40 text-white' : 'bg-white border-blue-500/40 text-slate-900 shadow-lg'
+                isDark ? 'bg-[#15151A] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-lg'
               }`}>
                 <div className="flex items-center justify-between mb-2.5">
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-blue-400"></span>
-                    <span className="text-[10px] font-mono font-bold tracking-wide uppercase text-blue-500">
+                    <span className="w-2 h-2 rounded-full bg-brand-orange"></span>
+                    <span className="text-[10px] font-mono font-bold tracking-wide uppercase text-brand-orange">
                       {currentLang === 'en' ? 'MASTERCARD BLACK BENEFITS' : 'BENEFÍCIOS MASTERCARD BLACK'}
                     </span>
                   </div>
@@ -716,9 +716,9 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
 
                 <div className="space-y-2 text-xs">
                   <div className={`p-2.5 rounded-[8px] flex items-start gap-2.5 ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
-                    <ShieldPlus className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                    <ShieldPlus className={`w-4 h-4 mt-0.5 flex-shrink-0 ${isDark ? 'text-white/90' : 'text-slate-700'}`} />
                     <div>
-                      <div className={`font-semibold ${isDark ? 'text-blue-300' : 'text-blue-700'}`}>{currentLang === 'en' ? 'Schengen Medical Insurance' : 'Seguro Médico Schengen'}</div>
+                      <div className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>{currentLang === 'en' ? 'Schengen Medical Insurance' : 'Seguro Médico Schengen'}</div>
                       <div className={`text-[10px] ${isDark ? 'text-white/60' : 'text-slate-500'}`}>€30.000 / USD $150.000 {currentLang === 'en' ? 'coverage included' : 'cobertura inclusa'}</div>
                     </div>
                   </div>
@@ -732,9 +732,9 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                   </div>
 
                   <div className={`p-2.5 rounded-[8px] flex items-start gap-2.5 ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
-                    <Car className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                    <Car className={`w-4 h-4 mt-0.5 flex-shrink-0 ${isDark ? 'text-white/90' : 'text-slate-700'}`} />
                     <div>
-                      <div className={`font-semibold ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>{currentLang === 'en' ? 'Masterseguro Auto (CDW/LDW)' : 'Masterseguro de Automóveis'}</div>
+                      <div className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>{currentLang === 'en' ? 'Masterseguro Auto (CDW/LDW)' : 'Masterseguro de Automóveis'}</div>
                       <div className={`text-[10px] ${isDark ? 'text-white/60' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Rental car damage protection + 24/7 Concierge' : 'Cobertura de locação + Concierge 24h'}</div>
                     </div>
                   </div>
@@ -743,12 +743,12 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
             ) : activeCardId === 'open_finance_optimizer' ? (
               /* Open Finance Rate Comparison & Yield Arbitrage Dynamic Card */
               <div className={`w-full rounded-[16px] p-3.5 border animate-fadeIn shadow-2xl relative ${
-                isDark ? 'bg-[#15151A] border-emerald-500/30 text-white' : 'bg-white border-emerald-500/30 text-slate-900 shadow-lg'
+                isDark ? 'bg-[#15151A] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-lg'
               }`}>
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#10B981]"></span>
-                    <span className="text-[10px] font-mono font-bold tracking-wide uppercase text-emerald-500">
+                    <span className="w-2 h-2 rounded-full bg-brand-orange"></span>
+                    <span className="text-[10px] font-mono font-bold tracking-wide uppercase text-brand-orange">
                       {currentLang === 'en' ? 'BEST RATES & YIELD ARBITRAGE' : 'MELHORES TAXAS & ARBITRAGEM OPEN FINANCE'}
                     </span>
                   </div>
@@ -766,7 +766,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                   {/* 1. Debt Interest Rate Comparison */}
                   <div className={`p-2.5 rounded-[10px] space-y-1.5 ${isDark ? 'bg-white/[0.03] border border-white/[0.06]' : 'bg-slate-50 border border-slate-200'}`}>
                     <div className="flex items-center justify-between">
-                      <span className="text-[9.5px] font-bold uppercase tracking-wider text-amber-400">
+                      <span className={`text-[9.5px] font-bold uppercase tracking-wider ${isDark ? 'text-white/70' : 'text-slate-600'}`}>
                         {currentLang === 'en' ? 'Credit & Debt Rate Optimization' : 'Taxa de Dívidas & Crédito (R$ 18.000)'}
                       </span>
                       <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400">
@@ -781,7 +781,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                       </div>
                       <div className={`p-1.5 rounded-[6px] ${isDark ? 'bg-white/[0.02]' : 'bg-white'}`}>
                         <span className={`text-[9px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Itaú Sob Medida' : 'Itaú Sob Medida'}</span>
-                        <span className={`font-mono font-bold ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>1,69% a.m.</span>
+                        <span className={`font-mono font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>1,69% a.m.</span>
                       </div>
                     </div>
                     <div className="text-[10px] flex items-center justify-between pt-0.5 border-t border-white/[0.05]">
@@ -793,7 +793,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                   {/* 2. Savings & Fixed Income Yield Comparison */}
                   <div className={`p-2.5 rounded-[10px] space-y-1.5 ${isDark ? 'bg-white/[0.03] border border-white/[0.06]' : 'bg-slate-50 border border-slate-200'}`}>
                     <div className="flex items-center justify-between">
-                      <span className="text-[9.5px] font-bold uppercase tracking-wider text-emerald-400">
+                      <span className={`text-[9.5px] font-bold uppercase tracking-wider ${isDark ? 'text-white/70' : 'text-slate-600'}`}>
                         {currentLang === 'en' ? 'Savings & Yield Difference' : 'Rendimento & Poupança (R$ 330.000)'}
                       </span>
                       <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400">
@@ -808,7 +808,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                       </div>
                       <div className={`p-1.5 rounded-[6px] ${isDark ? 'bg-white/[0.02]' : 'bg-white'}`}>
                         <span className={`text-[9px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Itaú CDB DI' : 'Itaú CDB DI'}</span>
-                        <span className={`font-mono font-bold ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>100% do CDI</span>
+                        <span className={`font-mono font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>100% do CDI</span>
                       </div>
                     </div>
                     <div className="text-[10px] flex items-center justify-between pt-0.5 border-t border-white/[0.05]">
