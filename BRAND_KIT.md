@@ -61,7 +61,7 @@
 
 ### Application Shell & Layout
 1. **`CockpitHeader`** (`frontend/src/components/CockpitHeader.tsx`):
-   - Executive top navigation bar. Contains the Itaú brand glyph, brand title, direct link to `/brandkit.html`, Portuguese/English language toggle, monochrome theme toggle (dark/light), session reset, and save session controls.
+   - Executive top navigation bar. Contains the Itaú brand glyph, brand title, Portuguese/English language toggle, monochrome theme toggle (dark/light), session reset, and save session controls.
 2. **`PhoneContainer`** (`frontend/src/components/PhoneContainer.tsx`):
    - Ultra-realistic physical smartphone simulator chassis. Contains the physical volume/power buttons, Dynamic Island, 5G status bar, customer identity header, quick-actions 4-grid, dynamic canvas host, and bottom concierge dock.
 3. **`AudioWaveformVisualizer`** (`frontend/src/components/AudioWaveformVisualizer.tsx`):
