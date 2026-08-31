@@ -210,13 +210,19 @@ echo "--> Deployed Service URL: ${SERVICE_URL}"
 # 12. Configure correct IAP IAM Roles
 echo "--> Configuring IAP IAM access for ${IAP_ALLOWED_DOMAINS}..."
 # Grant roles/iap.httpsResourceAccessor at the Cloud Run IAP resource level
-gcloud iap web add-iam-policy-binding \
-  --resource-type=cloud-run \
-  --service="${APP_NAME}" \
-  --region="${GCP_REGION}" \
-  --member="domain:${IAP_ALLOWED_DOMAINS:-google.com}" \
-  --role="roles/iap.httpsResourceAccessor" \
-  --project="${GCP_PROJECT}" --quiet || true
+IFS=',' read -ra DOMAINS_ARRAY <<< "${IAP_ALLOWED_DOMAINS:-google.com}"
+for D in "${DOMAINS_ARRAY[@]}"; do
+  D=$(echo "${D}" | xargs)
+  if [[ -n "${D}" && "${D}" != "*" ]]; then
+    gcloud iap web add-iam-policy-binding \
+      --resource-type=cloud-run \
+      --service="${APP_NAME}" \
+      --region="${GCP_REGION}" \
+      --member="domain:${D}" \
+      --role="roles/iap.httpsResourceAccessor" \
+      --project="${GCP_PROJECT}" --quiet || true
+  fi
+done
 
 if [[ -n "${IAP_ALLOWED_MEMBER:-}" ]]; then
   echo "--> Granting IAP access for member: ${IAP_ALLOWED_MEMBER}..."
