@@ -220,6 +220,7 @@ for D in "${DOMAINS_ARRAY[@]}"; do
       --region="${GCP_REGION}" \
       --member="domain:${D}" \
       --role="roles/iap.httpsResourceAccessor" \
+      --condition=None \
       --project="${GCP_PROJECT}" --quiet || true
   fi
 done
@@ -232,6 +233,7 @@ if [[ -n "${IAP_ALLOWED_MEMBER:-}" ]]; then
     --region="${GCP_REGION}" \
     --member="${IAP_ALLOWED_MEMBER}" \
     --role="roles/iap.httpsResourceAccessor" \
+    --condition=None \
     --project="${GCP_PROJECT}" --quiet >/dev/null 2>&1 || true
 fi
 
