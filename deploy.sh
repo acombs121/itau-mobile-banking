@@ -247,7 +247,8 @@ accessSettings:
   allowedDomainsSettings:
     enable: true
     domains:
-      - "${IAP_ALLOWED_DOMAINS:-google.com}"
+      - "${SERVICE_DOMAIN}"
+      - "${APP_NAME}-${PROJECT_NUMBER}.${GCP_REGION}.run.app"
 EOF_IAP
 
 gcloud iap settings set "${IAP_SETTINGS_TMP}" \
