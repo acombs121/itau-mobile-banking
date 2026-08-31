@@ -405,8 +405,8 @@ export const translations = {
           id: "cash_flow_forecast_agent",
           name: "Cash Flow & Yield Forecasting Agent",
           type: "cash_flow",
-          description: "Projeta fluxos de caixa, simula compras hipotéticas e calcula a distribuição ótima entre Conta Corrente e CDB DI.",
-          capabilities: ["Previsão Séries Temporais", "Simulação de Cenários Hipotéticos", "Zero Juros LIS"],
+          description: "Projeta fluxos de caixa da conta, antecipa compromissos de débitos futuros e calcula a distribuição ótima entre conta corrente e aplicações de liquidez diária.",
+          capabilities: ["Previsão de Fluxo de Caixa", "Prevenção de Déficits", "Resgates Automáticos de Liquidez"],
           defaultResult: {
             account: "ITAU-7749-00912",
             forecast_window: "D+30",
@@ -419,23 +419,22 @@ export const translations = {
           id: "travel_shield_agent",
           name: "Travel Notice & International Card Shield",
           type: "travel",
-          description: "Registra aviso de viagem ativo para Portugal e Espanha, eleva limite internacional diário para R$ 50.000 e suprime falsos positivos em terminais no exterior.",
-          capabilities: ["Aviso Viagem Bandeira", "Limite POS R$ 50k", "Supressão Falsos Bloqueios"],
+          description: "Registra avisos de viagem de clientes junto às redes de pagamento globais, ajusta dinamicamente limites internacionais e suprime recusas indevidas por suspeita de fraude.",
+          capabilities: ["Aviso Viagem em Bandeiras", "Limites Internacionais Dinâmicos", "Supressão Preventiva de Recusas"],
           defaultResult: {
-            travel_notice: "ACTIVE",
-            destinations: ["Portugal", "Espanha"],
+            service_status: "STANDBY_READY",
             network_authorizers: ["MASTERCARD_GLOBAL", "VISA_NET"],
-            international_pos_limit_brl: 50000.00,
-            fraud_suppression_airports_hotels: "ENABLED",
-            status: "PROTECTED_ROAMING"
+            international_security_profile: "ADAPTIVE_LIMITS",
+            fraud_suppression: "STANDBY",
+            status: "READY"
           }
         },
         {
           id: "card_benefits_agent",
-          name: "Mastercard Black Benefits & Coverage Agent",
+          name: "Card Benefits & Coverage Concierge",
           type: "card_benefits",
-          description: "Apresenta coberturas e benefícios do Mastercard Black: seguro médico internacional (€30k Schengen), salas VIP LoungeKey e proteção de bagagem.",
-          capabilities: ["Seguro Médico Schengen €30k", "Salas VIP LoungeKey", "Atraso/Perda Bagagem", "Masterseguro Auto"],
+          description: "Apresenta benefícios de categorias de alta renda, emissão de apólices de seguro viagem, acesso a salas VIP globais e proteções de compra.",
+          capabilities: ["Seguro Médico Internacional", "Programas de Salas VIP", "Seguro de Viagem e Bagagem", "Masterseguro de Automóveis"],
           defaultResult: {
             card_tier: "Itaú Personnalité Mastercard Black",
             travel_medical_insurance: {
@@ -458,10 +457,10 @@ export const translations = {
         },
         {
           id: "open_finance_optimizer",
-          name: "Open Finance & Debt Refinancing Optimizer",
+          name: "Open Finance & Yield Rate Optimizer",
           type: "open_finance",
-          description: "Analisa dívidas externas conectadas, calcula arbitragem de juros e emite CCBs digitais para refinanciamento.",
-          capabilities: ["Varredura Open Finance FAPI", "Emissão CCB Lei 10.931", "Liquidação CIP/STR"],
+          description: "Analisa o ecossistema Open Finance entre instituições para identificar arbitragens em taxas de rendimento e crédito, coordenando portabilidade automatizada de recursos.",
+          capabilities: ["Varredura no Ecossistema Open Finance", "Arbitragem de CDI e Crédito", "Portabilidade Automatizada"],
           defaultResult: {
             open_finance_consent: "ACTIVE",
             refi_opportunity_detected: true,
@@ -955,8 +954,8 @@ export const translations = {
           id: "cash_flow_forecast_agent",
           name: "Cash Flow & Yield Forecasting Agent",
           type: "cash_flow",
-          description: "Forecasts cash flows, models hypothetical purchases, and optimizes balance allocation between Checking and CDB DI.",
-          capabilities: ["Time-Series Forecasting", "Hypothetical Scenario Modeling", "Zero Overdraft Interest"],
+          description: "Forecasts account cash flows, models upcoming debit obligations, and calculates optimal balance allocation between checking and interest-earning liquidity accounts.",
+          capabilities: ["Time-Series Cash Flow Forecasting", "Overdraft Deficit Prevention", "Automated Liquidity Sweeps"],
           defaultResult: {
             account: "ITAU-7749-00912",
             forecast_window: "D+30",
@@ -969,23 +968,22 @@ export const translations = {
           id: "travel_shield_agent",
           name: "Travel Notice & International Card Shield",
           type: "travel",
-          description: "Registers active travel notice for Portugal & Spain across card networks, raises POS limit to R$ 50k, and suppresses false-positive foreign declines.",
-          capabilities: ["Network Travel Notice", "POS Limit R$ 50k", "False-Positive Suppression"],
+          description: "Registers cardholder travel notices across global payment networks, dynamically adjusts international POS spending limits, and suppresses false-positive fraud declines abroad.",
+          capabilities: ["Payment Network Travel Notices", "Dynamic International POS Limits", "Fraud Decline Pre-Suppression"],
           defaultResult: {
-            travel_notice: "ACTIVE",
-            destinations: ["Portugal", "Spain"],
+            service_status: "STANDBY_READY",
             network_authorizers: ["MASTERCARD_GLOBAL", "VISA_NET"],
-            international_pos_limit_brl: 50000.00,
-            fraud_suppression_airports_hotels: "ENABLED",
-            status: "PROTECTED_ROAMING"
+            international_security_profile: "ADAPTIVE_LIMITS",
+            fraud_suppression: "STANDBY",
+            status: "READY"
           }
         },
         {
           id: "card_benefits_agent",
-          name: "Mastercard Black Benefits & Coverage Agent",
+          name: "Card Benefits & Coverage Concierge",
           type: "card_benefits",
-          description: "Explains premium Mastercard Black benefits: worldwide travel medical insurance (€30k Schengen), LoungeKey VIP access, and trip protection.",
-          capabilities: ["Schengen Medical €30k", "LoungeKey VIP Lounges", "Baggage / Delay Insurance", "Mastercard Concierge"],
+          description: "Advises cardholders on premium tier card benefits, automated travel insurance policies, worldwide VIP airport lounge access, and purchase protections.",
+          capabilities: ["International Travel Medical Coverage", "VIP Airport Lounge Programs", "Trip Cancellation & Baggage Insurance", "Vehicle Rental Coverage"],
           defaultResult: {
             card_tier: "Itaú Personnalité Mastercard Black",
             travel_medical_insurance: {
@@ -1008,10 +1006,10 @@ export const translations = {
         },
         {
           id: "open_finance_optimizer",
-          name: "Open Finance & Debt Refinancing Optimizer",
+          name: "Open Finance & Yield Rate Optimizer",
           type: "open_finance",
-          description: "Analyzes connected external debts, calculates interest rate arbitrage, and issues digital CCBs for debt consolidation.",
-          capabilities: ["Open Finance FAPI Scan", "Electronic CCB Issuance", "CIP/STR Payoff"],
+          description: "Scans multi-bank Open Finance ecosystems to identify rate arbitrage opportunities in credit and fixed income, coordinating automated portfolio portability.",
+          capabilities: ["Open Finance Ecosystem Scanning", "Yield & Debt Rate Arbitrage", "Automated Asset Portability"],
           defaultResult: {
             open_finance_consent: "ACTIVE",
             refi_opportunity_detected: true,

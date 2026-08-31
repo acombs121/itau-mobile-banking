@@ -792,7 +792,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                         {currentLang === 'en' ? 'Competitors' : 'Concorrentes'}
                       </span>
                       <span className={`font-mono text-xs font-semibold ${isDark ? 'text-white/60' : 'text-slate-600'}`}>
-                        85% do CDI
+                        {currentLang === 'en' ? '85% of CDI' : '85% do CDI'}
                       </span>
                       <span className={`text-[9px] block mt-0.5 ${isDark ? 'text-white/40' : 'text-slate-400'}`}>
                         {currentLang === 'en' ? 'Lower yield' : 'Rentabilidade menor'}
@@ -804,7 +804,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                         Itaú CDB DI
                       </span>
                       <span className="font-mono text-xs font-black text-brand-orange">
-                        100% do CDI
+                        {currentLang === 'en' ? '100% of CDI' : '100% do CDI'}
                       </span>
                       <span className={`text-[9px] block mt-0.5 ${isDark ? 'text-brand-orange/80' : 'text-brand-orange'}`}>
                         {currentLang === 'en' ? 'Daily Liquidity 24/7' : 'Liquidez Diária 24/7'}
@@ -812,19 +812,21 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                     </div>
                   </div>
 
-                  {/* Net Improvement Hero Banner */}
-                  <div className={`p-2.5 rounded-[8px] flex items-center justify-between border ${
+                  {/* Net Improvement Hero Banner - Clean 2-Liner */}
+                  <div className={`py-2 px-2.5 rounded-[8px] flex items-center justify-between border ${
                     isDark ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-emerald-50 border-emerald-200 text-emerald-700'
                   }`}>
-                    <div>
-                      <span className="text-[9.5px] uppercase font-mono font-bold block">
+                    <div className="min-w-0 flex-1 pr-1">
+                      <span className="text-[9px] uppercase font-mono font-bold block opacity-80 tracking-wider">
                         {currentLang === 'en' ? 'Yield Spread Advantage' : 'Ganho Adicional Líquido'}
                       </span>
-                      <span className="font-mono font-bold text-sm">
-                        +15% do CDI (+R$ 5.940,00 / ano)
-                      </span>
+                      <div className="font-mono font-extrabold text-xs sm:text-[13px] whitespace-nowrap tracking-tight leading-normal mt-0.5">
+                        {currentLang === 'en'
+                          ? '+15% of CDI (+R$ 5,940/yr)'
+                          : '+15% do CDI (+R$ 5.940/ano)'}
+                      </div>
                     </div>
-                    <div className="w-7 h-7 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                    <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
                       <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
                     </div>
                   </div>
@@ -832,10 +834,10 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                   {/* Approval CTA Button */}
                   <button
                     onClick={() => onActionClick('confirm_cdi_transfer')}
-                    className="w-full py-2.5 px-4 rounded-[8px] font-bold text-xs flex items-center justify-center gap-2 bg-brand-orange hover:bg-brand-orange-hover text-white shadow-sm transition-all mt-1"
+                    className="w-full py-2.5 px-2 rounded-[8px] font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1.5 bg-brand-orange hover:bg-brand-orange-hover text-white shadow-sm transition-all mt-1 whitespace-nowrap"
                   >
-                    <Check className="w-3.5 h-3.5" />
-                    <span>
+                    <Check className="w-3.5 h-3.5 flex-shrink-0" />
+                    <span className="truncate">
                       {currentLang === 'en'
                         ? 'Approve Transfer (R$ 330k → 100% CDI)'
                         : 'Aprovar Mudança (R$ 330k → 100% CDI)'}

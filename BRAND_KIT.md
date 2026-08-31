@@ -83,7 +83,7 @@
 10. **`OpenFinanceOptimizerCard`** (`open_finance_optimizer`):
     - Swiss 2-column tabular comparison. Left column displays monochrome competitor revolving debt (`11.20%/mo`); right column displays Itaú Sob Medida (`1.69%/mo`) and semantic green contract savings of `R$ 14.280,00`.
 11. **`TravelShieldCard`** (`travel_shield_agent`):
-    - Fraud defense confirmation card. Registers active travel notice for Portugal & Spain, elevates daily international POS limit to `R$ 50.000,00`, and pre-suppresses false-positive declines.
+    - Fraud defense confirmation card. Registers active travel notices across global card networks, elevates daily international POS limits, and pre-suppresses false-positive declines.
 
 ---
 
