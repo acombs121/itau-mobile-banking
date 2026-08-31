@@ -47,11 +47,7 @@ fi
 # Start Python FastAPI Backend (binding strictly to 127.0.0.1)
 echo "Starting Python FastAPI Backend on ${LOCAL_HOST}:${LOCAL_PORT}..."
 python3 -m uvicorn main:app --host "${LOCAL_HOST}" --port "${LOCAL_PORT}" --reload &
-BACKEND_PID=$!
 
-# Start Frontend Dev Server
+# Start Frontend Dev Server in foreground
 echo "Starting Frontend Vite Dev Server..."
-(cd frontend && npm run dev -- --host "${LOCAL_HOST}") &
-FRONTEND_PID=$!
-
-wait
+(cd frontend && npm run dev -- --host "${LOCAL_HOST}")
