@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { QrCode, ArrowUpRight, ArrowDownLeft, CreditCard, Mic, MicOff, X, Check, ShieldCheck, Plane, TrendingUp, ShieldPlus, Car, MapPin, Calendar, Building2, ChevronRight } from 'lucide-react';
+import { QrCode, ArrowUpRight, ArrowDownLeft, CreditCard, Mic, MicOff, X, Check, ShieldCheck, Plane, TrendingUp, ShieldPlus, Car, MapPin, Calendar, Building2, ChevronRight, Lock, Flashlight, Camera } from 'lucide-react';
 import { BankingProfile } from '../types/banking';
 import { ScenarioId } from '../types/itau_concierge';
 import { Language, translations } from '../i18n/translations';
@@ -16,6 +16,7 @@ interface PhoneContainerProps {
   onActionClick: (action: string, targetId?: string, customPayload?: Record<string, any>) => void;
   isTravelModeActive?: boolean;
   isCdbSweepScheduled?: boolean;
+  isCdiTransferDone?: boolean;
   isOpenFinanceRefiDone?: boolean;
   isPixBlocked?: boolean;
   activeRunningAgentId?: string | null;
@@ -23,6 +24,10 @@ interface PhoneContainerProps {
   agentStates?: Record<string, { status: 'idle' | 'running' | 'completed'; lastRun?: string; liveResult?: Record<string, any> }>;
   onUserQuery?: (query: string) => void;
   onTurnComplete?: () => void;
+  isLocked?: boolean;
+  onUnlock?: () => void;
+  onLock?: () => void;
+  onPredictiveAlertClick?: () => void;
 }
 
 export const PhoneContainer: React.FC<PhoneContainerProps> = ({
@@ -35,12 +40,17 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
   onActionClick,
   isTravelModeActive = false,
   isCdbSweepScheduled = false,
+  isCdiTransferDone: _isCdiTransferDone = false,
   isOpenFinanceRefiDone = false,
   activeRunningAgentId = null,
   activeDynamicCardId = null,
   agentStates: _agentStates = {},
   onUserQuery,
-  onTurnComplete
+  onTurnComplete,
+  isLocked = false,
+  onUnlock,
+  onLock,
+  onPredictiveAlertClick
 }) => {
   const [activeNavTab, setActiveNavTab] = useState<'home' | 'extrato' | 'pix' | 'cartoes'>('home');
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
@@ -82,14 +92,31 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
         } else if (qt === 'scheduled_debits') {
           setActiveCardId('scheduled_payments');
         } else {
-          // Default: card with multiple accounts & consolidated balances
-          setActiveCardId('account_info_agent');
+          // Strictly Itaú balances only!
+          setActiveCardId('itau_balances');
         }
       }
-      else if (toolName === 'sweep_cdb') setActiveCardId('cash_flow_forecast_agent');
-      else if (toolName === 'activate_travel_mode') setActiveCardId('travel_shield_agent');
-      else if (toolName === 'get_card_benefits') setActiveCardId('card_benefits_agent');
-      else if (toolName === 'refinance_open_finance') setActiveCardId('open_finance_optimizer');
+      else if (toolName === 'pull_open_finance') {
+        setActiveCardId('open_finance_select');
+      }
+      else if (toolName === 'quote_open_finance_cdi') {
+        setActiveCardId('open_finance_cdi');
+      }
+      else if (toolName === 'confirm_cdi_transfer') {
+        setActiveCardId('open_finance_transfer_confirmed');
+      }
+      else if (toolName === 'explain_predictive_alert' || toolName === 'sweep_cdb' || toolName === 'confirm_cdb_sweep') {
+        setActiveCardId('cash_flow_forecast_agent');
+      }
+      else if (toolName === 'activate_travel_mode') {
+        setActiveCardId('travel_shield_agent');
+      }
+      else if (toolName === 'get_card_benefits') {
+        setActiveCardId('card_benefits_agent');
+      }
+      else if (toolName === 'refinance_open_finance') {
+        setActiveCardId('open_finance_optimizer');
+      }
     },
     onActionTriggered: (action) => {
       onActionClick(action);
@@ -156,12 +183,115 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
             </div>
           </div>
 
-          {/* Minimalist In-App Top Bar */}
-          <div className={`px-5 pt-3 pb-2.5 border-b flex items-center justify-between flex-shrink-0 ${isDark ? 'border-white/[0.06]' : 'border-slate-100 bg-slate-50/50'}`}>
-            <span className={`text-xs sm:text-sm font-semibold truncate ${isDark ? 'text-white/95' : 'text-slate-900'}`}>
-              {profile.customer_name}
-            </span>
-          </div>
+          {isLocked ? (
+            /* Executive Smartphone Lock Screen with Predictive Balance Alert */
+            <div className="flex-1 w-full flex flex-col justify-between p-5 select-none relative overflow-hidden animate-fadeIn">
+              <div className="absolute inset-0 bg-gradient-to-b from-[#18181E] via-[#0E0E12] to-[#070708] -z-10" />
+
+              {/* Lock Header: Padlock, Big Clock, Date */}
+              <div className="flex flex-col items-center pt-2">
+                <div className="flex items-center gap-1.5 text-white/50 text-[11px] font-medium mb-1">
+                  <Lock className="w-3.5 h-3.5 text-brand-orange" />
+                  <span>{currentLang === 'en' ? 'Locked' : 'Bloqueado'}</span>
+                </div>
+                <div className="text-5xl sm:text-6xl font-light tracking-tight text-white mb-1 font-sans">
+                  14:32
+                </div>
+                <div className="text-xs font-medium text-white/70 tracking-wide">
+                  {currentLang === 'en' ? 'Thursday, August 28' : 'Quinta-feira, 28 de agosto'}
+                </div>
+              </div>
+
+              {/* Center Lock Screen Notification Banner: Predictive Balance Alert */}
+              <div className="my-auto py-2">
+                <div 
+                  onClick={() => {
+                    const alertQuery = currentLang === 'en'
+                      ? "I saw the Predictive Balance Alert. What is this alert about?"
+                      : "Vi o Alerta Preventivo de Saldo. Do que se trata este alerta?";
+                    if (onPredictiveAlertClick) {
+                      onPredictiveAlertClick();
+                    } else if (onUnlock) {
+                      onUnlock();
+                    }
+                    connect(alertQuery);
+                  }}
+                  className="w-full bg-[#1A1A22]/95 backdrop-blur-xl border border-brand-orange/40 hover:border-brand-orange rounded-[18px] p-4 shadow-[0_12px_40px_rgba(0,0,0,0.85),0_0_24px_rgba(255,100,35,0.18)] cursor-pointer hover:scale-[1.02] active:scale-[0.99] transition-all duration-200 group"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-5 h-5 rounded-[5px] bg-brand-orange text-white font-black text-[9px] flex items-center justify-center shadow-sm">
+                        itau
+                      </div>
+                      <span className="text-[10px] font-bold tracking-wider text-white/90 uppercase font-sans">
+                        ITAÚ PERSONNALITÉ
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-mono text-white/40">
+                      {currentLang === 'en' ? 'now' : 'agora'}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="w-2 h-2 rounded-full bg-brand-orange animate-pulse flex-shrink-0" />
+                    <h4 className="text-xs font-bold text-white tracking-tight group-hover:text-brand-orange transition-colors">
+                      {currentLang === 'en' ? 'Predictive Balance Alert' : 'Alerta Preventivo de Saldo'}
+                    </h4>
+                  </div>
+
+                  <p className="text-[11px] text-white/80 leading-relaxed">
+                    {currentLang === 'en'
+                      ? 'Scheduled debits of R$ 38,000.00 on Thursday will exceed your checking balance. Tap to review with Cash Flow Agent.'
+                      : 'Débitos agendados de R$ 38.000,00 na quinta-feira excederão o saldo em conta corrente. Toque para revisar com o Agente de Fluxo de Caixa.'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Bottom Actions & Unlock Handle */}
+              <div className="flex flex-col items-center gap-3 pb-1">
+                <div className="w-full flex items-center justify-between px-2">
+                  <div 
+                    className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white/80"
+                    title="Flashlight"
+                  >
+                    <Flashlight className="w-4 h-4" />
+                  </div>
+                  <div 
+                    className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white/80"
+                    title="Camera"
+                  >
+                    <Camera className="w-4 h-4" />
+                  </div>
+                </div>
+
+                <div 
+                  onClick={() => onUnlock?.()}
+                  className="flex flex-col items-center gap-1.5 cursor-pointer opacity-75 hover:opacity-100 transition-opacity"
+                >
+                  <span className="text-[9.5px] text-white/50 font-medium">
+                    {currentLang === 'en' ? 'Tap alert above or click bar to unlock' : 'Toque no alerta ou na barra para desbloquear'}
+                  </span>
+                  <div className="w-28 h-1 bg-white/50 rounded-full hover:bg-white transition-colors" />
+                </div>
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Minimalist In-App Top Bar */}
+              <div className={`px-5 pt-3 pb-2.5 border-b flex items-center justify-between flex-shrink-0 ${isDark ? 'border-white/[0.06]' : 'border-slate-100 bg-slate-50/50'}`}>
+                <span className={`text-xs sm:text-sm font-semibold truncate ${isDark ? 'text-white/95' : 'text-slate-900'}`}>
+                  {profile.customer_name}
+                </span>
+                <button
+                  onClick={() => onLock?.()}
+                  title={currentLang === 'en' ? 'Lock Phone Simulator' : 'Bloquear Simulador'}
+                  className={`p-1 rounded-[6px] transition-colors ${
+                    isDark ? 'text-white/40 hover:text-white hover:bg-white/10' : 'text-slate-400 hover:text-slate-800 hover:bg-slate-200'
+                  }`}
+                >
+                  <Lock className="w-3.5 h-3.5" />
+                </button>
+              </div>
 
           {/* Quick Actions 4-Grid Top Bar */}
           <div className={`px-4 pt-3.5 pb-3 border-b flex-shrink-0 ${isDark ? 'border-white/[0.04]' : 'border-slate-100'}`}>
@@ -431,16 +561,16 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                   </div>
                 </div>
               </div>
-            ) : activeCardId === 'account_info_agent' ? (
-              /* Consolidated Position Dynamic Card with Open Finance Awareness */
+            ) : (activeCardId === 'itau_balances' || activeCardId === 'account_info_agent') ? (
+              /* Strictly Itaú Balances Card (No Open Finance Data Shown) */
               <div className={`w-full rounded-[16px] p-3.5 border animate-fadeIn shadow-2xl relative ${
                 isDark ? 'bg-[#15151A] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-lg'
               }`}>
                 <div className={`flex items-center justify-between mb-3 pb-2 border-b ${isDark ? 'border-white/[0.06]' : 'border-slate-100'}`}>
                   <div className="flex items-center gap-2">
-                    <Building2 className="w-3.5 h-3.5 opacity-70" />
+                    <Building2 className="w-3.5 h-3.5 opacity-70 text-brand-orange" />
                     <span className={`text-[11px] font-sans font-bold tracking-wider uppercase ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
-                      {currentLang === 'en' ? 'MY ACCOUNTS & CONSOLIDATED POSITION' : 'MINHAS CONTAS & POSIÇÃO CONSOLIDADA'}
+                      {currentLang === 'en' ? 'BANCO ITAÚ PERSONNALITÉ' : 'BANCO ITAÚ PERSONNALITÉ'}
                     </span>
                   </div>
                   <button 
@@ -453,59 +583,325 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                   </button>
                 </div>
 
-                <div className="space-y-2 text-xs font-sans">
-                  {/* Total Liquid Patrimony Hero Box */}
+                <div className="space-y-2.5 text-xs font-sans">
+                  {/* Total Itaú Liquid Balance Hero Box */}
                   <div className={`p-2.5 rounded-[10px] ${isDark ? 'bg-white/[0.04] border border-white/[0.08]' : 'bg-slate-50 border border-slate-200'}`}>
                     <div className="flex items-center justify-between">
-                      <span className={`text-[10px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Total Consolidated Liquid Assets' : 'Patrimônio Líquido Consolidado'}</span>
-                      <span className={`text-[9px] font-sans px-1.5 py-0.5 rounded font-semibold ${isDark ? 'bg-white/10 text-white/80' : 'bg-slate-200 text-slate-700'}`}>{currentLang === 'en' ? '3 Connected Banks' : '3 Bancos Conectados'}</span>
+                      <span className={`text-[10px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>
+                        {currentLang === 'en' ? 'Total Liquid Balance with Itaú' : 'Saldo Total no Banco Itaú'}
+                      </span>
+                      <span className={`text-[9px] font-sans px-1.5 py-0.5 rounded font-semibold ${isDark ? 'bg-brand-orange/20 text-brand-orange' : 'bg-brand-orange/10 text-brand-orange'}`}>
+                        Ag. 7749 • CC 00912-8
+                      </span>
                     </div>
-                    <span className={`text-2xl font-black font-sans tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>R$ 463.950,20</span>
+                    <span className={`text-2xl font-black font-sans tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                      R$ 133.950,20
+                    </span>
                   </div>
 
                   {/* Itaú Balances Breakdown */}
-                  <div className="space-y-1">
-                    <div className="text-[9.5px] font-bold uppercase tracking-wider opacity-50 px-1 pt-0.5">
-                      {currentLang === 'en' ? 'Banco Itaú Personnalité (R$ 133,950.20)' : 'Banco Itaú Personnalité (R$ 133.950,20)'}
+                  <div className="space-y-1.5">
+                    <div className={`p-2 rounded-[8px] flex justify-between items-center ${isDark ? 'bg-white/[0.02] border border-white/[0.04]' : 'bg-slate-50 border border-slate-200'}`}>
+                      <div>
+                        <span className={`text-[11px] font-semibold block ${isDark ? 'text-white/90' : 'text-slate-900'}`}>
+                          {currentLang === 'en' ? 'Checking Account' : 'Conta Corrente'}
+                        </span>
+                        <span className={`text-[9.5px] block ${isDark ? 'text-white/40' : 'text-slate-500'}`}>
+                          {currentLang === 'en' ? 'Available for immediate use' : 'Disponível para movimentação'}
+                        </span>
+                      </div>
+                      <span className="font-sans font-bold text-xs">R$ 48.950,20</span>
                     </div>
-                    <div className={`p-1.5 px-2 rounded-[6px] flex justify-between items-center text-[11px] ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}>
-                      <span className={isDark ? 'text-white/70' : 'text-slate-600'}>{currentLang === 'en' ? 'Checking Account' : 'Conta Corrente'}</span>
-                      <span className="font-sans font-bold">R$ 48.950,20</span>
+
+                    <div className={`p-2 rounded-[8px] flex justify-between items-center ${isDark ? 'bg-white/[0.02] border border-white/[0.04]' : 'bg-slate-50 border border-slate-200'}`}>
+                      <div>
+                        <span className={`text-[11px] font-semibold block ${isDark ? 'text-white/90' : 'text-slate-900'}`}>
+                          CDB DI (100% do CDI)
+                        </span>
+                        <span className={`text-[9.5px] block ${isDark ? 'text-white/40' : 'text-slate-500'}`}>
+                          {currentLang === 'en' ? 'Daily liquidity • 24/7' : 'Liquidez diária 24/7'}
+                        </span>
+                      </div>
+                      <span className="font-sans font-bold text-xs text-brand-orange">R$ 85.000,00</span>
                     </div>
-                    <div className={`p-1.5 px-2 rounded-[6px] flex justify-between items-center text-[11px] ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}>
-                      <span className={isDark ? 'text-white/70' : 'text-slate-600'}>CDB DI (100% CDI)</span>
-                      <span className="font-sans font-bold">R$ 85.000,00</span>
+
+                    <div className={`p-2 rounded-[8px] flex justify-between items-center ${isDark ? 'bg-white/[0.02] border border-white/[0.04]' : 'bg-slate-50 border border-slate-200'}`}>
+                      <div>
+                        <span className={`text-[11px] font-semibold block ${isDark ? 'text-white/90' : 'text-slate-900'}`}>
+                          Mastercard Black (•••• 8841)
+                        </span>
+                        <span className={`text-[9.5px] block ${isDark ? 'text-white/40' : 'text-slate-500'}`}>
+                          {currentLang === 'en' ? 'Available Limit / Total R$ 85k' : 'Limite Disponível / Total R$ 85k'}
+                        </span>
+                      </div>
+                      <span className="font-sans font-bold text-xs">R$ 72.569,50</span>
                     </div>
                   </div>
 
-                  {/* Open Finance External Connected Institutions */}
-                  <div className="space-y-1 pt-1">
-                    <div className="text-[9.5px] font-bold uppercase tracking-wider opacity-60 px-1">
-                      {currentLang === 'en' ? 'Open Finance External Assets (R$ 330,000.00)' : 'Open Finance — Ativos Externos (R$ 330.000,00)'}
-                    </div>
-                    <div className={`p-1.5 px-2 rounded-[6px] flex justify-between items-center text-[11px] ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}>
-                      <span className={isDark ? 'text-white/70' : 'text-slate-600'}>BTG Pactual (Liquidez)</span>
-                      <span className="font-sans font-bold">R$ 120.000,00</span>
-                    </div>
-                    <div className={`p-1.5 px-2 rounded-[6px] flex justify-between items-center text-[11px] ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}>
-                      <span className={isDark ? 'text-white/70' : 'text-slate-600'}>XP Investimentos (Tesouro / Selic)</span>
-                      <span className="font-sans font-bold">R$ 210.000,00</span>
-                    </div>
-                  </div>
-
-                  {/* Open Finance External Debt Refinance Opportunity */}
-                  <div className={`p-2 rounded-[8px] flex items-center justify-between text-[11px] mt-1.5 ${isDark ? 'bg-amber-500/10 border border-amber-500/20 text-amber-300' : 'bg-amber-50 border border-amber-200 text-amber-800'}`}>
-                    <div>
-                      <span className="text-[9.5px] font-bold block">{currentLang === 'en' ? 'Competitor Debt Detected' : 'Dívida no Concorrente'}</span>
-                      <span className="font-sans font-bold">R$ 18.000,00 (11,2% a.m.)</span>
+                  {/* Open Finance Proactive Suggestion Banner */}
+                  <div className={`p-2.5 rounded-[10px] border flex flex-col gap-2 mt-1 ${
+                    isDark ? 'bg-brand-orange/10 border-brand-orange/25 text-white' : 'bg-orange-50/80 border-brand-orange/30 text-slate-900'
+                  }`}>
+                    <div className="flex items-start gap-2">
+                      <TrendingUp className="w-4 h-4 text-brand-orange flex-shrink-0 mt-0.5" />
+                      <div>
+                        <span className="text-[10px] font-bold block text-brand-orange uppercase tracking-wider">
+                          Open Finance
+                        </span>
+                        <p className={`text-[10.5px] leading-snug mt-0.5 ${isDark ? 'text-white/80' : 'text-slate-700'}`}>
+                          {currentLang === 'en'
+                            ? 'I can pull your Open Finance data to check if you are getting the best rates across other institutions.'
+                            : 'Posso consultar seus dados no Open Finance para verificar se você está recebendo as melhores taxas do mercado.'}
+                        </p>
+                      </div>
                     </div>
                     <button
-                      onClick={() => onActionClick('refinance_open_finance')}
-                      className="px-2 py-1 bg-brand-orange hover:bg-brand-orange-hover text-white text-[10px] font-bold rounded shadow-sm transition-all flex items-center gap-1"
+                      onClick={() => onActionClick('pull_open_finance')}
+                      className="w-full py-1.5 px-3 bg-brand-orange hover:bg-brand-orange-hover text-white text-[10.5px] font-bold rounded-[6px] shadow-sm transition-all flex items-center justify-center gap-1.5"
                     >
-                      <span>{currentLang === 'en' ? 'Save R$ 14.2k' : 'Economizar R$ 14,2k'}</span>
-                      <ChevronRight className="w-3 h-3" />
+                      <span>{currentLang === 'en' ? 'Check Rates via Open Finance →' : 'Consultar Taxas via Open Finance →'}</span>
                     </button>
+                  </div>
+                </div>
+              </div>
+            ) : activeCardId === 'open_finance_select' ? (
+              /* Open Finance Category Selection Card (Debt vs CDI) */
+              <div className={`w-full rounded-[16px] p-4 border animate-fadeIn shadow-2xl relative ${
+                isDark ? 'bg-[#15151A] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-lg'
+              }`}>
+                <div className={`flex items-center justify-between mb-3 pb-2 border-b ${isDark ? 'border-white/[0.06]' : 'border-slate-100'}`}>
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="w-3.5 h-3.5 text-brand-orange" />
+                    <span className={`text-[10.5px] font-mono font-bold tracking-wide uppercase ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
+                      {currentLang === 'en' ? 'OPEN FINANCE — RATE ANALYSIS' : 'OPEN FINANCE — ANÁLISE DE TAXAS'}
+                    </span>
+                  </div>
+                  <button 
+                    onClick={() => setActiveCardId(null)}
+                    className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${
+                      isDark ? 'text-white/40 hover:text-white hover:bg-white/10' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
+                    }`}
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[9px] font-mono font-bold mb-2.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>{currentLang === 'en' ? 'CONNECTED VIA BACEN OPEN FINANCE' : 'CONECTADO VIA OPEN FINANCE BACEN'}</span>
+                </div>
+
+                <p className={`text-xs mb-3 leading-relaxed ${isDark ? 'text-white/80' : 'text-slate-700'}`}>
+                  {currentLang === 'en'
+                    ? 'Which rate category would you like me to analyze across your connected accounts?'
+                    : 'Qual categoria de taxas você gostaria que eu analise nas suas contas conectadas?'}
+                </p>
+
+                <div className="space-y-2 text-xs">
+                  {/* Category 1: CDI Balances */}
+                  <div
+                    onClick={() => onActionClick('quote_open_finance_cdi')}
+                    className={`p-3 rounded-[10px] border cursor-pointer transition-all hover:scale-[1.01] ${
+                      isDark ? 'bg-white/[0.03] border-brand-orange/40 hover:border-brand-orange' : 'bg-orange-50/50 border-brand-orange/40 hover:border-brand-orange'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-bold text-brand-orange text-xs">
+                        {currentLang === 'en' ? '1. CDI Balances & Yield' : '1. Saldos e Rendimentos CDI'}
+                      </span>
+                      <span className={`text-[9px] px-2 py-0.5 rounded font-mono font-semibold ${isDark ? 'bg-brand-orange/20 text-brand-orange' : 'bg-brand-orange/15 text-brand-orange'}`}>
+                        {currentLang === 'en' ? 'Say "CDI"' : 'Diga "CDI"'}
+                      </span>
+                    </div>
+                    <p className={`text-[10.5px] leading-snug ${isDark ? 'text-white/60' : 'text-slate-600'}`}>
+                      {currentLang === 'en'
+                        ? 'Check whether your liquid funds at BTG Pactual and XP are earning 100% of CDI.'
+                        : 'Verificar se seus investimentos no BTG Pactual e XP estão rendendo 100% do CDI.'}
+                    </p>
+                  </div>
+
+                  {/* Category 2: Debt Balances */}
+                  <div
+                    onClick={() => onActionClick('refinance_open_finance')}
+                    className={`p-3 rounded-[10px] border cursor-pointer transition-all hover:scale-[1.01] ${
+                      isDark ? 'bg-white/[0.02] border-white/10 hover:border-white/20' : 'bg-slate-50 border-slate-200 hover:border-slate-300'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className={`font-bold text-xs ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
+                        {currentLang === 'en' ? '2. Outstanding Debt Balances' : '2. Saldos Devedores e Crédito'}
+                      </span>
+                      <span className={`text-[9px] px-2 py-0.5 rounded font-mono font-semibold ${isDark ? 'bg-white/10 text-white/70' : 'bg-slate-200 text-slate-700'}`}>
+                        {currentLang === 'en' ? 'Say "Debt"' : 'Diga "Dívidas"'}
+                      </span>
+                    </div>
+                    <p className={`text-[10.5px] leading-snug ${isDark ? 'text-white/60' : 'text-slate-600'}`}>
+                      {currentLang === 'en'
+                        ? 'Analyze competitor revolving debt for potential rate reduction via Itaú Sob Medida.'
+                        : 'Analisar dívidas rotativas externas para redução de juros via Itaú Sob Medida.'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-3 text-center">
+                  <span className="font-mono text-[10px] text-brand-orange animate-pulse">
+                    {currentLang === 'en' ? 'Listening... Say "CDI" to quote yield improvements' : 'Ouvindo... Diga "CDI" para ver as melhorias de rentabilidade'}
+                  </span>
+                </div>
+              </div>
+            ) : activeCardId === 'open_finance_cdi' ? (
+              /* CDI Yield Improvements Quoted Card */
+              <div className={`w-full rounded-[16px] p-4 border animate-fadeIn shadow-2xl relative ${
+                isDark ? 'bg-[#15151A] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-lg'
+              }`}>
+                <div className={`flex items-center justify-between mb-3 pb-2 border-b ${isDark ? 'border-white/[0.06]' : 'border-slate-100'}`}>
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="w-3.5 h-3.5 text-brand-orange" />
+                    <span className={`text-[10.5px] font-mono font-bold tracking-wide uppercase ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
+                      {currentLang === 'en' ? 'CDI YIELD OPTIMIZATION' : 'OTIMIZAÇÃO DE RENDIMENTO CDI'}
+                    </span>
+                  </div>
+                  <button 
+                    onClick={() => setActiveCardId(null)}
+                    className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${
+                      isDark ? 'text-white/40 hover:text-white hover:bg-white/10' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
+                    }`}
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+
+                <div className="space-y-2.5 text-xs">
+                  {/* External Balance Notice */}
+                  <div className={`p-2.5 rounded-[8px] ${isDark ? 'bg-white/[0.03] border border-white/[0.06]' : 'bg-slate-50 border border-slate-200'}`}>
+                    <span className={`text-[10px] block font-mono uppercase ${isDark ? 'text-white/50' : 'text-slate-500'}`}>
+                      {currentLang === 'en' ? 'External Connected Liquidity' : 'Liquidez Externa Conectada'}
+                    </span>
+                    <span className={`text-base font-black font-sans ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                      R$ 330.000,00
+                    </span>
+                    <span className={`text-[10px] block mt-0.5 ${isDark ? 'text-white/50' : 'text-slate-500'}`}>
+                      BTG Pactual (R$ 120k) + XP Investimentos (R$ 210k)
+                    </span>
+                  </div>
+
+                  {/* Yield Comparison Grid */}
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className={`p-2.5 rounded-[8px] border ${isDark ? 'bg-white/[0.02] border-white/10' : 'bg-white border-slate-200'}`}>
+                      <span className={`text-[9px] block uppercase font-mono tracking-wider ${isDark ? 'text-white/40' : 'text-slate-400'}`}>
+                        {currentLang === 'en' ? 'Competitors' : 'Concorrentes'}
+                      </span>
+                      <span className={`font-mono text-xs font-semibold ${isDark ? 'text-white/60' : 'text-slate-600'}`}>
+                        85% do CDI
+                      </span>
+                      <span className={`text-[9px] block mt-0.5 ${isDark ? 'text-white/40' : 'text-slate-400'}`}>
+                        {currentLang === 'en' ? 'Lower yield' : 'Rentabilidade menor'}
+                      </span>
+                    </div>
+
+                    <div className={`p-2.5 rounded-[8px] border ${isDark ? 'bg-brand-orange/10 border-brand-orange/30' : 'bg-orange-50 border-brand-orange/30'}`}>
+                      <span className="text-[9px] block uppercase font-mono tracking-wider text-brand-orange font-bold">
+                        Itaú CDB DI
+                      </span>
+                      <span className="font-mono text-xs font-black text-brand-orange">
+                        100% do CDI
+                      </span>
+                      <span className={`text-[9px] block mt-0.5 ${isDark ? 'text-brand-orange/80' : 'text-brand-orange'}`}>
+                        {currentLang === 'en' ? 'Daily Liquidity 24/7' : 'Liquidez Diária 24/7'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Net Improvement Hero Banner */}
+                  <div className={`p-2.5 rounded-[8px] flex items-center justify-between border ${
+                    isDark ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                  }`}>
+                    <div>
+                      <span className="text-[9.5px] uppercase font-mono font-bold block">
+                        {currentLang === 'en' ? 'Yield Spread Advantage' : 'Ganho Adicional Líquido'}
+                      </span>
+                      <span className="font-mono font-bold text-sm">
+                        +15% do CDI (+R$ 5.940,00 / ano)
+                      </span>
+                    </div>
+                    <div className="w-7 h-7 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                      <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+                    </div>
+                  </div>
+
+                  {/* Approval CTA Button */}
+                  <button
+                    onClick={() => onActionClick('confirm_cdi_transfer')}
+                    className="w-full py-2.5 px-4 rounded-[8px] font-bold text-xs flex items-center justify-center gap-2 bg-brand-orange hover:bg-brand-orange-hover text-white shadow-sm transition-all mt-1"
+                  >
+                    <Check className="w-3.5 h-3.5" />
+                    <span>
+                      {currentLang === 'en'
+                        ? 'Approve Transfer (R$ 330k → 100% CDI)'
+                        : 'Aprovar Mudança (R$ 330k → 100% CDI)'}
+                    </span>
+                  </button>
+
+                  <div className="text-center pt-0.5">
+                    <span className={`text-[10px] font-mono ${isDark ? 'text-white/50' : 'text-slate-500'}`}>
+                      {currentLang === 'en' ? 'Say: "ok, let\'s make that change" or "I approve"' : 'Diga: "ok, pode fazer a mudança" ou "aprovo"'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ) : activeCardId === 'open_finance_transfer_confirmed' ? (
+              /* CDI Transfer Confirmed Success Card */
+              <div className={`w-full rounded-[16px] p-4 border animate-fadeIn shadow-2xl relative ${
+                isDark ? 'bg-[#15151A] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-lg'
+              }`}>
+                <div className={`flex items-center justify-between mb-3 pb-2 border-b ${isDark ? 'border-white/[0.06]' : 'border-slate-100'}`}>
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                    <span className={`text-[10.5px] font-mono font-bold tracking-wide uppercase ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
+                      {currentLang === 'en' ? 'TRANSFER CONFIRMED' : 'TRANSFERÊNCIA CONFIRMADA'}
+                    </span>
+                  </div>
+                  <button 
+                    onClick={() => setActiveCardId(null)}
+                    className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${
+                      isDark ? 'text-white/40 hover:text-white hover:bg-white/10' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
+                    }`}
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+
+                <div className="space-y-2.5 text-xs text-center py-1">
+                  <div className="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 mx-auto flex items-center justify-center border border-emerald-500/30">
+                    <Check className="w-6 h-6" />
+                  </div>
+
+                  <div>
+                    <span className={`text-base font-black font-sans block ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                      R$ 330.000,00 {currentLang === 'en' ? 'Transferred' : 'Transferidos'}
+                    </span>
+                    <span className="text-[11px] text-emerald-400 font-bold block mt-0.5">
+                      {currentLang === 'en' ? 'Now Earning 100% of CDI (Liquidez Diária)' : 'Agora Rendendo 100% do CDI (Liquidez Diária)'}
+                    </span>
+                  </div>
+
+                  <div className={`p-2.5 rounded-[8px] text-left space-y-1 ${isDark ? 'bg-white/[0.02] border border-white/[0.05]' : 'bg-slate-50 border border-slate-200'}`}>
+                    <div className="flex justify-between text-[10.5px]">
+                      <span className={isDark ? 'text-white/60' : 'text-slate-500'}>{currentLang === 'en' ? 'Annual Yield Gain:' : 'Ganho Anual Adicional:'}</span>
+                      <span className="font-mono font-bold text-emerald-400">+R$ 5.940,00 / ano</span>
+                    </div>
+                    <div className="flex justify-between text-[10.5px]">
+                      <span className={isDark ? 'text-white/60' : 'text-slate-500'}>{currentLang === 'en' ? 'New Itaú Liquid Total:' : 'Novo Patrimônio Total Itaú:'}</span>
+                      <span className="font-mono font-bold">R$ 463.950,20</span>
+                    </div>
+                    <div className="flex justify-between text-[10.5px]">
+                      <span className={isDark ? 'text-white/60' : 'text-slate-500'}>{currentLang === 'en' ? 'Settlement Rail:' : 'Canal de Liquidação:'}</span>
+                      <span className="font-mono text-[9.5px]">Open Finance / CIP</span>
+                    </div>
+                  </div>
+
+                  <div className={`p-2 rounded-[6px] text-[10px] ${isDark ? 'bg-white/[0.02] text-white/50' : 'bg-slate-100 text-slate-600'}`}>
+                    {currentLang === 'en' ? 'Funds secured with daily liquidity 24/7' : 'Recursos protegidos com liquidez diária 24/7'}
                   </div>
                 </div>
               </div>
@@ -531,11 +927,26 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                   </button>
                 </div>
 
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-brand-orange/15 border border-brand-orange/30 text-brand-orange text-[9px] font-mono font-bold mb-2.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-brand-orange animate-pulse" />
+                  <span>{currentLang === 'en' ? 'TRIGGERED BY PREDICTIVE BALANCE ALERT' : 'DISPARADO POR ALERTA PREVENTIVO'}</span>
+                </div>
+
                 <div className="space-y-2 text-xs">
-                  <div className={`p-2.5 rounded-[10px] border ${isDark ? 'bg-rose-500/10 border-rose-500/20 text-rose-300' : 'bg-rose-50 border-rose-200 text-rose-700'}`}>
-                    <span className="text-[10px] font-bold uppercase block">{currentLang === 'en' ? 'D+4 Projected Shortfall' : 'Déficit Projetado D+4'}</span>
-                    <span className="text-base font-bold font-mono">-R$ 13.050,00</span>
-                    <p className="text-[10px] opacity-80 mt-0.5">{currentLang === 'en' ? 'After Lisbon flight purchase & Thursday bill debits.' : 'Após compra de passagens e débitos de fatura na quinta.'}</p>
+                  <div className={`p-2.5 rounded-[10px] border shadow-sm ${
+                    isDark 
+                      ? 'bg-white/10 border-white/15 text-red-400 backdrop-blur-sm' 
+                      : 'bg-white/90 border-red-200 text-red-600'
+                  }`}>
+                    <span className={`text-[10px] font-bold uppercase block ${isDark ? 'text-red-400' : 'text-red-600'}`}>
+                      {currentLang === 'en' ? 'D+4 Projected Shortfall' : 'Déficit Projetado D+4'}
+                    </span>
+                    <span className={`text-base font-bold font-mono ${isDark ? 'text-red-400' : 'text-red-600'}`}>
+                      -R$ 13.050,00
+                    </span>
+                    <p className={`text-[10px] mt-0.5 ${isDark ? 'text-red-300/80' : 'text-red-600/80'}`}>
+                      {currentLang === 'en' ? 'After Lisbon flight purchase & Thursday bill debits.' : 'Após compra de passagens e débitos de fatura na quinta.'}
+                    </p>
                   </div>
 
                   <div className={`p-2 rounded-[8px] ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
@@ -848,11 +1259,15 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
           <div className={`relative px-4 py-2 border-t flex items-center justify-between flex-shrink-0 transition-colors ${
             isDark ? 'border-white/[0.08] bg-[#121217]' : 'border-slate-200 bg-slate-100/90'
           }`}>
-            {/* Left Column: Branding */}
-            <div className="flex items-center gap-2 z-10 select-none">
-              <div className="w-2 h-2 rounded-full bg-brand-orange flex-shrink-0"></div>
-              <span className={`text-xs font-semibold tracking-tight ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
-                Itaú Concierge
+            {/* Left Column: Branding & Status */}
+            <div className="flex items-center gap-2 z-10 select-none min-w-0">
+              <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isSpeaking ? 'bg-emerald-400 animate-ping' : isListening ? 'bg-brand-orange animate-pulse' : 'bg-brand-orange'}`}></div>
+              <span className={`text-xs font-semibold tracking-tight truncate ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
+                {isSpeaking
+                  ? (currentLang === 'en' ? 'Speaking...' : 'Falando...')
+                  : isListening
+                  ? (currentLang === 'en' ? 'Listening...' : 'Ouvindo...')
+                  : 'Itaú Concierge'}
               </span>
             </div>
 
@@ -917,7 +1332,10 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
           {/* iOS Bottom Home Bar */}
           <div className="w-28 h-1 bg-white/20 rounded-full mx-auto my-1 flex-shrink-0" />
 
-        </div>
+        </>
+        )}
+
+      </div>
 
       </div>
 

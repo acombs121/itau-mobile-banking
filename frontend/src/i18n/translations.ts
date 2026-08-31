@@ -27,6 +27,15 @@ export const translations = {
       customer: "Roberto Silva",
       account: "Ag. 7749 • CC 00912-8",
       scenarioSelectorTitle: "Cenário Ativo:",
+      adminPanelTitle: "Painel do Administrador",
+      adminPanelSubtitle: "Recursos de Apresentação e Governança",
+      brandKitButton: "Brand Kit & Tipografia Itaú",
+      brandKitDesc: "Tipografia oficial Itaú Display & Itaú Text, paleta e diretrizes",
+      demoScriptButton: "Roteiro da Demonstração (Demo Script)",
+      demoScriptDesc: "Roteiro executivo completo em 5 atos para apresentações C-Level",
+      scenariosMatrixButton: "Catálogo de Cenários (BACEN / MED)",
+      scenariosMatrixDesc: "Matriz de governança, resolução 147 e telemetria de sub-agentes",
+      openInNewTab: "Abre em nova aba",
     },
     tabs: {
       agents: "Sub-Agentes Ativos",
@@ -36,16 +45,85 @@ export const translations = {
     },
     scenarios: [
       {
+        id: 'cash_flow' as ScenarioId,
+        title: "1. Alerta Preventivo de Saldo & Resgate CDB",
+        shortLabel: "1. Alerta & Fluxo",
+        tag: "CASH_FLOW_FORECAST",
+        agentId: "cash_flow_forecast_agent",
+        alert: {
+          badge: "Alerta Preventivo de Saldo",
+          title: "Déficit Projetado D+4: -R$ 13.050,00",
+          description: "Débitos agendados de R$ 38.000,00 na quinta-feira excederão o saldo de conta corrente. O Agente de Fluxo de Caixa propõe resgate preventivo do CDB DI de R$ 15.000,00.",
+          primaryActionLabel: "Agendar Resgate CDB (R$ 15k)",
+          primaryActionType: "sweep_cdb",
+          secondaryActionLabel: "Ver Detalhes do Fluxo",
+          secondaryActionType: "view_cash_flow"
+        },
+        telemetryPayload: {
+          account: "ITAU-7749-00912",
+          projected_date: "2026-08-25 (Quinta-Feira)",
+          projected_shortfall: 13050.00,
+          source_asset: "CDB_DI_LIQUIDEZ_DIARIA",
+          asset_balance_brl: 85000.00,
+          cdi_yield_rate: "100% CDI Diário",
+          optimal_transfer_date: "2026-08-25 06:00 BRT",
+          interest_avoided_est_brl: 184.60,
+          status: "SCHEDULED_AUTOMATED_SWEEP"
+        },
+        graphNodes: [
+          {
+            id: "customer",
+            name: "Roberto Silva (Personnalité)",
+            group: "Perfil do Titular",
+            layer: "Input",
+            color: "#FF6423",
+            details: "Saldo CC: R$ 48.950,20 • CDB DI: R$ 85.000,00 • Débitos Previstos: R$ 38.000,00"
+          },
+          {
+            id: "shortfall_event",
+            name: "Débitos D+4: R$ 38.000,00",
+            group: "Evento Futuro",
+            layer: "Input",
+            color: "#E11D48",
+            details: "Condomínio Pix (R$ 3.850) + Fatura Mastercard Black (R$ 34.150) = Déficit -R$ 13.050"
+          },
+          {
+            id: "cmn_policy",
+            name: "Diretriz CMN 4.765 (Anti-LIS)",
+            group: "Regulação BACEN",
+            layer: "Policy",
+            color: "#475569",
+            details: "Prevenção proativa de juros de cheque especial (LIS) com consentimento explícito"
+          },
+          {
+            id: "cash_agent",
+            name: "Motor Cash Flow & Yield Concierge",
+            group: "Processamento IA",
+            layer: "Decision",
+            color: "#070707",
+            details: "Modela rentabilidade diária do CDB até 25/08 às 06:00 BRT e agenda resgate exato"
+          },
+          {
+            id: "sweep_output",
+            name: "Resgate R$ 15.000 Agendado (LIS Zero)",
+            group: "Ação de Salvaguarda",
+            layer: "Output",
+            color: "#059669",
+            details: "Rendimento preservado até o minuto da compensação • R$ 184,60 em juros economizados"
+          }
+        ]
+      },
+      {
         id: 'account_info' as ScenarioId,
-        title: "1. Informações de Conta & Extrato",
-        shortLabel: "1. Info Conta",
+        title: "2. Informações de Conta & Posição Consolidada",
+        shortLabel: "2. Info Conta",
         tag: "ACCOUNT_INFO_STATEMENTS",
         agentId: "account_info_agent",
         alert: {
           badge: "Consulta de Posição Consolidada",
-          title: "Posição Global: R$ 404.400,20",
-          description: "Saldo em conta corrente (R$ 48.950,20), CDB DI 100% CDI (R$ 85.000,00) e Mastercard Black com limite disponível de R$ 72.569,50.",
-          primaryActionLabel: "Ver Extrato & Lançamentos Futuros",
+          title: "Posição Global: R$ 463.950,20",
+          description: "Saldo em conta corrente (R$ 48.950,20), CDB DI 100% CDI (R$ 85.000,00) e ativos externos Open Finance (BTG R$ 120k + XP R$ 210k).",
+          primaryActionLabel: "Ver Extrato & Posição Consolidada",
           primaryActionType: "view_statements",
           secondaryActionLabel: "Consultar Limites Disponíveis",
           secondaryActionType: "view_limits"
@@ -56,7 +134,7 @@ export const translations = {
           segment: "Itaú Personnalité",
           checking_balance_brl: 48950.20,
           cdb_di_balance_brl: 85000.00,
-          investments_total_brl: 320450.00,
+          total_consolidated_liquid_patrimony_brl: 463950.20,
           mastercard_black_available_limit: 72569.50,
           scheduled_debits_next_thursday_brl: 38000.00,
           status: "ACCOUNT_OVERVIEW_ACTIVE"
@@ -105,78 +183,77 @@ export const translations = {
         ]
       },
       {
-        id: 'cash_flow' as ScenarioId,
-        title: "2. Previsão de Saldo & Otimização de Yield",
-        shortLabel: "2. Previsão Saldo",
-        tag: "CASH_FLOW_FORECAST",
-        agentId: "cash_flow_forecast_agent",
+        id: 'open_finance' as ScenarioId,
+        title: "3. Open Finance & Portabilidade de Dívida",
+        shortLabel: "3. Open Finance",
+        tag: "OPEN_FINANCE_OPTIMIZER",
+        agentId: "open_finance_optimizer",
         alert: {
-          badge: "Previsão de Saldo D+4",
-          title: "Déficit Projetado: -R$ 13.050,00",
-          description: "Débitos de condomínio e fatura na quinta-feira (25/08) excederão o saldo de conta corrente após compra de passagens aéreas.",
-          primaryActionLabel: "Agendar Resgate CDB (R$ 15k)",
-          primaryActionType: "sweep_cdb",
-          secondaryActionLabel: "Ver Detalhes do Fluxo",
-          secondaryActionType: "view_cash_flow"
+          badge: "Oportunidade Open Finance Identificada",
+          title: "Economia Projetada: R$ 14.280,00",
+          description: "Saldo rotativo de R$ 18.000,00 no banco concorrente a 11,2% a.m. pode ser refinanciado no Itaú Sob Medida por 1,69% a.m.",
+          primaryActionLabel: "Refinanciar & Emitir CCB (Economizar R$ 14k)",
+          primaryActionType: "refinance_open_finance",
+          secondaryActionLabel: "Simular Parcelamento",
+          secondaryActionType: "simulate_open_finance"
         },
         telemetryPayload: {
-          account: "ITAU-7749-00912",
-          projected_date: "2026-08-25 (Quinta-Feira)",
-          projected_shortfall: 13050.00,
-          source_asset: "CDB_DI_LIQUIDEZ_DIARIA",
-          asset_balance_brl: 85000.00,
-          cdi_yield_rate: "100% CDI Diário",
-          optimal_transfer_date: "2026-08-25 06:00 BRT",
-          interest_avoided_est_brl: 184.60,
-          status: "SCHEDULED_AUTOMATED_SWEEP"
+          competitor_debt_balance_brl: 18000.00,
+          competitor_interest_rate_monthly: "11.20%",
+          itau_sob_medida_rate_monthly: "1.69%",
+          monthly_interest_savings_brl: 680.40,
+          total_interest_avoided_brl: 14280.00,
+          instrument_type: "CCB_DIGITAL_LEI_10931",
+          interbank_rail: "CIP_STR_PORTABILITY",
+          status: "REFINANCE_PROPOSAL_DISPATCHED"
         },
         graphNodes: [
           {
-            id: "customer",
-            name: "Roberto Silva (Personnalité)",
-            group: "Perfil do Titular",
+            id: "open_finance_data",
+            name: "Dados Open Finance (Consentimento Ativo)",
+            group: "Open Finance",
             layer: "Input",
             color: "#FF6423",
-            details: "Saldo CC: R$ 48.950,20 • CDB DI: R$ 85.000,00 • Compra Passagens: R$ 24.000,00"
+            details: "Saldo devedor R$ 18.000,00 em banco concorrente • Taxa rotativa 11,2% a.m."
           },
           {
-            id: "shortfall_event",
-            name: "Débitos D+4: R$ 38.000,00",
-            group: "Evento Futuro",
+            id: "itau_rating",
+            name: "Rating Personnalité (Score 980)",
+            group: "Crédito Itaú",
             layer: "Input",
-            color: "#E11D48",
-            details: "Condomínio Pix (R$ 3.850) + Fatura Mastercard Black (R$ 34.150) = Déficit -R$ 13.050"
+            color: "#64748B",
+            details: "Linha Itaú Sob Medida pré-aprovada com taxa diferenciada de 1,69% a.m."
           },
           {
-            id: "cmn_policy",
-            name: "Diretriz CMN 4.765 (Anti-LIS)",
-            group: "Regulação BACEN",
+            id: "lei_ccb",
+            name: "Marco Legal CCB (Lei 10.931)",
+            group: "Regulação Financeira",
             layer: "Policy",
             color: "#475569",
-            details: "Prevenção proativa de juros de cheque especial (LIS) com consentimento explícito"
+            details: "Cédula de Crédito Bancário emitida eletronicamente com liquidação interbancária direta"
           },
           {
-            id: "cash_agent",
-            name: "Motor Cash Flow & Yield Concierge",
+            id: "refi_agent",
+            name: "Otimizador de Dívida Open Finance",
             group: "Processamento IA",
             layer: "Decision",
             color: "#070707",
-            details: "Modela rentabilidade diária do CDB até 25/08 às 06:00 BRT e agenda resgate exato"
+            details: "Calcula spread de 9,51% a.m. e gera proposta de portabilidade com liquidação STR"
           },
           {
-            id: "sweep_output",
-            name: "Resgate R$ 15.000 Agendado (LIS Zero)",
+            id: "refi_output",
+            name: "Dívida Consolidada (Economia R$ 14.280)",
             group: "Ação de Salvaguarda",
             layer: "Output",
             color: "#059669",
-            details: "Rendimento preservado até o minuto da compensação • R$ 184,60 em juros economizados"
+            details: "CCB assinada digitalmente com redução imediata de parcela e liquidação no concorrente"
           }
         ]
       },
       {
         id: 'travel_shield' as ScenarioId,
-        title: "3. Aviso Viagem & Proteção Internacional",
-        shortLabel: "3. Aviso Viagem",
+        title: "4. Aviso Viagem & Proteção Internacional",
+        shortLabel: "4. Aviso Viagem",
         tag: "TRAVEL_SHIELDING",
         agentId: "travel_shield_agent",
         alert: {
@@ -242,8 +319,8 @@ export const translations = {
       },
       {
         id: 'card_benefits' as ScenarioId,
-        title: "4. Benefícios Mastercard Black & Schengen",
-        shortLabel: "4. Benefícios Black",
+        title: "5. Benefícios Mastercard Black & Schengen",
+        shortLabel: "5. Benefícios Black",
         tag: "MASTERCARD_BLACK_BENEFITS",
         agentId: "card_benefits_agent",
         alert: {
@@ -295,74 +372,6 @@ export const translations = {
             layer: "Output",
             color: "#059669",
             details: "Certificado médico Schengen e 4 passes LoungeKey disponíveis"
-          }
-        ]
-      },
-      {
-        id: 'open_finance' as ScenarioId,
-        title: "5. Open Finance & Portabilidade de Dívida",
-        shortLabel: "5. Open Finance",
-        tag: "OPEN_FINANCE_OPTIMIZER",
-        agentId: "open_finance_optimizer",
-        alert: {
-          badge: "Oportunidade Open Finance Identificada",
-          title: "Economia Projetada: R$ 14.280,00",
-          description: "Saldo rotativo de R$ 18.000,00 no banco concorrente a 11,2% a.m. pode ser refinanciado no Itaú Sob Medida por 1,69% a.m.",
-          primaryActionLabel: "Refinanciar & Emitir CCB (Economizar R$ 14k)",
-          primaryActionType: "refinance_open_finance",
-          secondaryActionLabel: "Simular Parcelamento",
-          secondaryActionType: "simulate_open_finance"
-        },
-        telemetryPayload: {
-          competitor_debt_balance_brl: 18000.00,
-          competitor_interest_rate_monthly: "11.20%",
-          itau_sob_medida_rate_monthly: "1.69%",
-          monthly_interest_savings_brl: 680.40,
-          total_interest_avoided_brl: 14280.00,
-          instrument_type: "CCB_DIGITAL_LEI_10931",
-          interbank_rail: "CIP_STR_PORTABILITY",
-          status: "REFINANCE_PROPOSAL_DISPATCHED"
-        },
-        graphNodes: [
-          {
-            id: "open_finance_data",
-            name: "Dados Open Finance (Consentimento Ativo)",
-            group: "Open Finance",
-            layer: "Input",
-            color: "#FF6423",
-            details: "Saldo devedor R$ 18.000,00 em banco concorrente • Taxa rotativa 11,2% a.m."
-          },
-          {
-            id: "itau_rating",
-            name: "Rating Personnalité (Score 980)",
-            group: "Crédito Itaú",
-            layer: "Input",
-            color: "#64748B",
-            details: "Linha Itaú Sob Medida pré-aprovada com taxa diferenciada de 1,69% a.m."
-          },
-          {
-            id: "lei_ccb",
-            name: "Marco Legal CCB (Lei 10.931)",
-            group: "Regulação Financeira",
-            layer: "Policy",
-            color: "#475569",
-            details: "Cédula de Crédito Bancário emitida eletronicamente com liquidação interbancária direta"
-          },
-          {
-            id: "refi_agent",
-            name: "Otimizador de Dívida Open Finance",
-            group: "Processamento IA",
-            layer: "Decision",
-            color: "#070707",
-            details: "Calcula spread de 9,51% a.m. e gera proposta de portabilidade com liquidação STR"
-          },
-          {
-            id: "refi_output",
-            name: "Dívida Consolidada (Economia R$ 14.280)",
-            group: "Ação de Salvaguarda",
-            layer: "Output",
-            color: "#059669",
-            details: "CCB assinada digitalmente com redução imediata de parcela e liquidação no concorrente"
           }
         ]
       }
@@ -533,6 +542,8 @@ export const translations = {
     notifications: {
       cdbSweepTitle: "Resgate CDB DI Programado",
       cdbSweepSubtitle: "R$ 15.000,00 agendados para 25/08 às 06:00 BRT (Zero Juros LIS).",
+      cdiTransferTitle: "Transferência CDI Concluída",
+      cdiTransferSubtitle: "R$ 330.000,00 transferidos para CDB DI Itaú a 100% do CDI (+R$ 5.940/ano).",
       travelModeTitle: "Aviso de Viagem Ativado",
       travelModeSubtitle: "Modo Viagem ativo para Portugal e Espanha. Limite elevado para R$ 50.000.",
       openFinanceTitle: "Portabilidade CCB Executada",
@@ -566,6 +577,15 @@ export const translations = {
       customer: "Roberto Silva",
       account: "Br. 7749 • Acct 00912-8",
       scenarioSelectorTitle: "Active Scenario:",
+      adminPanelTitle: "Admin & Presenter Panel",
+      adminPanelSubtitle: "Demonstration Tools & Governance Resources",
+      brandKitButton: "Itaú Brand Kit & Typography",
+      brandKitDesc: "Official Itaú Display & Itaú Text typography, brand colors & guidelines",
+      demoScriptButton: "Executive Demo Script",
+      demoScriptDesc: "Complete 5-act presentation narrative for executive & C-suite demos",
+      scenariosMatrixButton: "Scenarios Matrix (BACEN / MED)",
+      scenariosMatrixDesc: "Regulatory compliance matrix, Resolution 147 & sub-agent telemetry",
+      openInNewTab: "Opens in new tab",
     },
     tabs: {
       agents: "Active Sub-Agents",
@@ -575,15 +595,84 @@ export const translations = {
     },
     scenarios: [
       {
+        id: 'cash_flow' as ScenarioId,
+        title: "1. Predictive Balance Alert & Cash Sweep",
+        shortLabel: "1. Alert & Flow",
+        tag: "CASH_FLOW_FORECAST",
+        agentId: "cash_flow_forecast_agent",
+        alert: {
+          badge: "Predictive Balance Alert",
+          title: "Projected Shortfall D+4: -R$ 13,050.00",
+          description: "Scheduled debits of R$ 38,000.00 on Thursday will exceed your checking balance. Cash Flow Agent proposes preventive CDB DI sweep of R$ 15,000.00.",
+          primaryActionLabel: "Schedule CDB Sweep (R$ 15k)",
+          primaryActionType: "sweep_cdb",
+          secondaryActionLabel: "View Flow Analysis",
+          secondaryActionType: "view_cash_flow"
+        },
+        telemetryPayload: {
+          account: "ITAU-7749-00912",
+          projected_date: "2026-08-25 (Thursday)",
+          projected_shortfall: 13050.00,
+          source_asset: "CDB_DI_LIQUIDEZ_DIARIA",
+          asset_balance_brl: 85000.00,
+          cdi_yield_rate: "100% Daily CDI",
+          optimal_transfer_date: "2026-08-25 06:00 BRT",
+          interest_avoided_est_brl: 184.60,
+          status: "SCHEDULED_AUTOMATED_SWEEP"
+        },
+        graphNodes: [
+          {
+            id: "customer",
+            name: "Roberto Silva (Personnalité)",
+            group: "Cardholder Profile",
+            layer: "Input",
+            color: "#FF6423",
+            details: "Checking: R$ 48,950.20 • CDB DI: R$ 85,000.00 • Scheduled Debits: R$ 38,000.00"
+          },
+          {
+            id: "shortfall_event",
+            name: "D+4 Scheduled Debits: R$ 38,000.00",
+            group: "Future Event",
+            layer: "Input",
+            color: "#E11D48",
+            details: "Condo Pix (R$ 3,850) + Mastercard Black Bill (R$ 34,150) = Shortfall -R$ 13,050"
+          },
+          {
+            id: "cmn_policy",
+            name: "CMN Resolution 4.765 (Anti-Overdraft)",
+            group: "BACEN Policy",
+            layer: "Policy",
+            color: "#475569",
+            details: "Proactive prevention of overdraft (LIS) interest with explicit customer authorization"
+          },
+          {
+            id: "cash_agent",
+            name: "Cash Flow & Yield Engine",
+            group: "AI Processing",
+            layer: "Decision",
+            color: "#070707",
+            details: "Models daily CDB yield until 25/08 at 06:00 BRT and schedules optimal sweep"
+          },
+          {
+            id: "sweep_output",
+            name: "R$ 15,000 Sweep Scheduled (Zero Overdraft)",
+            group: "Safeguard Action",
+            layer: "Output",
+            color: "#059669",
+            details: "Yield maximized until settlement minute • R$ 184.60 in overdraft interest saved"
+          }
+        ]
+      },
+      {
         id: 'account_info' as ScenarioId,
-        title: "1. Account Information & Statements",
-        shortLabel: "1. Account Info",
+        title: "2. Account Balances & Consolidated Position",
+        shortLabel: "2. Account Info",
         tag: "ACCOUNT_INFO_STATEMENTS",
         agentId: "account_info_agent",
         alert: {
           badge: "Consolidated Position Inquiry",
-          title: "Total Wealth Balance: R$ 404,400.20",
-          description: "Checking account balance (R$ 48,950.20), Daily Liquidity CDB DI (R$ 85,000.00), and Mastercard Black with available limit of R$ 72,569.50.",
+          title: "Total Wealth Balance: R$ 463,950.20",
+          description: "Checking account balance (R$ 48,950.20), Daily Liquidity CDB DI (R$ 85,000.00), and Open Finance connected assets (BTG R$ 120k + XP R$ 210k).",
           primaryActionLabel: "View Statements & Scheduled Debits",
           primaryActionType: "view_statements",
           secondaryActionLabel: "Check Available Limits",
@@ -595,7 +684,7 @@ export const translations = {
           segment: "Itaú Personnalité",
           checking_balance_brl: 48950.20,
           cdb_di_balance_brl: 85000.00,
-          investments_total_brl: 320450.00,
+          total_consolidated_liquid_patrimony_brl: 463950.20,
           mastercard_black_available_limit: 72569.50,
           scheduled_debits_next_thursday_brl: 38000.00,
           status: "ACCOUNT_OVERVIEW_ACTIVE"
@@ -644,78 +733,77 @@ export const translations = {
         ]
       },
       {
-        id: 'cash_flow' as ScenarioId,
-        title: "2. Cash Flow & Yield Forecasting",
-        shortLabel: "2. Cash Flow Forecast",
-        tag: "CASH_FLOW_FORECAST",
-        agentId: "cash_flow_forecast_agent",
+        id: 'open_finance' as ScenarioId,
+        title: "3. Open Finance & Debt Refinancing",
+        shortLabel: "3. Open Finance",
+        tag: "OPEN_FINANCE_OPTIMIZER",
+        agentId: "open_finance_optimizer",
         alert: {
-          badge: "D+4 Balance Forecast",
-          title: "Projected Shortfall: -R$ 13,050.00",
-          description: "Condo fee and Mastercard Black bill next Thursday (25/08) will exceed checking balance after purchasing airline tickets.",
-          primaryActionLabel: "Schedule CDB Sweep (R$ 15k)",
-          primaryActionType: "sweep_cdb",
-          secondaryActionLabel: "View Flow Analysis",
-          secondaryActionType: "view_cash_flow"
+          badge: "Open Finance Opportunity Identified",
+          title: "Projected Savings: R$ 14,280.00",
+          description: "R$ 18,000.00 revolving balance at competitor bank at 11.2%/mo can be refinanced under Itaú Sob Medida for 1.69%/mo.",
+          primaryActionLabel: "Refinance & Issue CCB (Save R$ 14k)",
+          primaryActionType: "refinance_open_finance",
+          secondaryActionLabel: "Simulate Installments",
+          secondaryActionType: "simulate_open_finance"
         },
         telemetryPayload: {
-          account: "ITAU-7749-00912",
-          projected_date: "2026-08-25 (Thursday)",
-          projected_shortfall: 13050.00,
-          source_asset: "CDB_DI_LIQUIDEZ_DIARIA",
-          asset_balance_brl: 85000.00,
-          cdi_yield_rate: "100% Daily CDI",
-          optimal_transfer_date: "2026-08-25 06:00 BRT",
-          interest_avoided_est_brl: 184.60,
-          status: "SCHEDULED_AUTOMATED_SWEEP"
+          competitor_debt_balance_brl: 18000.00,
+          competitor_interest_rate_monthly: "11.20%",
+          itau_sob_medida_rate_monthly: "1.69%",
+          monthly_interest_savings_brl: 680.40,
+          total_interest_avoided_brl: 14280.00,
+          instrument_type: "CCB_DIGITAL_LEI_10931",
+          interbank_rail: "CIP_STR_PORTABILITY",
+          status: "REFINANCE_PROPOSAL_DISPATCHED"
         },
         graphNodes: [
           {
-            id: "customer",
-            name: "Roberto Silva (Personnalité)",
-            group: "Cardholder Profile",
+            id: "open_finance_data",
+            name: "Open Finance Data (Active Consent)",
+            group: "Open Finance",
             layer: "Input",
             color: "#FF6423",
-            details: "Checking: R$ 48,950.20 • CDB DI: R$ 85,000.00 • Ticket Purchase: R$ 24,000.00"
+            details: "Outstanding balance R$ 18,000.00 at competitor • Revolving rate 11.2%/mo"
           },
           {
-            id: "shortfall_event",
-            name: "D+4 Scheduled Debits: R$ 38,000.00",
-            group: "Future Event",
+            id: "itau_rating",
+            name: "Personnalité Rating (Score 980)",
+            group: "Itaú Credit",
             layer: "Input",
-            color: "#E11D48",
-            details: "Condo Pix (R$ 3,850) + Mastercard Black Bill (R$ 34,150) = Shortfall -R$ 13,050"
+            color: "#64748B",
+            details: "Pre-approved Itaú Sob Medida line with preferential rate of 1.69%/mo"
           },
           {
-            id: "cmn_policy",
-            name: "CMN Resolution 4.765 (Anti-Overdraft)",
-            group: "BACEN Policy",
+            id: "lei_ccb",
+            name: "CCB Legal Framework (Law 10,931)",
+            group: "Financial Regulation",
             layer: "Policy",
             color: "#475569",
-            details: "Proactive prevention of overdraft (LIS) interest with explicit customer authorization"
+            details: "Electronic Bank Credit Note issued with direct interbank debt settlement"
           },
           {
-            id: "cash_agent",
-            name: "Cash Flow & Yield Engine",
+            id: "refi_agent",
+            name: "Open Finance Debt Optimizer",
             group: "AI Processing",
             layer: "Decision",
             color: "#070707",
-            details: "Models daily CDB yield until 25/08 at 06:00 BRT and schedules optimal sweep"
+            details: "Calculates 9.51%/mo spread reduction and dispatches CIP/STR payoff proposal"
           },
           {
-            id: "sweep_output",
-            name: "R$ 15,000 Sweep Scheduled (Zero Overdraft)",
+            id: "refi_output",
+            name: "Debt Consolidated (R$ 14,280 Saved)",
             group: "Safeguard Action",
             layer: "Output",
             color: "#059669",
-            details: "Yield maximized until settlement minute • R$ 184.60 in overdraft interest saved"
+            details: "Digitally signed CCB with immediate installment drop and external debt cancellation"
           }
         ]
       },
       {
         id: 'travel_shield' as ScenarioId,
-        title: "3. Travel Notice & International Shield",
-        shortLabel: "3. Travel Shield",
+        title: "4. Travel Notice & International Shield",
+        shortLabel: "4. Travel Shield",
         tag: "TRAVEL_SHIELDING",
         agentId: "travel_shield_agent",
         alert: {
@@ -781,8 +869,8 @@ export const translations = {
       },
       {
         id: 'card_benefits' as ScenarioId,
-        title: "4. Mastercard Black Benefits & Schengen",
-        shortLabel: "4. Black Benefits",
+        title: "5. Mastercard Black Benefits & Schengen",
+        shortLabel: "5. Black Benefits",
         tag: "MASTERCARD_BLACK_BENEFITS",
         agentId: "card_benefits_agent",
         alert: {
@@ -834,74 +922,6 @@ export const translations = {
             layer: "Output",
             color: "#059669",
             details: "Schengen medical certificate and 4 LoungeKey passes ready"
-          }
-        ]
-      },
-      {
-        id: 'open_finance' as ScenarioId,
-        title: "5. Open Finance & Debt Portability",
-        shortLabel: "5. Open Finance",
-        tag: "OPEN_FINANCE_OPTIMIZER",
-        agentId: "open_finance_optimizer",
-        alert: {
-          badge: "Open Finance Opportunity Identified",
-          title: "Projected Savings: R$ 14,280.00",
-          description: "R$ 18,000.00 revolving balance at competitor bank at 11.2%/mo can be refinanced under Itaú Sob Medida for 1.69%/mo.",
-          primaryActionLabel: "Refinance & Issue CCB (Save R$ 14k)",
-          primaryActionType: "refinance_open_finance",
-          secondaryActionLabel: "Simulate Installments",
-          secondaryActionType: "simulate_open_finance"
-        },
-        telemetryPayload: {
-          competitor_debt_balance_brl: 18000.00,
-          competitor_interest_rate_monthly: "11.20%",
-          itau_sob_medida_rate_monthly: "1.69%",
-          monthly_interest_savings_brl: 680.40,
-          total_interest_avoided_brl: 14280.00,
-          instrument_type: "CCB_DIGITAL_LEI_10931",
-          interbank_rail: "CIP_STR_PORTABILITY",
-          status: "REFINANCE_PROPOSAL_DISPATCHED"
-        },
-        graphNodes: [
-          {
-            id: "open_finance_data",
-            name: "Open Finance Data (Active Consent)",
-            group: "Open Finance",
-            layer: "Input",
-            color: "#FF6423",
-            details: "Outstanding balance R$ 18,000.00 at competitor • Revolving rate 11.2%/mo"
-          },
-          {
-            id: "itau_rating",
-            name: "Personnalité Rating (Score 980)",
-            group: "Itaú Credit",
-            layer: "Input",
-            color: "#64748B",
-            details: "Pre-approved Itaú Sob Medida line with preferential rate of 1.69%/mo"
-          },
-          {
-            id: "lei_ccb",
-            name: "CCB Legal Framework (Law 10,931)",
-            group: "Financial Regulation",
-            layer: "Policy",
-            color: "#475569",
-            details: "Electronic Bank Credit Note issued with direct interbank debt settlement"
-          },
-          {
-            id: "refi_agent",
-            name: "Open Finance Debt Optimizer",
-            group: "AI Processing",
-            layer: "Decision",
-            color: "#070707",
-            details: "Calculates 9.51%/mo spread reduction and dispatches CIP/STR payoff proposal"
-          },
-          {
-            id: "refi_output",
-            name: "Debt Consolidated (R$ 14,280 Saved)",
-            group: "Safeguard Action",
-            layer: "Output",
-            color: "#059669",
-            details: "Digitally signed CCB with immediate installment drop and external debt cancellation"
           }
         ]
       }
@@ -1072,6 +1092,8 @@ export const translations = {
     notifications: {
       cdbSweepTitle: "CDB DI Sweep Scheduled",
       cdbSweepSubtitle: "R$ 15,000.00 scheduled for 25/08 at 06:00 BRT (Zero Overdraft Fees).",
+      cdiTransferTitle: "CDI Transfer Executed",
+      cdiTransferSubtitle: "R$ 330,000.00 transferred to Itaú CDB DI at 100% CDI (+R$ 5,940/yr).",
       travelModeTitle: "Travel Shield Activated",
       travelModeSubtitle: "Travel mode active for Portugal & Spain. Daily limit elevated to R$ 50,000.",
       openFinanceTitle: "Portability CCB Executed",

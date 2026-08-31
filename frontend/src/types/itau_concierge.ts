@@ -14,7 +14,7 @@ export interface SubAgent {
 export interface SecurityActionItem {
   id: string;
   time: string;
-  type: 'pix_hold' | 'geo_verify' | 'card_freeze' | 'med_claim' | 'limit_adjust' | 'cdb_sweep' | 'travel_mode' | 'card_benefits' | 'open_finance_ccb';
+  type: 'pix_hold' | 'geo_verify' | 'card_freeze' | 'med_claim' | 'limit_adjust' | 'cdb_sweep' | 'travel_mode' | 'card_benefits' | 'open_finance_ccb' | 'cdi_transfer';
   title: string;
   description: string;
   status: 'Confirmed' | 'Pending' | 'Active' | 'Safeguarded';

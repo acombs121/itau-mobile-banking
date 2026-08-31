@@ -47,13 +47,13 @@
 | Token Name | Typeface | Size (px / rem) | Font Weight | Line Height | Letter Spacing | Case | Component Usage |
 |:---|:---|:---|:---|:---|:---|:---|:---|
 | `--type-hero-metric` | **JetBrains Mono** | `24px` / `1.5rem` | `700` (Bold) | `1.2` (`28.8px`) | `-0.02em` | None | Primary checking balance (`R$ 48.950,20`) |
-| `--type-display-title` | **Inter** | `18px` / `1.125rem` | `700` (Bold) | `1.3` (`23.4px`) | `-0.015em` | None | Cockpit navigation header & main title |
-| `--type-card-header` | **Inter** | `14px` / `0.875rem` | `600` (SemiBold) | `1.35` (`18.9px`) | `-0.01em` | None | In-phone dynamic card titles, item headers |
+| `--type-display-title` | **Itaú Display** *(Inter fallback)* | `18px` / `1.125rem` | `700` (Bold) | `1.3` (`23.4px`) | `-0.015em` | None | Cockpit navigation header & main title |
+| `--type-card-header` | **Itaú Text** *(Inter fallback)* | `14px` / `0.875rem` | `600` (SemiBold) | `1.35` (`18.9px`) | `-0.01em` | None | In-phone dynamic card titles, item headers |
 | `--type-mono-tag` | **JetBrains Mono** | `10.5px` / `0.656rem` | `700` (Bold) | `1.4` (`14.7px`) | `+0.05em` | `UPPERCASE` | Category badges (`CHECKING ACCOUNT`, `OPEN FINANCE`) |
 | `--type-tabular-row` | **JetBrains Mono** | `11px` / `0.6875rem` | `600` (SemiBold) | `1.45` (`16.0px`) | `0.00em` (`tnum`) | None | Rate spreads, interest savings, tabular rows |
-| `--type-body-ui` | **Inter** | `12px` / `0.75rem` | `400` (Regular) | `1.5` (`18.0px`) | `0.00em` | None | Narrative copy, advisory explanations |
-| `--type-caption-micro`| **Inter** | `9.5px` / `0.59rem` | `500` (Medium) | `1.3` (`12.3px`) | `+0.03em` | `UPPERCASE` | Timestamps, section indicators, metadata labels |
-| `--type-logotype` | **Inter Black** | `42px` / `2.625rem` | `900` (Black) | `1.0` (`42.0px`) | `-0.04em` | `lowercase` | Official `"itau"` vector emblem |
+| `--type-body-ui` | **Itaú Text** *(Inter fallback)* | `12px` / `0.75rem` | `400` (Regular) | `1.5` (`18.0px`) | `0.00em` | None | Narrative copy, advisory explanations |
+| `--type-caption-micro`| **Itaú Text** *(Inter fallback)* | `9.5px` / `0.59rem` | `500` (Medium) | `1.3` (`12.3px`) | `+0.03em` | `UPPERCASE` | Timestamps, section indicators, metadata labels |
+| `--type-logotype` | **Itaú Display Black** *(Inter Black fallback)* | `42px` / `2.625rem` | `900` (Black) | `1.0` (`42.0px`) | `-0.04em` | `lowercase` | Official `"itau"` vector emblem |
 
 ---
 

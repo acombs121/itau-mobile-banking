@@ -1,5 +1,5 @@
-import React from 'react';
-import { RotateCcw, Save, Sun, Moon } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { RotateCcw, Save, Sun, Moon, Settings, Palette, FileText, ExternalLink, X, Compass, ShieldCheck } from 'lucide-react';
 import { Language, translations } from '../i18n/translations';
 import { ScenarioId } from '../types/itau_concierge';
 
@@ -28,6 +28,24 @@ export const CockpitHeader: React.FC<CockpitHeaderProps> = ({
 }) => {
   const t = translations[currentLang];
   const isDark = theme === 'dark';
+
+  const [isAdminOpen, setIsAdminOpen] = useState(false);
+  const adminPanelRef = useRef<HTMLDivElement>(null);
+
+  // Close admin panel when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (adminPanelRef.current && !adminPanelRef.current.contains(event.target as Node)) {
+        setIsAdminOpen(false);
+      }
+    };
+    if (isAdminOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isAdminOpen]);
 
   return (
     <header
@@ -135,6 +153,163 @@ export const CockpitHeader: React.FC<CockpitHeaderProps> = ({
           <Save className="w-4 h-4 flex-shrink-0" />
           <span className="hidden xl:inline">{isSaving ? '...' : t.header.saveSession}</span>
         </button>
+
+        <div className={`h-5 w-[1px] ${isDark ? 'bg-white/15' : 'bg-slate-300'}`} />
+
+        {/* Admin Panel Gear Trigger & Dropdown */}
+        <div className="relative" ref={adminPanelRef}>
+          <button
+            onClick={() => setIsAdminOpen(prev => !prev)}
+            className={`w-9 h-9 rounded-[5px] flex items-center justify-center border box-border flex-shrink-0 transition-all ${
+              isAdminOpen
+                ? 'bg-brand-orange border-brand-orange text-white shadow-md'
+                : isDark
+                ? 'border-white/15 text-white/70 hover:text-white hover:bg-white/10'
+                : 'border-slate-300 bg-white text-slate-700 hover:text-slate-900 hover:bg-slate-50'
+            }`}
+            title={t.header.adminPanelTitle}
+            aria-label="Open Admin Panel"
+            aria-expanded={isAdminOpen}
+          >
+            <Settings className={`w-4 h-4 transition-transform duration-300 ${isAdminOpen ? 'rotate-90 text-white' : ''}`} />
+          </button>
+
+          {/* Admin Panel Dropdown */}
+          {isAdminOpen && (
+            <div
+              className={`absolute right-0 top-11 mt-2 w-80 sm:w-96 rounded-xl border shadow-2xl z-50 p-4 animate-in fade-in slide-in-from-top-2 duration-150 backdrop-blur-xl ${
+                isDark
+                  ? 'bg-[#18181C]/95 border-white/[0.12] text-white shadow-black/80'
+                  : 'bg-white/95 border-slate-200 text-slate-900 shadow-xl'
+              }`}
+            >
+              {/* Header inside Panel */}
+              <div className={`flex items-center justify-between pb-3 mb-3 border-b ${isDark ? 'border-white/[0.08]' : 'border-slate-200'}`}>
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-md bg-white/10 border border-white/15 text-white flex items-center justify-center">
+                    <Settings className="w-3.5 h-3.5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-brand-orange">
+                      {t.header.adminPanelTitle}
+                    </h3>
+                    <p className={`text-[11px] ${isDark ? 'text-white/50' : 'text-slate-500'}`}>
+                      {t.header.adminPanelSubtitle}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsAdminOpen(false)}
+                  className={`p-1 rounded transition-colors ${isDark ? 'hover:bg-white/10 text-white/50 hover:text-white' : 'hover:bg-slate-100 text-slate-400 hover:text-slate-700'}`}
+                  aria-label="Close panel"
+                >
+                  <X className="w-3.5 h-3.5 text-white" />
+                </button>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="space-y-2.5">
+                {/* Brand Kit Button */}
+                <a
+                  href="/brandkit.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`group w-full text-left p-3 rounded-lg border flex items-start justify-between gap-3 transition-all ${
+                    isDark
+                      ? 'bg-white/[0.03] border-white/[0.08] hover:bg-white/[0.07] hover:border-white/20 text-white'
+                      : 'bg-slate-50 border-slate-200 hover:bg-slate-100 hover:border-slate-300 text-slate-900'
+                  }`}
+                >
+                  <div className="flex items-start gap-3 min-w-0">
+                    <div className="w-8 h-8 rounded-lg bg-white/10 border border-white/20 text-white flex items-center justify-center flex-shrink-0 mt-0.5 group-hover:bg-white/20 transition-all">
+                      <Palette className="w-4 h-4 text-white" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className={`text-xs font-bold flex items-center gap-1.5 ${isDark ? 'text-white' : 'text-slate-900'} group-hover:text-white transition-colors`}>
+                        <span>{t.header.brandKitButton}</span>
+                      </div>
+                      <p className={`text-[11px] leading-relaxed mt-0.5 line-clamp-2 ${isDark ? 'text-white/55' : 'text-slate-500'}`}>
+                        {t.header.brandKitDesc}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex-shrink-0 flex items-center gap-1 text-[10px] font-mono text-white/80 group-hover:text-white mt-1">
+                    <ExternalLink className="w-3.5 h-3.5 text-white" />
+                  </div>
+                </a>
+
+                {/* Demo Script Button */}
+                <a
+                  href="/demo_script.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`group w-full text-left p-3 rounded-lg border flex items-start justify-between gap-3 transition-all ${
+                    isDark
+                      ? 'bg-white/[0.03] border-white/[0.08] hover:bg-white/[0.07] hover:border-white/20 text-white'
+                      : 'bg-slate-50 border-slate-200 hover:bg-slate-100 hover:border-slate-300 text-slate-900'
+                  }`}
+                >
+                  <div className="flex items-start gap-3 min-w-0">
+                    <div className="w-8 h-8 rounded-lg bg-white/10 border border-white/20 text-white flex items-center justify-center flex-shrink-0 mt-0.5 group-hover:bg-white/20 transition-all">
+                      <FileText className="w-4 h-4 text-white" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className={`text-xs font-bold flex items-center gap-1.5 ${isDark ? 'text-white' : 'text-slate-900'} group-hover:text-white transition-colors`}>
+                        <span>{t.header.demoScriptButton}</span>
+                      </div>
+                      <p className={`text-[11px] leading-relaxed mt-0.5 line-clamp-2 ${isDark ? 'text-white/55' : 'text-slate-500'}`}>
+                        {t.header.demoScriptDesc}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex-shrink-0 flex items-center gap-1 text-[10px] font-mono text-white/80 group-hover:text-white mt-1">
+                    <ExternalLink className="w-3.5 h-3.5 text-white" />
+                  </div>
+                </a>
+
+                {/* Scenarios Matrix Button */}
+                <a
+                  href="/scenarios.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`group w-full text-left p-3 rounded-lg border flex items-start justify-between gap-3 transition-all ${
+                    isDark
+                      ? 'bg-white/[0.03] border-white/[0.08] hover:bg-white/[0.07] hover:border-white/20 text-white'
+                      : 'bg-slate-50 border-slate-200 hover:bg-slate-100 hover:border-slate-300 text-slate-900'
+                  }`}
+                >
+                  <div className="flex items-start gap-3 min-w-0">
+                    <div className="w-8 h-8 rounded-lg bg-white/10 border border-white/20 text-white flex items-center justify-center flex-shrink-0 mt-0.5 group-hover:bg-white/20 transition-all">
+                      <Compass className="w-4 h-4 text-white" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className={`text-xs font-bold flex items-center gap-1.5 ${isDark ? 'text-white' : 'text-slate-900'} group-hover:text-white transition-colors`}>
+                        <span>{t.header.scenariosMatrixButton}</span>
+                      </div>
+                      <p className={`text-[11px] leading-relaxed mt-0.5 line-clamp-2 ${isDark ? 'text-white/55' : 'text-slate-500'}`}>
+                        {t.header.scenariosMatrixDesc}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex-shrink-0 flex items-center gap-1 text-[10px] font-mono text-white/80 group-hover:text-white mt-1">
+                    <ExternalLink className="w-3.5 h-3.5 text-white" />
+                  </div>
+                </a>
+              </div>
+
+              {/* Footer Note */}
+              <div className={`mt-3 pt-2.5 border-t flex items-center justify-between text-[10px] ${isDark ? 'border-white/[0.06] text-white/40' : 'border-slate-200 text-slate-400'}`}>
+                <span className="flex items-center gap-1">
+                  <ShieldCheck className="w-3 h-3 text-white" />
+                  <span>Itaú Concierge Admin Mode</span>
+                </span>
+                <span className="font-mono text-[9px] uppercase tracking-wider opacity-70">
+                  {t.header.openInNewTab}
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
 
       </div>
 

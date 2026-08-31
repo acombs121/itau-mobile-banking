@@ -70,9 +70,10 @@ export const App: React.FC = () => {
     return (savedTheme === 'light' || savedTheme === 'dark') ? savedTheme : 'dark';
   });
 
-  // Active Scenario State: Default is 'account_info' (1st Agent)
-  const [activeScenario, setActiveScenario] = useState<ScenarioId>('account_info');
+  // Active Scenario State: Default is 'cash_flow' (Act 1: Predictive Balance Alert & Cash Sweep)
+  const [activeScenario, setActiveScenario] = useState<ScenarioId>('cash_flow');
   const [activeRunningAgentId, setActiveRunningAgentId] = useState<string | null>(null);
+  const [isLocked, setIsLocked] = useState(true);
 
   // Dynamic Sub-Agent Lifecycle States for 5 Specialized Agents
   const [agentStates, setAgentStates] = useState<Record<string, { status: 'idle' | 'running' | 'completed'; lastRun?: string; liveResult?: Record<string, any> }>>({
@@ -91,15 +92,41 @@ export const App: React.FC = () => {
   // Scenario Resolution Flags
   const [isCdbSweepScheduled, setIsCdbSweepScheduled] = useState(false);
   const [isTravelModeActive, setIsTravelModeActive] = useState(false);
+  const [isCdiTransferDone, setIsCdiTransferDone] = useState(false);
   const [isOpenFinanceRefiDone, setIsOpenFinanceRefiDone] = useState(false);
   const [isPixBlocked, setIsPixBlocked] = useState(false);
 
   // In-Phone Live Voice & Dynamic Canvas State
   const [isCallActive, setIsCallActive] = useState(false);
   const [isProcessingAgent, setIsProcessingAgent] = useState<string | null>(null);
-  const [activeDynamicCardId, setActiveDynamicCardId] = useState<string | null>(null);
+  const [activeDynamicCardId, setActiveDynamicCardId] = useState<string | null>('cash_flow_forecast_agent');
   const [isSaving, setIsSaving] = useState(false);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
+
+  // When clicking on the Predictive Balance Alert from the Lock Screen
+  const handlePredictiveAlertClick = () => {
+    setIsLocked(false);
+    setActiveScenario('cash_flow');
+    setActiveRunningAgentId('cash_flow_forecast_agent');
+    setActiveDynamicCardId('cash_flow_forecast_agent');
+    setAgentStates(prev => ({
+      ...prev,
+      cash_flow_forecast_agent: {
+        status: 'running',
+        lastRun: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' BRT',
+        liveResult: {
+          account: "ITAU-7749-00912",
+          alert: "PREDICTIVE_BALANCE_ALERT",
+          scheduled_debits_next_thursday: 38000.00,
+          projected_shortfall: 13050.00,
+          source_asset: "CDB_DI_LIQUIDEZ_DIARIA",
+          recommended_sweep_amount: 15000.00,
+          status: "SWEEP_OFFER_ACTIVE"
+        }
+      }
+    }));
+    setIsCallActive(true);
+  };
 
   // Sync lang changes to localStorage
   const handleToggleLang = (newLang: Language) => {
@@ -132,287 +159,18 @@ export const App: React.FC = () => {
     // Popups suppressed
   };
 
-  // User Spoken Query / Intent Detection -> Query-Specific Dynamic Card & Sub-Agent Dispatch
+  // User Spoken Query -> Log to Telemetry (UI screens are driven exclusively by the agent's tool calls)
   const handleUserQuery = (query: string) => {
-    const q = query.toLowerCase();
-    const nowTime = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' BRT';
-
-    // 1. Benefits & Insurance Agent
-    if (
-      q.includes('benefit') || q.includes('benefício') || q.includes('lounge') || q.includes('sala vip') || 
-      q.includes('insurance') || q.includes('seguro') || q.includes('coverage') || q.includes('cobertura') || 
-      q.includes('schengen') || q.includes('baggage') || q.includes('bagagem') || q.includes('delay') || 
-      q.includes('atraso') || q.includes('guarulhos') || q.includes('car rental') || q.includes('aluguel') ||
-      ((q.includes('yes') || q.includes('sim') || q.includes('sure') || q.includes('please') || q.includes('quero') || q.includes('por favor') || q.includes('tell me') || q.includes('conte')) && 
-       (activeRunningAgentId === 'travel_shield_agent' || activeScenario === 'travel_shield' || agentStates.travel_shield_agent?.status === 'completed'))
-    ) {
-      setActiveRunningAgentId('card_benefits_agent');
-      setActiveDynamicCardId('card_benefits_agent');
-      setAgentStates(prev => ({
-        ...prev,
-        card_benefits_agent: {
-          status: 'running',
-          lastRun: nowTime,
-          liveResult: {
-            card_tier: "Itaú Personnalité Mastercard Black",
-            gru_vip_lounge_t3: "UNLIMITED_COMPLIMENTARY",
-            international_loungekey_passes: "4 PASSES (LIS/MAD)",
-            schengen_medical_insurance_eur: 30000.00,
-            masterseguro_car_rental: "CDW/LDW INCLUDED",
-            concierge_service_24h: "AVAILABLE",
-            status: "ANALYZING_TRIP_BENEFITS"
-          }
-        }
-      }));
-    }
-    // 2. Multi-Account / All Accounts Query -> Card with Multiple Accounts (Open Finance & Itaú)
-    else if (
-      q.includes('accounts') || q.includes('my accounts') || q.includes('all accounts') || q.includes('what accounts') ||
-      q.includes('multiple accounts') || q.includes('contas') || q.includes('minhas contas') || q.includes('todas as contas') ||
-      q.includes('quais contas') || q.includes('quais são as minhas contas')
-    ) {
-      setActiveRunningAgentId('account_info_agent');
-      setActiveDynamicCardId('account_info_agent');
-      setActiveScenario('account_info');
-      setAgentStates(prev => ({
-        ...prev,
-        account_info_agent: {
-          status: 'running',
-          lastRun: nowTime,
-          liveResult: {
-            account_id: "ITAU-7749-00912",
-            customer: "Roberto Silva",
-            total_consolidated_liquid_patrimony_brl: 463950.20,
-            itau_accounts: {
-              checking_balance_brl: 48950.20,
-              cdb_di_balance_brl: 85000.00,
-              mastercard_black_available_limit_brl: 72569.50,
-              total_itau_liquid_brl: 133950.20
-            },
-            open_finance_connected_assets: {
-              btg_pactual_checking_liquidity_brl: 120000.00,
-              xp_investimentos_fixed_income_brl: 210000.00,
-              total_external_liquid_brl: 330000.00,
-              external_competitor_debt_brl: 18000.00
-            },
-            scheduled_debits_next_thursday_brl: 38000.00,
-            status: "OPEN_FINANCE_CONSOLIDATED"
-          }
-        }
-      }));
-    }
-    // 2.5 Specific Checking Account Query (Single account, checking specifically)
-    else if (
-      q.includes('checking') || q.includes('check in') || q.includes('corrente') || 
-      (q.includes('checking balance')) ||
-      (q.includes('account') && !q.includes('accounts') && !q.includes('card') && !q.includes('credit') && !q.includes('saving') && !q.includes('cdb')) ||
-      (q.includes('conta') && !q.includes('contas') && !q.includes('cartão') && !q.includes('investimento') && !q.includes('cdb'))
-    ) {
-      setActiveRunningAgentId('account_info_agent');
-      setActiveDynamicCardId('balance_checking');
-      setAgentStates(prev => ({
-        ...prev,
-        account_info_agent: {
-          status: 'running',
-          lastRun: nowTime,
-          liveResult: {
-            account_type: "CHECKING_ACCOUNT",
-            checking_balance_brl: 48950.20,
-            lis_limit_brl: 10000.00,
-            scheduled_debits_next_thursday_brl: 38000.00,
-            status: "QUERY_COMPLETE"
-          }
-        }
-      }));
-    }
-    // 3. Specific Savings / CDB Investment Query
-    else if (q.includes('saving') || q.includes('poupança') || q.includes('cdb') || q.includes('invest') || q.includes('aplicação')) {
-      setActiveRunningAgentId('account_info_agent');
-      setActiveDynamicCardId('balance_cdb');
-      setAgentStates(prev => ({
-        ...prev,
-        account_info_agent: {
-          status: 'running',
-          lastRun: nowTime,
-          liveResult: {
-            investment_type: "CDB_DI_LIQUIDEZ_DIARIA",
-            balance_brl: 85000.00,
-            rate_percent_cdi: 100.0,
-            liquidity: "IMMEDIATE_24_7",
-            status: "QUERY_COMPLETE"
-          }
-        }
-      }));
-    }
-    // 4. Specific Mastercard Black / Credit Card Query
-    else if (q.includes('black') || q.includes('mastercard') || q.includes('credit card') || q.includes('cartão') || q.includes('fatura') || q.includes('limit') || q.includes('limite')) {
-      setActiveRunningAgentId('account_info_agent');
-      setActiveDynamicCardId('balance_card');
-      setAgentStates(prev => ({
-        ...prev,
-        account_info_agent: {
-          status: 'running',
-          lastRun: nowTime,
-          liveResult: {
-            card_name: "Itaú Personnalité Mastercard Black",
-            available_limit_brl: 72569.50,
-            total_limit_brl: 85000.00,
-            current_invoice_due_thu_brl: 34150.00,
-            status: "QUERY_COMPLETE"
-          }
-        }
-      }));
-    }
-    // 5. Specific Scheduled Payments / Debits / Bills Query
-    else if (q.includes('schedule') || q.includes('agendad') || q.includes('payment') || q.includes('pagamento') || q.includes('bill') || q.includes('boleto') || q.includes('debit') || q.includes('débito') || q.includes('due') || q.includes('vencimento') || q.includes('next week') || q.includes('semana')) {
-      setActiveRunningAgentId('account_info_agent');
-      setActiveDynamicCardId('scheduled_payments');
-      setAgentStates(prev => ({
-        ...prev,
-        account_info_agent: {
-          status: 'running',
-          lastRun: nowTime,
-          liveResult: {
-            account_id: "ITAU-7749-00912",
-            scheduled_payments_total_brl: 38000.00,
-            scheduled_date: "2026-08-25 (Thursday)",
-            items: [
-              { name: "Mastercard Black Invoice", amount_brl: 34150.00, method: "Auto-Debit" },
-              { name: "Condomínio Edifício Jardins", amount_brl: 3850.00, method: "Scheduled Boleto" }
-            ],
-            checking_balance_brl: 48950.20,
-            coverage: "100% COVERED",
-            status: "QUERY_COMPLETE"
-          }
-        }
-      }));
-    }
-    // 5. Best Rates, Refinancing & Savings Yield Arbitrage Query
-    else if (q.includes('rate') || q.includes('taxa') || q.includes('best rate') || q.includes('melhor taxa') || q.includes('refinanc') || q.includes('arbitrag') || q.includes('debt') || q.includes('dívida') || q.includes('loan') || q.includes('empréstimo') || q.includes('ccb') || q.includes('saving') || q.includes('poupan') || q.includes('yield')) {
-      setActiveRunningAgentId('open_finance_optimizer');
-      setActiveDynamicCardId('open_finance_optimizer');
-      setActiveScenario('open_finance');
-      setAgentStates(prev => ({
-        ...prev,
-        open_finance_optimizer: {
-          status: 'running',
-          lastRun: nowTime,
-          liveResult: {
-            external_bank: "BANCO_COMPETITOR_SA",
-            debt_refinancing: {
-              competitor_balance_brl: 18000.00,
-              competitor_rate_pm: 11.20,
-              itau_rate_pm: 1.69,
-              rate_spread_saved: "-9.51% a.m.",
-              monthly_savings_brl: 680.40,
-              total_savings_brl: 14280.00,
-              mechanism: "CCB_DIGITAL_LEI_10931"
-            },
-            savings_yield_arbitrage: {
-              external_liquid_assets_brl: 330000.00,
-              competitor_savings_yield: "85% do CDI",
-              itau_cdb_di_yield: "100% do CDI",
-              yield_spread: "+15% do CDI",
-              projected_annual_yield_increase_brl: 5940.00
-            },
-            status: "OPEN_FINANCE_ARBITRAGE_ACTIVE"
-          }
-        }
-      }));
-    }
-    // 6. Open Finance Balance Consolidation Query
-    else if (q.includes('consolidat') || q.includes('consolidar') || q.includes('patrimon') || q.includes('all accounts') || q.includes('all balances') || q.includes('todas as contas') || (q.includes('open finance') && (q.includes('balance') || q.includes('saldo')))) {
-      setActiveRunningAgentId('account_info_agent');
-      setActiveDynamicCardId('account_info_agent');
-      setActiveScenario('account_info');
-      setAgentStates(prev => ({
-        ...prev,
-        account_info_agent: {
-          status: 'running',
-          lastRun: nowTime,
-          liveResult: {
-            account_id: "ITAU-7749-00912",
-            customer: "Roberto Silva",
-            total_consolidated_liquid_patrimony_brl: 463950.20,
-            itau_accounts: {
-              checking_balance_brl: 48950.20,
-              cdb_di_balance_brl: 85000.00,
-              mastercard_black_available_limit_brl: 72569.50,
-              total_itau_liquid_brl: 133950.20
-            },
-            open_finance_connected_assets: {
-              btg_pactual_checking_liquidity_brl: 120000.00,
-              xp_investimentos_fixed_income_brl: 210000.00,
-              total_external_liquid_brl: 330000.00,
-              external_competitor_debt_brl: 18000.00
-            },
-            scheduled_debits_next_thursday_brl: 38000.00,
-            status: "OPEN_FINANCE_CONSOLIDATED"
-          }
-        }
-      }));
-    }
-    // 7. Generic Balance Query -> Directly Show Checking Account Balance
-    else if (q.includes('balance') || q.includes('saldo') || q.includes('extrato') || q.includes('statement')) {
-      setActiveRunningAgentId('account_info_agent');
-      setActiveDynamicCardId('balance_checking');
-      setAgentStates(prev => ({
-        ...prev,
-        account_info_agent: {
-          status: 'running',
-          lastRun: nowTime,
-          liveResult: {
-            account_type: "CHECKING_ACCOUNT",
-            checking_balance_brl: 48950.20,
-            lis_limit_brl: 10000.00,
-            scheduled_debits_next_thursday_brl: 38000.00,
-            status: "QUERY_COMPLETE"
-          }
-        }
-      }));
-    }
-    // 8. Cash Flow & Yield Forecasting
-    else if (q.includes('ticket') || q.includes('passagem') || q.includes('lisbon') || q.includes('lisboa') || q.includes('forecast') || q.includes('previsão') || q.includes('shortfall') || q.includes('sweep') || q.includes('resgate')) {
-      setActiveRunningAgentId('cash_flow_forecast_agent');
-      setActiveDynamicCardId('cash_flow_forecast_agent');
-      setActiveScenario('cash_flow');
-      setAgentStates(prev => ({
-        ...prev,
-        cash_flow_forecast_agent: {
-          status: 'running',
-          lastRun: nowTime,
-          liveResult: {
-            account: "ITAU-7749-00912",
-            projected_shortfall: 13050.00,
-            projected_date: "2026-08-25 (Thursday)",
-            recommended_sweep_brl: 15000.00,
-            source: "CDB_DI_LIQUIDEZ_DIARIA",
-            status: "RUNNING_HYPOTHETICAL_SIMULATION"
-          }
-        }
-      }));
-    }
-    // 9. Travel Notice & Fraud Defense
-    else if (q.includes('travel') || q.includes('viagem') || q.includes('portugal') || q.includes('spain') || q.includes('espanha') || q.includes('madrid') || q.includes('trip') || q.includes('flight') || q.includes('abroad')) {
-      setActiveRunningAgentId('travel_shield_agent');
-      setActiveDynamicCardId('travel_shield_agent');
-      setActiveScenario('travel_shield');
-      setAgentStates(prev => ({
-        ...prev,
-        travel_shield_agent: {
-          status: 'running',
-          lastRun: nowTime,
-          liveResult: {
-            travel_notice: "REGISTERING",
-            destinations: ["Portugal", "Spain"],
-            network_authorizers: ["MASTERCARD_GLOBAL", "VISA_NET"],
-            pos_limit_brl: 50000.00,
-            fraud_suppression: "ENABLING",
-            status: "ENGAGING_FRAUD_SHIELD"
-          }
-        }
-      }));
-    }
+    const newLog: TelemetryLog = {
+      id: "log_" + Date.now(),
+      timestamp: new Date().toLocaleTimeString(),
+      agentId: "itau_concierge",
+      agentName: currentLang === 'en' ? "Itaú Concierge Voice" : "Concierge de Voz Itaú",
+      action: "CARDHOLDER_INPUT",
+      status: "info",
+      payload: { query }
+    };
+    setTelemetryLogs(prev => [newLog, ...prev]);
   };
 
   // Turn Complete Handler - keeps last agent highlighted until next is activated
@@ -462,7 +220,7 @@ export const App: React.FC = () => {
     if (actionType === 'get_account_info' || actionType === 'view_statements' || actionType === 'view_limits') {
       setActiveRunningAgentId('account_info_agent');
       const qt = customPayload?.query_type || (customPayload as any)?.args?.query_type;
-      let targetCardId = 'account_info_agent';
+      let targetCardId = 'itau_balances';
       if (qt === 'checking' || qt === 'checking_account') {
         targetCardId = 'balance_checking';
       } else if (qt === 'cdb_investments' || qt === 'savings') {
@@ -472,7 +230,7 @@ export const App: React.FC = () => {
       } else if (qt === 'scheduled_debits') {
         targetCardId = 'scheduled_payments';
       } else {
-        targetCardId = 'account_info_agent';
+        targetCardId = 'itau_balances';
       }
       setActiveDynamicCardId(targetCardId);
       setActiveScenario('account_info');
@@ -523,7 +281,45 @@ export const App: React.FC = () => {
       };
       setTelemetryLogs(prev => [newLog, ...prev]);
     }
-    else if (actionType === 'sweep_cdb' || actionType === 'view_cash_flow') {
+    else if (actionType === 'explain_predictive_alert' || actionType === 'view_cash_flow') {
+      // Explain shortfall & cash flow WITHOUT scheduling the sweep yet
+      setIsCdbSweepScheduled(false);
+      setActiveRunningAgentId('cash_flow_forecast_agent');
+      setActiveDynamicCardId('cash_flow_forecast_agent');
+      setActiveScenario('cash_flow');
+      
+      const payloadData = customPayload || {
+        account: "ITAU-7749-00912",
+        alert: "PREDICTIVE_BALANCE_ALERT",
+        scheduled_debits_next_thursday: 38000.00,
+        projected_shortfall: 13050.00,
+        source_asset: "CDB_DI_LIQUIDEZ_DIARIA",
+        recommended_sweep_amount: 15000.00,
+        status: "SWEEP_OFFER_AWAITING_CONFIRMATION"
+      };
+
+      setAgentStates(prev => ({
+        ...prev,
+        cash_flow_forecast_agent: {
+          status: 'completed',
+          lastRun: nowTime,
+          liveResult: payloadData
+        }
+      }));
+
+      const newLog: TelemetryLog = {
+        id: "log_" + Date.now(),
+        timestamp: new Date().toLocaleTimeString(),
+        agentId: "cash_flow_forecast_agent",
+        agentName: "Cash Flow & Yield Forecasting Agent",
+        action: "ANALYZE_PREDICTIVE_BALANCE_SHORTFALL",
+        status: "info",
+        payload: payloadData
+      };
+      setTelemetryLogs(prev => [newLog, ...prev]);
+    }
+    else if (actionType === 'sweep_cdb' || actionType === 'confirm_cdb_sweep') {
+      // User confirmed! Schedule the automated sweep!
       setIsCdbSweepScheduled(true);
       setActiveRunningAgentId('cash_flow_forecast_agent');
       setActiveDynamicCardId('cash_flow_forecast_agent');
@@ -731,6 +527,131 @@ export const App: React.FC = () => {
       };
       setTelemetryLogs(prev => [newLog, ...prev]);
     }
+    else if (actionType === 'pull_open_finance') {
+      setActiveRunningAgentId('open_finance_optimizer');
+      setActiveDynamicCardId('open_finance_select');
+      setActiveScenario('open_finance');
+      
+      const payloadData = customPayload || {
+        consent_status: "ACTIVE",
+        source: "BACEN_OPEN_FINANCE_FAPI",
+        available_categories: ["cdi_balances", "debt_balances"],
+        status: "CATEGORIES_SELECTION_ACTIVE"
+      };
+
+      setAgentStates(prev => ({
+        ...prev,
+        open_finance_optimizer: {
+          status: 'completed',
+          lastRun: nowTime,
+          liveResult: payloadData
+        }
+      }));
+
+      const newLog: TelemetryLog = {
+        id: "log_" + Date.now(),
+        timestamp: new Date().toLocaleTimeString(),
+        agentId: "open_finance_optimizer",
+        agentName: "Open Finance & Rate Optimizer",
+        action: "RETRIEVE_OPEN_FINANCE_CATEGORIES",
+        status: "info",
+        payload: payloadData
+      };
+      setTelemetryLogs(prev => [newLog, ...prev]);
+    }
+    else if (actionType === 'quote_open_finance_cdi') {
+      setActiveRunningAgentId('open_finance_optimizer');
+      setActiveDynamicCardId('open_finance_cdi');
+      setActiveScenario('open_finance');
+      
+      const payloadData = customPayload || {
+        external_liquid_assets: 330000.00,
+        connected_institutions: ["BTG Pactual", "XP Investimentos"],
+        competitor_cdi_yield: "85% do CDI",
+        itau_cdb_di_yield: "100% do CDI (Liquidez Diária)",
+        spread_advantage: "+15% do CDI",
+        projected_annual_gain: 5940.00,
+        status: "CDI_IMPROVEMENT_QUOTED"
+      };
+
+      setAgentStates(prev => ({
+        ...prev,
+        open_finance_optimizer: {
+          status: 'completed',
+          lastRun: nowTime,
+          liveResult: payloadData
+        }
+      }));
+
+      const newLog: TelemetryLog = {
+        id: "log_" + Date.now(),
+        timestamp: new Date().toLocaleTimeString(),
+        agentId: "open_finance_optimizer",
+        agentName: "Open Finance & Rate Optimizer",
+        action: "QUOTE_CDI_YIELD_ARBITRAGE",
+        status: "info",
+        payload: payloadData
+      };
+      setTelemetryLogs(prev => [newLog, ...prev]);
+    }
+    else if (actionType === 'confirm_cdi_transfer') {
+      setIsCdiTransferDone(true);
+      setActiveRunningAgentId('open_finance_optimizer');
+      setActiveDynamicCardId('open_finance_transfer_confirmed');
+      setActiveScenario('open_finance');
+      
+      // Update investment balance with transferred funds
+      setProfile(prev => ({
+        ...prev,
+        investments_balance_brl: 415000.00
+      }));
+
+      const payloadData = customPayload || {
+        amount_transferred_brl: 330000.00,
+        source_institutions: ["BTG Pactual", "XP Investimentos"],
+        destination_asset: "CDB_DI_LIQUIDEZ_DIARIA_100_CDI",
+        additional_annual_yield_brl: 5940.00,
+        new_consolidated_balance_brl: 463950.20,
+        rail: "OPEN_FINANCE_CIP_STR",
+        status: "TRANSFER_SETTLED_SUCCESS"
+      };
+
+      setAgentStates(prev => ({
+        ...prev,
+        open_finance_optimizer: {
+          status: 'completed',
+          lastRun: nowTime,
+          liveResult: payloadData
+        }
+      }));
+
+      triggerNotification(
+        tNotif.cdiTransferTitle,
+        tNotif.cdiTransferSubtitle
+      );
+
+      const newAction: SecurityActionItem = {
+        id: "act_" + Date.now(),
+        time: nowTime,
+        type: "cdi_transfer",
+        title: currentLang === 'en' ? "CDI Yield Transfer Confirmed — +R$ 5,940/yr" : "Transferência CDI Concluída — +R$ 5.940/ano",
+        description: currentLang === 'en' ? "Transferred R$ 330,000.00 from BTG & XP to Itaú CDB DI (100% CDI). +15% CDI yield advantage secured with daily liquidity." : "Transferidos R$ 330.000,00 de BTG e XP para CDB DI Itaú (100% CDI). Ganho de +15% do CDI garantido com liquidez diária.",
+        status: "Safeguarded",
+        details: "CIP #2026-ITAU-TRF-9921 • 100% CDI Daily Yield"
+      };
+      setActionItems(prev => [newAction, ...prev]);
+
+      const newLog: TelemetryLog = {
+        id: "log_" + Date.now(),
+        timestamp: new Date().toLocaleTimeString(),
+        agentId: "open_finance_optimizer",
+        agentName: "Open Finance & Rate Optimizer",
+        action: "EXECUTE_OPEN_FINANCE_CDI_TRANSFER",
+        status: "success",
+        payload: payloadData
+      };
+      setTelemetryLogs(prev => [newLog, ...prev]);
+    }
     else if (actionType === 'freeze_card') {
       setProfile(prev => ({
         ...prev,
@@ -797,13 +718,17 @@ export const App: React.FC = () => {
     setProfile(DEFAULT_PROFILE);
     setIsCdbSweepScheduled(false);
     setIsTravelModeActive(false);
+    setIsCdiTransferDone(false);
     setIsOpenFinanceRefiDone(false);
     setIsPixBlocked(false);
     setIsCallActive(false);
+    setIsLocked(true);
+    setActiveScenario('cash_flow');
     setActiveRunningAgentId(null);
+    setActiveDynamicCardId('cash_flow_forecast_agent');
     setAgentStates({
       account_info_agent: { status: 'idle' },
-      cash_flow_forecast_agent: { status: 'completed' },
+      cash_flow_forecast_agent: { status: 'idle' },
       travel_shield_agent: { status: 'idle' },
       card_benefits_agent: { status: 'idle' },
       open_finance_optimizer: { status: 'idle' }
@@ -864,6 +789,7 @@ export const App: React.FC = () => {
               onActionClick={handleBankingAction}
               isTravelModeActive={isTravelModeActive}
               isCdbSweepScheduled={isCdbSweepScheduled}
+              isCdiTransferDone={isCdiTransferDone}
               isOpenFinanceRefiDone={isOpenFinanceRefiDone}
               isPixBlocked={isPixBlocked}
               activeRunningAgentId={activeRunningAgentId}
@@ -871,6 +797,10 @@ export const App: React.FC = () => {
               agentStates={agentStates}
               onUserQuery={handleUserQuery}
               onTurnComplete={handleTurnComplete}
+              isLocked={isLocked}
+              onUnlock={() => setIsLocked(false)}
+              onLock={() => setIsLocked(true)}
+              onPredictiveAlertClick={handlePredictiveAlertClick}
             />
           </div>
 

@@ -59,12 +59,22 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
   const recognitionRef = useRef<any>(null);
   const nextPlayTimeRef = useRef<number>(0);
   const isManuallyStoppedRef = useRef<boolean>(false);
+  const isListeningRef = useRef<boolean>(false);
   const isSpeakingRef = useRef<boolean>(false);
+  const isAssistantAudioPlayingRef = useRef<boolean>(false);
   const activeSourcesRef = useRef<AudioBufferSourceNode[]>([]);
   const isProcessingRef = useRef<boolean>(false);
+  const isTurnActiveRef = useRef<boolean>(false);
+  const latestServerTurnRef = useRef<number>(0);
+  const abortedTurnIdRef = useRef<number>(-1);
   const lastAssistantSpokenTimeRef = useRef<number>(0);
+  const playbackCooldownTimerRef = useRef<any>(null);
+  const recentAssistantTextRef = useRef<string>('');
   const lastSentQueryRef = useRef<{ text: string; time: number }>({ text: '', time: 0 });
+  const pendingPromptRef = useRef<string | null>(null);
   const animFrameIdRef = useRef<number | null>(null);
+  const speechDebounceTimerRef = useRef<any>(null);
+  const latestSpokenTextRef = useRef<string>('');
 
   // Initialize or get playback AudioContext
   const getPlaybackContext = useCallback(() => {
@@ -80,6 +90,10 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
 
   // Stop any active playing audio sources (barge-in / clear queue)
   const stopAllAudioPlayback = useCallback(() => {
+    if (playbackCooldownTimerRef.current) {
+      clearTimeout(playbackCooldownTimerRef.current);
+      playbackCooldownTimerRef.current = null;
+    }
     activeSourcesRef.current.forEach(source => {
       try {
         source.stop();
@@ -89,7 +103,69 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
     activeSourcesRef.current = [];
     nextPlayTimeRef.current = 0;
     isSpeakingRef.current = false;
+    isAssistantAudioPlayingRef.current = false;
     setIsSpeaking(false);
+  }, []);
+
+  // Check if recognized text is an echo of the assistant's own output
+  const isSelfEcho = useCallback((text: string): boolean => {
+    const lower = text.toLowerCase().trim();
+    if (!lower) return true;
+
+    // Reject short audio artifacts (e.g. "hi", "uh", "yes", "hear", "me", "i", "can") if spoken right around assistant speech
+    const now = Date.now();
+    if (now - lastAssistantSpokenTimeRef.current < 2500) {
+      const trivialWords = ['hi', 'uh', 'yes', 'hear', 'me', 'i', 'can', 'yeah', 'so', 'ok', 'okay', 'hum'];
+      if (trivialWords.includes(lower)) {
+        return true;
+      }
+    }
+
+    // Common phrases spoken by Itaú Concierge or mistranscribed by Web Speech API
+    const assistantEchoPatterns = [
+      'how can i assist',
+      'how can i help',
+      'ready to assist',
+      'i am ready to assist',
+      'i am itau concierge',
+      'sou o itau concierge',
+      'posso ajudar',
+      'posso te ajudar',
+      'pronto para ajudar',
+      'como posso ajudar',
+      'assist you with your accounts',
+      'would you like assistance',
+      'assistance with your accounts',
+      'assist with your',
+      'listening mr silva',
+      'mr silva yeah',
+      'can i insist you',
+      'insist you with your accounts',
+      'mr silva',
+      'sr silva',
+      'scheduled debits next thursday',
+      'debitos agendados na proxima quinta'
+    ];
+
+    for (const pattern of assistantEchoPatterns) {
+      if (lower.includes(pattern)) {
+        return true;
+      }
+    }
+
+    // Compare against recent assistant spoken text
+    if (recentAssistantTextRef.current) {
+      const assistantWords = recentAssistantTextRef.current.toLowerCase();
+      const userWords = lower.split(/\s+/).filter(w => w.length > 3);
+      if (userWords.length >= 2) {
+        const matches = userWords.filter(w => assistantWords.includes(w)).length;
+        if (matches / userWords.length >= 0.7) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }, []);
 
   // Convert Base64 PCM (16-bit LE, 24kHz) to Float32Array
@@ -108,13 +184,35 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
     return float32Array;
   }, []);
 
+  // Safe restart of speech recognition after playback completes
+  const safeRestartRecognitionRef = useRef<() => void>(() => {});
+
   // Play continuous PCM chunks without gaps
-  const queueAndPlayPCM = useCallback((pcmChunk: Float32Array) => {
+  const queueAndPlayPCM = useCallback((pcmChunk: Float32Array, turnId?: number) => {
+    // Drop chunks if this turn was aborted by user barge-in
+    if (turnId !== undefined && turnId <= abortedTurnIdRef.current) {
+      console.log(`[Audio] Ignored chunk from aborted Turn ${turnId} (aborted up to: ${abortedTurnIdRef.current})`);
+      return;
+    }
+
     const ctx = getPlaybackContext();
     if (!ctx) return;
 
+    // Immediately stop & abort recognition so it doesn't hear the speaker output!
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.abort();
+      } catch {}
+    }
+
     isSpeakingRef.current = true;
+    isAssistantAudioPlayingRef.current = true;
     setIsSpeaking(true);
+
+    if (playbackCooldownTimerRef.current) {
+      clearTimeout(playbackCooldownTimerRef.current);
+      playbackCooldownTimerRef.current = null;
+    }
 
     const buffer = ctx.createBuffer(1, pcmChunk.length, 24000);
     buffer.copyToChannel(pcmChunk, 0);
@@ -149,27 +247,43 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
     ]);
 
     source.onended = () => {
-      // Remove from active list
       activeSourcesRef.current = activeSourcesRef.current.filter(s => s !== source);
 
-      // Check if all queued audio is finished
-      if (ctx.currentTime >= nextPlayTimeRef.current - 0.08) {
+      // Check if all queued audio has finished playing
+      if (ctx.currentTime >= nextPlayTimeRef.current - 0.08 || activeSourcesRef.current.length === 0) {
         lastAssistantSpokenTimeRef.current = Date.now();
-        // Cooldown buffer before re-enabling mic listening
-        setTimeout(() => {
+        if (playbackCooldownTimerRef.current) {
+          clearTimeout(playbackCooldownTimerRef.current);
+        }
+        // Minimal 100ms buffer just to let final audio chunk finish
+        playbackCooldownTimerRef.current = setTimeout(() => {
           if (activeSourcesRef.current.length === 0) {
             isSpeakingRef.current = false;
+            isAssistantAudioPlayingRef.current = false;
+            isTurnActiveRef.current = false; // Turn is officially over!
             setIsSpeaking(false);
             setAudioLevels([15, 25, 40, 20, 35, 15, 30, 20, 25]);
+            // Restart recognition immediately so user can respond without lag!
+            if (!isManuallyStoppedRef.current && isListeningRef.current) {
+              safeRestartRecognitionRef.current();
+            }
           }
-        }, 500);
+        }, 100);
       }
     };
   }, [getPlaybackContext]);
 
   // Connect WebSocket
-  const connect = useCallback(() => {
+  const connect = useCallback((initialPrompt?: string) => {
+    if (initialPrompt) {
+      pendingPromptRef.current = initialPrompt;
+    }
+
     if (wsRef.current && (wsRef.current.readyState === WebSocket.OPEN || wsRef.current.readyState === WebSocket.CONNECTING)) {
+      if (initialPrompt && wsRef.current.readyState === WebSocket.OPEN) {
+        pendingPromptRef.current = null;
+        sendTextQuery(initialPrompt);
+      }
       return;
     }
 
@@ -186,6 +300,12 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
       setIsConnected(true);
       isProcessingRef.current = false;
       setIsProcessing(false);
+
+      if (pendingPromptRef.current) {
+        const promptToSend = pendingPromptRef.current;
+        pendingPromptRef.current = null;
+        sendTextQuery(promptToSend);
+      }
     };
 
     ws.onmessage = (event) => {
@@ -193,14 +313,28 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
       try {
         const data = JSON.parse(event.data);
 
+        // Turn ID gating: record server turn and ignore old aborted turns
+        if (data.turn_id !== undefined) {
+          latestServerTurnRef.current = data.turn_id;
+          if (data.turn_id <= abortedTurnIdRef.current) {
+            return;
+          }
+        }
+
         // Raw Audio PCM chunk from Gemini Live
         if (data.audio_pcm_24k) {
+          // Immediately silence speech recognition so no speaker output leaks into mic!
+          if (recognitionRef.current) {
+            try { recognitionRef.current.abort(); } catch {}
+          }
+          isAssistantAudioPlayingRef.current = true;
           const pcm = decodePCM24k(data.audio_pcm_24k);
-          queueAndPlayPCM(pcm);
+          queueAndPlayPCM(pcm, data.turn_id);
         }
 
         // Text transcript piece
         if (data.text) {
+          recentAssistantTextRef.current += data.text;
           setTranscript(prev => {
             const last = prev[prev.length - 1];
             if (last && last.role === 'assistant') {
@@ -245,11 +379,14 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
       setIsListening(false);
       setIsSpeaking(false);
       isSpeakingRef.current = false;
+      isAssistantAudioPlayingRef.current = false;
       isProcessingRef.current = false;
+      isTurnActiveRef.current = false;
+      setAudioLevels([15, 20, 15, 25, 15, 20, 15, 15, 10]);
     };
 
     wsRef.current = ws;
-  }, [decodePCM24k, queueAndPlayPCM]);
+  }, [queueAndPlayPCM]);
 
   // Send text query
   const sendTextQuery = useCallback((text: string) => {
@@ -263,6 +400,12 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
       return;
     }
     lastSentQueryRef.current = { text: cleanText, time: now };
+
+    // Abort previous server turn audio if new user query interrupts
+    if (latestServerTurnRef.current > 0) {
+      abortedTurnIdRef.current = latestServerTurnRef.current;
+    }
+    isTurnActiveRef.current = true;
 
     // Barge-in: stop any playing assistant speech when new user query arrives
     stopAllAudioPlayback();
@@ -279,12 +422,18 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
       wsRef.current.send(JSON.stringify({
         text_input: cleanText
       }));
+    } else {
+      pendingPromptRef.current = cleanText;
+      if (!wsRef.current || wsRef.current.readyState === WebSocket.CLOSED) {
+        connect();
+      }
     }
-  }, [stopAllAudioPlayback]);
+  }, [stopAllAudioPlayback, connect]);
 
   // Disconnect WebSocket & teardown all mic streams
   const disconnect = useCallback(() => {
     isManuallyStoppedRef.current = true;
+    isListeningRef.current = false;
     stopAllAudioPlayback();
 
     if (animFrameIdRef.current) {
@@ -316,6 +465,7 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
     setIsSpeaking(false);
     setIsListening(false);
     isSpeakingRef.current = false;
+    isAssistantAudioPlayingRef.current = false;
     isProcessingRef.current = false;
     setAudioLevels([15, 20, 15, 25, 15, 20, 15, 15, 10]);
   }, [stopAllAudioPlayback]);
@@ -323,6 +473,7 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
   // Start continuous microphone with acoustic echo suppression
   const startMicrophone = useCallback(async () => {
     isManuallyStoppedRef.current = false;
+    isListeningRef.current = true;
     try {
       if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
         connect();
@@ -332,43 +483,55 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       if (SpeechRecognition) {
         const initRec = () => {
-          if (isManuallyStoppedRef.current) return;
+          if (isManuallyStoppedRef.current || !isListeningRef.current) return;
+          if (isAssistantAudioPlayingRef.current || isSpeakingRef.current) {
+            console.log("[Mic] Delayed start because assistant is speaking.");
+            return;
+          }
+
+          if (recognitionRef.current) {
+            try { recognitionRef.current.abort(); } catch {}
+          }
+
           const rec = new SpeechRecognition();
           rec.lang = langRef.current === 'en' ? 'en-US' : 'pt-BR';
           rec.continuous = false;
           rec.interimResults = false;
 
           rec.onresult = (e: any) => {
-            // ACOUSTIC ECHO & MID-FLIGHT SUPPRESSION:
-            // If the model is currently speaking or processing/generating, ignore microphone input so it doesn't self-hear!
-            if (isSpeakingRef.current || isProcessingRef.current) {
-              console.log("Suppressed echo input while model was speaking or processing.");
+            // Ignore if assistant is actively speaking to prevent echo
+            if (isAssistantAudioPlayingRef.current || isSpeakingRef.current) {
               return;
             }
 
-            const now = Date.now();
-            if (now - lastAssistantSpokenTimeRef.current < 650) {
-              console.log("Suppressed input within post-speech cooldown buffer.");
+            const spokenText = e.results?.[0]?.[0]?.transcript;
+            if (!spokenText || !spokenText.trim()) return;
+
+            const cleanText = spokenText.trim();
+            if (isSelfEcho(cleanText)) {
               return;
             }
 
-            const spokenText = e.results[0][0].transcript;
-            if (spokenText && spokenText.trim()) {
-              console.log("Spoken transcript recognized from cardholder:", spokenText);
-              sendTextQuery(spokenText.trim());
+            latestSpokenTextRef.current = cleanText;
+            if (speechDebounceTimerRef.current) {
+              clearTimeout(speechDebounceTimerRef.current);
             }
+            speechDebounceTimerRef.current = setTimeout(() => {
+              const textToSend = latestSpokenTextRef.current;
+              if (textToSend) {
+                console.log("[Mic] Sending complete cardholder phrase:", textToSend);
+                sendTextQuery(textToSend);
+                latestSpokenTextRef.current = '';
+              }
+            }, 350);
           };
 
           rec.onend = () => {
-            // Auto-restart listening if mic is still active and not manually stopped
-            if (!isManuallyStoppedRef.current) {
-              setTimeout(() => {
-                if (!isManuallyStoppedRef.current) {
-                  try {
-                    rec.start();
-                  } catch {}
-                }
-              }, 150);
+            // Restart immediately if still in call and assistant is not speaking
+            if (!isManuallyStoppedRef.current && isListeningRef.current && !isAssistantAudioPlayingRef.current && !isSpeakingRef.current) {
+              try {
+                rec.start();
+              } catch {}
             }
           };
 
@@ -380,6 +543,7 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
           }
         };
 
+        safeRestartRecognitionRef.current = initRec;
         initRec();
       }
 
@@ -416,7 +580,7 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
         const avg = Math.min(100, (sum / bufferLength) * 1.5);
         
         // Only update mic waveform when user is speaking and model is NOT speaking
-        if (!isSpeakingRef.current && avg > 5) {
+        if (!isSpeakingRef.current && !isAssistantAudioPlayingRef.current && avg > 5) {
           setAudioLevels([
             Math.max(10, avg * 0.5),
             Math.max(20, avg * 0.8),
@@ -438,7 +602,7 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
       console.error("Failed to start mic stream:", err);
       setIsListening(false);
     }
-  }, [connect, sendTextQuery]);
+  }, [connect, isSelfEcho, sendTextQuery]);
 
   // Stop microphone
   const stopMicrophone = useCallback(() => {
