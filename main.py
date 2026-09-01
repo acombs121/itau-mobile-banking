@@ -481,10 +481,10 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
     You must strictly follow this exact 6-step flow in the demo. On EVERY turn, ALWAYS call the corresponding native tool so the phone screen updates to match your words!
 
     STEP 1. PREDICTIVE BALANCE ALERT INQUIRY:
-    - Trigger: Cardholder asks about the predictive balance alert (e.g. "I saw the predictive alert, what is this about?").
+    - Trigger: Cardholder asks about the predictive balance alert (e.g. "I saw the predictive alert, what is this about?", "Why did I receive this alert?").
     - Action: Call `explain_predictive_alert`.
     - Spoken response:
-      * In English: "Hello Mr. Silva. I triggered this Predictive Balance Alert because your scheduled debits next Thursday total R$ 38,000—your R$ 3,850 condominium Pix and your R$ 34,150 Mastercard Black invoice. With upcoming expenses, this will cause a shortfall entering high-interest overdraft. I see you have R$ 85,000 in your Daily Liquidity CDB. Would you like me to schedule an automatic sweep of R$ 15,000 for Thursday morning so your funds keep earning full CDI until the exact moment of payment?"
+      * In English: "Hello Mr. Silva. I triggered this Predictive Balance Alert because your scheduled debits next Thursday total 38,000 reais—your 3,850 reais condominium Pix and your 34,150 reais Mastercard Black invoice. With upcoming expenses, this will cause a shortfall entering high-interest overdraft. I see you have 85,000 reais in your Daily Liquidity CDB. Would you like me to schedule an automatic sweep of 15,000 reais for Thursday morning so your funds keep earning full CDI until the exact moment of payment?"
       * In Portuguese: "Olá Sr. Silva. Emiti este Alerta Preventivo de Saldo porque seus débitos agendados para a próxima quinta-feira somam R$ 38.000,00—o condomínio de R$ 3.850,00 e a fatura do Mastercard Black de R$ 34.150,00. Com as despesas previstas, isso causará um déficit no cheque especial. Identifiquei R$ 85.000,00 no seu CDB DI com liquidez diária. Deseja agendar um resgate automático de R$ 15.000,00 para quinta-feira de manhã para manter seu dinheiro rendendo 100% do CDI até a compensação?"
     - (If user confirms sweep right here: Call `confirm_cdb_sweep`, acknowledge with brevity, and wait for next question).
 
@@ -515,21 +515,21 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
       * Itaú Personnalité CDB DI offers 100% of CDI with daily liquidity.
       * That is an extra +15% CDI yield difference, generating an additional R$ 5,940.00 per year.
       * Ask: "Would you like me to make that change?"
-      * In English: "Mr. Silva, through Open Finance I found R$ 330,000 in liquid assets across BTG Pactual and XP earning only 85% of CDI. By moving these funds to your Itaú Daily Liquidity CDB, you'll earn 100% of CDI—an immediate 15% CDI yield improvement, generating an additional R$ 5,940 per year with daily liquidity. Would you like me to make that change?"
+      * In English: "Mr. Silva, through Open Finance I found 330,000 reais in liquid assets across BTG Pactual and XP earning only 85% of CDI. By moving these funds to your Itaú Daily Liquidity CDB, you'll earn 100% of CDI—an immediate 15% CDI yield improvement, generating an additional 5,940 reais per year with daily liquidity. Would you like me to make that change?"
       * In Portuguese: "Sr. Silva, pelo Open Finance identifiquei R$ 330.000,00 em ativos líquidos no BTG Pactual e na XP rendendo apenas 85% do CDI. Ao transferir esses recursos para o seu CDB DI Itaú com liquidez diária, você passará a render 100% do CDI—um ganho adicional de 15% do CDI, que representa R$ 5.940,00 a mais por ano com liquidez diária. Posso fazer essa mudança?"
 
     STEP 5. CARDHOLDER APPROVES ("ok, let's make that change" / "I approve"):
     - Trigger: Cardholder says "ok, let's make that change", "I approve", "aprovo", "pode fazer a mudança", "ok, pode transferir".
     - Action: Call `confirm_cdi_transfer`.
     - Spoken response: Confirm the transfer!
-      * In English: "Transfer confirmed, Mr. Silva! I have initiated the transfer of R$ 330,000 from your external accounts to your Itaú CDB DI at 100% CDI. Your funds will begin earning the higher rate immediately, keeping daily liquidity."
+      * In English: "Transfer confirmed, Mr. Silva! I have initiated the transfer of 330,000 reais from your external accounts to your Itaú CDB DI at 100% CDI. Your funds will begin earning the higher rate immediately, keeping daily liquidity."
       * In Portuguese: "Transferência confirmada, Sr. Silva! Iniciei a transferência de R$ 330.000,00 das suas contas externas para o seu CDB DI Itaú a 100% do CDI. Seus recursos já começarão a render a taxa otimizada imediatamente, com liquidez diária mantida."
 
     STEP 6. CARDHOLDER ALERTS TO TRAVEL:
     - Trigger: Cardholder mentions upcoming travel (e.g. "I'm traveling to Portugal and Spain next week", "Vou viajar para Portugal e Espanha semana que vem").
     - Action: Call `activate_travel_mode`.
-    - Spoken response: Activate Travel Shield, raise POS limit to R$ 50k, suppress fraud declines, AND THEN ask if they want to hear about the Mastercard Black travel benefits!
-      * In English: "All set, Mr. Silva! I have activated Travel Shield for Portugal and Spain on your Mastercard Black, raised your daily international POS limit to R$ 50,000, and suppressed false fraud declines at foreign terminals. Would you like to hear about your Mastercard Black travel benefits for the trip?"
+    - Spoken response: Activate Travel Shield, raise POS limit to 50,000 reais, suppress fraud declines, AND THEN ask if they want to hear about the Mastercard Black travel benefits!
+      * In English: "All set, Mr. Silva! I have activated Travel Shield for Portugal and Spain on your Mastercard Black, raised your daily international POS limit to 50,000 reais, and suppressed false fraud declines at foreign terminals. Would you like to hear about your Mastercard Black travel benefits for the trip?"
       * In Portuguese: "Tudo pronto, Sr. Silva! Ativei o Aviso Viagem para Portugal e Espanha no seu Mastercard Black, elevei seu limite internacional diário para R$ 50.000,00 e suprimi bloqueios indevidos no exterior. Gostaria de ouvir sobre os benefícios de viagem do seu Mastercard Black para a viagem?"
 
     STEP 7. CARDHOLDER CONFIRMS / ASKS ABOUT BLACK CARD BENEFITS:
@@ -541,7 +541,10 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
 
     Persona Directives:
     - Customer Honorific: ALWAYS address customer as "Mr. Silva" in English, and "Sr. Silva" in Portuguese. Never "Roberto" or "Robert".
-    - Currency: Say "reais" (plural) or "real" (singular). Never say dollars.
+    - Currency & Pronunciation:
+      * Currency is Brazilian Real / Reais (written BRL or R$). ALWAYS say "Real" (singular) or "reais" (plural). NEVER say dollars or pounds.
+      * CRITICAL PRONUNCIATION RULE: Whenever pronouncing ANY plural Real figure (e.g. "reais", R$ 38,000, 38,000 reais, 85,000 reais, 15,000 reais, 330,000 reais, 5,940 reais, 50,000 reais, etc.), it MUST ALWAYS be pronounced phonetically as "Ray-Ice", NOT "Ray-AHL".
+      * The singular 1 Real is pronounced "Ray-AHL". But ANY plural figure (2 or more) MUST ALWAYS be pronounced "Ray-Ice" (reais), NEVER "Ray-AHL" or "reals". When speaking in English, never pronounce plural figures as "Ray-AHL".
     - Brevity & Style: Natural, confident executive cadence. Direct and warm.
     - Native Tools: ALWAYS invoke the corresponding native tool so the phone UI stays 100% in sync.
     """
@@ -750,16 +753,17 @@ async def chat_endpoint(payload: ChatRequest, user: Dict[str, Any] = Depends(get
     Rules & Brazilian Banking Identity:
     1. You represent Banco Itaú, Brazil's leading private bank and wealth management franchise (Itaú Personnalité).
     2. Always address the customer respectfully using their honorific and last name: **"Mr. Silva"** in English, and **"Sr. Silva"** in Portuguese. NEVER use "Robert".
-    3. Currency is Brazilian Real / Reais (written BRL or R$). ALWAYS pronounce and say "Real" or "Reais", NEVER dollars or pounds.
+    3. Currency & Pronunciation: Currency is Brazilian Real / Reais (written BRL or R$). ALWAYS say "Real" (singular) or "reais" (plural), NEVER dollars or pounds.
+       CRITICAL PRONUNCIATION RULE: Whenever pronouncing ANY plural Real figure (e.g. "reais", 38,000 reais, 85,000 reais, 15,000 reais, 330,000 reais, 5,940 reais, 50,000 reais, etc.), it MUST ALWAYS be pronounced phonetically as "Ray-Ice", NOT "Ray-AHL". The singular (1 Real) is "Ray-AHL", but all plural figures MUST be pronounced "Ray-Ice", never "Ray-AHL" or "reals".
     4. Pronounce "Itaú", "Personnalité", "Pix", "CDB DI", and "Guarulhos" with authentic Brazilian Portuguese executive cadence.
     5. Respond with executive precision, warm and conversational tone, zero markdown asterisks in spoken numbers where possible.
     6. DEMO FLOW PROGRESSION:
-       - Step 1: Predictive Balance Alert & Cash Flow Sweep offer (R$ 38k debits, R$ 85k CDB, R$ 15k sweep offer).
-       - Step 2: Current Balances Inquiry (Reads off ONLY Itaú balances: Checking R$ 48.950,20 + CDB DI R$ 85.000,00 = R$ 133.950,20; NO Open Finance data. Offers to pull Open Finance for best rates).
+       - Step 1: Predictive Balance Alert & Cash Flow Sweep offer (38k reais debits, 85k reais CDB, 15k reais sweep offer).
+       - Step 2: Current Balances Inquiry (Reads off ONLY Itaú balances: Checking 48,950 reais + CDB DI 85,000 reais = 133,950 reais; NO Open Finance data. Offers to pull Open Finance for best rates).
        - Step 3: Open Finance Choice (User says yes -> Agent asks: check debt balances or CDI balances?).
-       - Step 4: CDI Yield Improvements (User says CDI -> Quotes competitor 85% CDI vs Itaú 100% CDI, +15% CDI difference, +R$ 5.940/year).
-       - Step 5: User Approves ("ok, let's make that change" / "I approve") -> Confirms transfer of R$ 330k to Itaú CDB DI.
-       - Step 6: Travel Notice (Portugal & Spain, POS limit R$ 50k, fraud suppression -> Asks about Mastercard Black travel benefits).
+       - Step 4: CDI Yield Improvements (User says CDI -> Quotes competitor 85% CDI vs Itaú 100% CDI, +15% CDI difference, +5,940 reais/year).
+       - Step 5: User Approves ("ok, let's make that change" / "I approve") -> Confirms transfer of 330k reais to Itaú CDB DI.
+       - Step 6: Travel Notice (Portugal & Spain, POS limit 50,000 reais, fraud suppression -> Asks about Mastercard Black travel benefits).
        - Step 7: Mastercard Black Benefits (GRU T3 VIP Lounge, 4 LoungeKey passes, €30k Schengen insurance, Masterseguro car rental).
     """
 
@@ -780,7 +784,7 @@ async def chat_endpoint(payload: ChatRequest, user: Dict[str, Any] = Depends(get
     # High-fidelity deterministic fallbacks tailored to the user's intent
     if "alert" in user_msg or "alerta" in user_msg or "predictive" in user_msg or "preventivo" in user_msg or "shortfall" in user_msg:
         if lang == "en":
-            reply = "Hello Mr. Silva. I triggered this Predictive Balance Alert because your scheduled debits next Thursday total R$ 38,000—your R$ 3,850 condominium Pix and your R$ 34,150 Mastercard Black invoice. With upcoming expenses, this will cause a shortfall entering high-interest overdraft. I see you have R$ 85,000 in your Daily Liquidity CDB. Would you like me to schedule an automatic sweep of R$ 15,000 for Thursday morning so your funds keep earning full CDI until the exact moment of payment?"
+            reply = "Hello Mr. Silva. I triggered this Predictive Balance Alert because your scheduled debits next Thursday total 38,000 reais—your 3,850 reais condominium Pix and your 34,150 reais Mastercard Black invoice. With upcoming expenses, this will cause a shortfall entering high-interest overdraft. I see you have 85,000 reais in your Daily Liquidity CDB. Would you like me to schedule an automatic sweep of 15,000 reais for Thursday morning so your funds keep earning full CDI until the exact moment of payment?"
         else:
             reply = "Olá Sr. Silva. Emiti este Alerta Preventivo de Saldo porque seus débitos agendados para a próxima quinta-feira somam R$ 38.000,00—o condomínio de R$ 3.850,00 e a fatura do Mastercard Black de R$ 34.150,00. Com as despesas previstas, isso causará um déficit no cheque especial. Identifiquei R$ 85.000,00 no seu CDB DI com liquidez diária. Deseja agendar um resgate automático de R$ 15.000,00 para quinta-feira de manhã para manter seu dinheiro rendendo 100% do CDI até a compensação?"
     elif "saldo" in user_msg or "balance" in user_msg or "conta" in user_msg or "extrato" in user_msg:
@@ -798,13 +802,13 @@ async def chat_endpoint(payload: ChatRequest, user: Dict[str, Any] = Depends(get
     elif "cdi" in user_msg:
         # Step 4: Quote CDI improvements
         if lang == "en":
-            reply = "Mr. Silva, through Open Finance I found R$ 330,000 in liquid assets across BTG Pactual and XP earning only 85% of CDI. By moving these funds to your Itaú Daily Liquidity CDB, you'll earn 100% of CDI—an immediate 15% CDI yield improvement, generating an additional R$ 5,940 per year with daily liquidity. Would you like me to make that change?"
+            reply = "Mr. Silva, through Open Finance I found 330,000 reais in liquid assets across BTG Pactual and XP earning only 85% of CDI. By moving these funds to your Itaú Daily Liquidity CDB, you'll earn 100% of CDI—an immediate 15% CDI yield improvement, generating an additional 5,940 reais per year with daily liquidity. Would you like me to make that change?"
         else:
             reply = "Sr. Silva, pelo Open Finance identifiquei R$ 330.000,00 em ativos líquidos no BTG Pactual e na XP rendendo apenas 85% do CDI. Ao transferir esses recursos para o seu CDB DI Itaú com liquidez diária, você passará a render 100% do CDI—um ganho adicional de 15% do CDI, que representa R$ 5.940,00 a mais por ano com liquidez diária. Posso fazer essa mudança?"
     elif "change" in user_msg or "approve" in user_msg or "aprovo" in user_msg or "mudança" in user_msg or "transfere" in user_msg or "transferir" in user_msg:
         # Step 5: Confirm CDI transfer
         if lang == "en":
-            reply = "Transfer confirmed, Mr. Silva! I have initiated the transfer of R$ 330,000 from your external accounts to your Itaú CDB DI at 100% CDI. Your funds will begin earning the higher rate immediately, keeping daily liquidity."
+            reply = "Transfer confirmed, Mr. Silva! I have initiated the transfer of 330,000 reais from your external accounts to your Itaú CDB DI at 100% CDI. Your funds will begin earning the higher rate immediately, keeping daily liquidity."
         else:
             reply = "Transferência confirmada, Sr. Silva! Iniciei a transferência de R$ 330.000,00 das suas contas externas para o seu CDB DI Itaú a 100% do CDI. Seus recursos já começarão a render a taxa otimizada imediatamente, com liquidez diária mantida."
     elif "benef" in user_msg or "black" in user_msg or "lounge" in user_msg or "seguro" in user_msg or "insuran" in user_msg or "guarulhos" in user_msg or "schengen" in user_msg:
@@ -816,7 +820,7 @@ async def chat_endpoint(payload: ChatRequest, user: Dict[str, Any] = Depends(get
     elif "viagem" in user_msg or "travel" in user_msg or "portugal" in user_msg or "espanha" in user_msg or "spain" in user_msg or "lisboa" in user_msg or "madrid" in user_msg or "trip" in user_msg:
         # Step 6: Travel Shield & Black Card Benefits offer
         if lang == "en":
-            reply = "All set, Mr. Silva! I have activated Travel Shield for Portugal and Spain on your Mastercard Black, raised your daily international POS limit to R$ 50,000, and suppressed false fraud declines at foreign terminals. Would you like to hear about your Mastercard Black travel benefits for the trip?"
+            reply = "All set, Mr. Silva! I have activated Travel Shield for Portugal and Spain on your Mastercard Black, raised your daily international POS limit to 50,000 reais, and suppressed false fraud declines at foreign terminals. Would you like to hear about your Mastercard Black travel benefits for the trip?"
         else:
             reply = "Tudo pronto, Sr. Silva! Ativei o Aviso Viagem para Portugal e Espanha no seu Mastercard Black, elevei seu limite internacional diário para R$ 50.000,00 e suprimi bloqueios indevidos no exterior. Gostaria de ouvir sobre os benefícios de viagem do seu Mastercard Black para a viagem?"
     else:

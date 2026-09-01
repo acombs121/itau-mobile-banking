@@ -206,15 +206,11 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
               <div className="my-auto py-2">
                 <div 
                   onClick={() => {
-                    const alertQuery = currentLang === 'en'
-                      ? "I saw the Predictive Balance Alert. What is this alert about?"
-                      : "Vi o Alerta Preventivo de Saldo. Do que se trata este alerta?";
                     if (onPredictiveAlertClick) {
                       onPredictiveAlertClick();
                     } else if (onUnlock) {
                       onUnlock();
                     }
-                    connect(alertQuery);
                   }}
                   className="w-full bg-[#1A1A22]/95 backdrop-blur-xl border border-brand-orange/40 hover:border-brand-orange rounded-[18px] p-4 shadow-[0_12px_40px_rgba(0,0,0,0.85),0_0_24px_rgba(255,100,35,0.18)] cursor-pointer hover:scale-[1.02] active:scale-[0.99] transition-all duration-200 group"
                 >

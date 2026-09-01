@@ -799,7 +799,10 @@ export const App: React.FC = () => {
               onTurnComplete={handleTurnComplete}
               isLocked={isLocked}
               onUnlock={() => setIsLocked(false)}
-              onLock={() => setIsLocked(true)}
+              onLock={() => {
+                setIsLocked(true);
+                setIsCallActive(false);
+              }}
               onPredictiveAlertClick={handlePredictiveAlertClick}
             />
           </div>

@@ -467,6 +467,7 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
     isSpeakingRef.current = false;
     isAssistantAudioPlayingRef.current = false;
     isProcessingRef.current = false;
+    pendingPromptRef.current = null;
     setAudioLevels([15, 20, 15, 25, 15, 20, 15, 15, 10]);
   }, [stopAllAudioPlayback]);
 
