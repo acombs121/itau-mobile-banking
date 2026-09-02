@@ -186,8 +186,8 @@ export const CockpitHeader: React.FC<CockpitHeaderProps> = ({
               {/* Header inside Panel */}
               <div className={`flex items-center justify-between pb-3 mb-3 border-b ${isDark ? 'border-white/[0.08]' : 'border-slate-200'}`}>
                 <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-md bg-white/10 border border-white/15 text-white flex items-center justify-center">
-                    <Settings className="w-3.5 h-3.5 text-white" />
+                  <div className={`w-6 h-6 rounded-md flex items-center justify-center border ${isDark ? 'bg-white/10 border-white/15 text-white' : 'bg-orange-50 border-orange-200 text-brand-orange'}`}>
+                    <Settings className="w-3.5 h-3.5 text-current" />
                   </div>
                   <div>
                     <h3 className="text-xs font-bold uppercase tracking-wider text-brand-orange">
@@ -203,7 +203,7 @@ export const CockpitHeader: React.FC<CockpitHeaderProps> = ({
                   className={`p-1 rounded transition-colors ${isDark ? 'hover:bg-white/10 text-white/50 hover:text-white' : 'hover:bg-slate-100 text-slate-400 hover:text-slate-700'}`}
                   aria-label="Close panel"
                 >
-                  <X className="w-3.5 h-3.5 text-white" />
+                  <X className="w-3.5 h-3.5 text-current" />
                 </button>
               </div>
 
@@ -221,11 +221,13 @@ export const CockpitHeader: React.FC<CockpitHeaderProps> = ({
                   }`}
                 >
                   <div className="flex items-start gap-3 min-w-0">
-                    <div className="w-8 h-8 rounded-lg bg-white/10 border border-white/20 text-white flex items-center justify-center flex-shrink-0 mt-0.5 group-hover:bg-white/20 transition-all">
-                      <Palette className="w-4 h-4 text-white" />
+                    <div className={`w-8 h-8 rounded-lg border flex items-center justify-center flex-shrink-0 mt-0.5 transition-all ${
+                      isDark ? 'bg-white/10 border-white/20 text-white group-hover:bg-white/20' : 'bg-slate-100 border-slate-200 text-slate-700 group-hover:bg-slate-200'
+                    }`}>
+                      <Palette className="w-4 h-4 text-current" />
                     </div>
                     <div className="min-w-0">
-                      <div className={`text-xs font-bold flex items-center gap-1.5 ${isDark ? 'text-white' : 'text-slate-900'} group-hover:text-white transition-colors`}>
+                      <div className={`text-xs font-bold flex items-center gap-1.5 transition-colors ${isDark ? 'text-white group-hover:text-white' : 'text-slate-900 group-hover:text-brand-orange'}`}>
                         <span>{t.header.brandKitButton}</span>
                       </div>
                       <p className={`text-[11px] leading-relaxed mt-0.5 line-clamp-2 ${isDark ? 'text-white/55' : 'text-slate-500'}`}>
@@ -233,8 +235,8 @@ export const CockpitHeader: React.FC<CockpitHeaderProps> = ({
                       </p>
                     </div>
                   </div>
-                  <div className="flex-shrink-0 flex items-center gap-1 text-[10px] font-mono text-white/80 group-hover:text-white mt-1">
-                    <ExternalLink className="w-3.5 h-3.5 text-white" />
+                  <div className={`flex-shrink-0 flex items-center gap-1 text-[10px] font-mono mt-1 ${isDark ? 'text-white/80 group-hover:text-white' : 'text-slate-400 group-hover:text-brand-orange'}`}>
+                    <ExternalLink className="w-3.5 h-3.5 text-current" />
                   </div>
                 </a>
 
@@ -250,11 +252,13 @@ export const CockpitHeader: React.FC<CockpitHeaderProps> = ({
                   }`}
                 >
                   <div className="flex items-start gap-3 min-w-0">
-                    <div className="w-8 h-8 rounded-lg bg-white/10 border border-white/20 text-white flex items-center justify-center flex-shrink-0 mt-0.5 group-hover:bg-white/20 transition-all">
-                      <FileText className="w-4 h-4 text-white" />
+                    <div className={`w-8 h-8 rounded-lg border flex items-center justify-center flex-shrink-0 mt-0.5 transition-all ${
+                      isDark ? 'bg-white/10 border-white/20 text-white group-hover:bg-white/20' : 'bg-slate-100 border-slate-200 text-slate-700 group-hover:bg-slate-200'
+                    }`}>
+                      <FileText className="w-4 h-4 text-current" />
                     </div>
                     <div className="min-w-0">
-                      <div className={`text-xs font-bold flex items-center gap-1.5 ${isDark ? 'text-white' : 'text-slate-900'} group-hover:text-white transition-colors`}>
+                      <div className={`text-xs font-bold flex items-center gap-1.5 transition-colors ${isDark ? 'text-white group-hover:text-white' : 'text-slate-900 group-hover:text-brand-orange'}`}>
                         <span>{t.header.demoScriptButton}</span>
                       </div>
                       <p className={`text-[11px] leading-relaxed mt-0.5 line-clamp-2 ${isDark ? 'text-white/55' : 'text-slate-500'}`}>
@@ -262,8 +266,8 @@ export const CockpitHeader: React.FC<CockpitHeaderProps> = ({
                       </p>
                     </div>
                   </div>
-                  <div className="flex-shrink-0 flex items-center gap-1 text-[10px] font-mono text-white/80 group-hover:text-white mt-1">
-                    <ExternalLink className="w-3.5 h-3.5 text-white" />
+                  <div className={`flex-shrink-0 flex items-center gap-1 text-[10px] font-mono mt-1 ${isDark ? 'text-white/80 group-hover:text-white' : 'text-slate-400 group-hover:text-brand-orange'}`}>
+                    <ExternalLink className="w-3.5 h-3.5 text-current" />
                   </div>
                 </a>
 
@@ -279,11 +283,13 @@ export const CockpitHeader: React.FC<CockpitHeaderProps> = ({
                   }`}
                 >
                   <div className="flex items-start gap-3 min-w-0">
-                    <div className="w-8 h-8 rounded-lg bg-white/10 border border-white/20 text-white flex items-center justify-center flex-shrink-0 mt-0.5 group-hover:bg-white/20 transition-all">
-                      <Compass className="w-4 h-4 text-white" />
+                    <div className={`w-8 h-8 rounded-lg border flex items-center justify-center flex-shrink-0 mt-0.5 transition-all ${
+                      isDark ? 'bg-white/10 border-white/20 text-white group-hover:bg-white/20' : 'bg-slate-100 border-slate-200 text-slate-700 group-hover:bg-slate-200'
+                    }`}>
+                      <Compass className="w-4 h-4 text-current" />
                     </div>
                     <div className="min-w-0">
-                      <div className={`text-xs font-bold flex items-center gap-1.5 ${isDark ? 'text-white' : 'text-slate-900'} group-hover:text-white transition-colors`}>
+                      <div className={`text-xs font-bold flex items-center gap-1.5 transition-colors ${isDark ? 'text-white group-hover:text-white' : 'text-slate-900 group-hover:text-brand-orange'}`}>
                         <span>{t.header.scenariosMatrixButton}</span>
                       </div>
                       <p className={`text-[11px] leading-relaxed mt-0.5 line-clamp-2 ${isDark ? 'text-white/55' : 'text-slate-500'}`}>
@@ -291,16 +297,16 @@ export const CockpitHeader: React.FC<CockpitHeaderProps> = ({
                       </p>
                     </div>
                   </div>
-                  <div className="flex-shrink-0 flex items-center gap-1 text-[10px] font-mono text-white/80 group-hover:text-white mt-1">
-                    <ExternalLink className="w-3.5 h-3.5 text-white" />
+                  <div className={`flex-shrink-0 flex items-center gap-1 text-[10px] font-mono mt-1 ${isDark ? 'text-white/80 group-hover:text-white' : 'text-slate-400 group-hover:text-brand-orange'}`}>
+                    <ExternalLink className="w-3.5 h-3.5 text-current" />
                   </div>
                 </a>
               </div>
 
               {/* Footer Note */}
-              <div className={`mt-3 pt-2.5 border-t flex items-center justify-between text-[10px] ${isDark ? 'border-white/[0.06] text-white/40' : 'border-slate-200 text-slate-400'}`}>
+              <div className={`mt-3 pt-2.5 border-t flex items-center justify-between text-[10px] ${isDark ? 'border-white/[0.06] text-white/40' : 'border-slate-200 text-slate-500'}`}>
                 <span className="flex items-center gap-1">
-                  <ShieldCheck className="w-3 h-3 text-white" />
+                  <ShieldCheck className={`w-3 h-3 ${isDark ? 'text-white' : 'text-slate-500'}`} />
                   <span>Itaú Concierge Admin Mode</span>
                 </span>
                 <span className="font-mono text-[9px] uppercase tracking-wider opacity-70">

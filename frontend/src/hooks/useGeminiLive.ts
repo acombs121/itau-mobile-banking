@@ -17,6 +17,64 @@ export interface UseGeminiLiveOptions {
   onTurnComplete?: () => void;
 }
 
+// Resample audio buffer to 16kHz linear PCM
+const resampleTo16k = (input: Float32Array, fromRate: number): Float32Array => {
+  if (fromRate === 16000) return input;
+  const ratio = fromRate / 16000;
+  const newLength = Math.round(input.length / ratio);
+  const result = new Float32Array(newLength);
+  for (let i = 0; i < newLength; i++) {
+    const origIndex = i * ratio;
+    const indexLow = Math.floor(origIndex);
+    const indexHigh = Math.min(indexLow + 1, input.length - 1);
+    const weight = origIndex - indexLow;
+    result[i] = input[indexLow] * (1 - weight) + input[indexHigh] * weight;
+  }
+  return result;
+};
+
+// Convert Float32Array (-1.0 to 1.0) to 16-bit signed linear PCM (little-endian)
+const floatTo16BitPCM = (input: Float32Array): Uint8Array => {
+  const output = new Uint8Array(input.length * 2);
+  const view = new DataView(output.buffer);
+  for (let i = 0; i < input.length; i++) {
+    const s = Math.max(-1, Math.min(1, input[i]));
+    const intVal = s < 0 ? s * 0x8000 : s * 0x7FFF;
+    view.setInt16(i * 2, intVal, true);
+  }
+  return output;
+};
+
+// Efficient chunked Base64 encoding for PCM frames
+const base64EncodeUint8 = (bytes: Uint8Array): string => {
+  let binary = '';
+  const len = bytes.byteLength;
+  const chunkSize = 0x8000;
+  for (let i = 0; i < len; i += chunkSize) {
+    binary += String.fromCharCode.apply(
+      null,
+      bytes.subarray(i, Math.min(i + chunkSize, len)) as any
+    );
+  }
+  return btoa(binary);
+};
+
+// Convert Base64 24kHz 16-bit PCM to Float32Array for Web Audio playback
+const decodePCM24k = (base64Data: string): Float32Array => {
+  const binaryString = atob(base64Data);
+  const len = binaryString.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  const int16Array = new Int16Array(bytes.buffer);
+  const float32Array = new Float32Array(int16Array.length);
+  for (let i = 0; i < int16Array.length; i++) {
+    float32Array[i] = int16Array[i] / 32768.0;
+  }
+  return float32Array;
+};
+
 export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery, onTurnComplete }: UseGeminiLiveOptions) => {
   const [isConnected, setIsConnected] = useState(false);
   const [isListening, setIsListening] = useState(false);
@@ -56,27 +114,20 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
   const audioContextRef = useRef<AudioContext | null>(null);
   const playbackContextRef = useRef<AudioContext | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
-  const recognitionRef = useRef<any>(null);
+  const scriptProcessorRef = useRef<ScriptProcessorNode | null>(null);
+  const muteGainRef = useRef<GainNode | null>(null);
+  const inputSourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
+
   const nextPlayTimeRef = useRef<number>(0);
   const isManuallyStoppedRef = useRef<boolean>(false);
   const isListeningRef = useRef<boolean>(false);
   const isSpeakingRef = useRef<boolean>(false);
-  const isAssistantAudioPlayingRef = useRef<boolean>(false);
   const activeSourcesRef = useRef<AudioBufferSourceNode[]>([]);
-  const isProcessingRef = useRef<boolean>(false);
-  const isTurnActiveRef = useRef<boolean>(false);
-  const latestServerTurnRef = useRef<number>(0);
-  const abortedTurnIdRef = useRef<number>(-1);
-  const lastAssistantSpokenTimeRef = useRef<number>(0);
-  const playbackCooldownTimerRef = useRef<any>(null);
-  const recentAssistantTextRef = useRef<string>('');
-  const lastSentQueryRef = useRef<{ text: string; time: number }>({ text: '', time: 0 });
+  const playbackEndTimerRef = useRef<any>(null);
   const pendingPromptRef = useRef<string | null>(null);
   const animFrameIdRef = useRef<number | null>(null);
-  const speechDebounceTimerRef = useRef<any>(null);
-  const latestSpokenTextRef = useRef<string>('');
 
-  // Initialize or get playback AudioContext
+  // Initialize or get playback AudioContext (24kHz standard for Gemini Live audio)
   const getPlaybackContext = useCallback(() => {
     if (!playbackContextRef.current || playbackContextRef.current.state === 'closed') {
       const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
@@ -88,11 +139,11 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
     return playbackContextRef.current;
   }, []);
 
-  // Stop any active playing audio sources (barge-in / clear queue)
+  // Stop any active playing audio sources (barge-in / interruption)
   const stopAllAudioPlayback = useCallback(() => {
-    if (playbackCooldownTimerRef.current) {
-      clearTimeout(playbackCooldownTimerRef.current);
-      playbackCooldownTimerRef.current = null;
+    if (playbackEndTimerRef.current) {
+      clearTimeout(playbackEndTimerRef.current);
+      playbackEndTimerRef.current = null;
     }
     activeSourcesRef.current.forEach(source => {
       try {
@@ -103,116 +154,21 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
     activeSourcesRef.current = [];
     nextPlayTimeRef.current = 0;
     isSpeakingRef.current = false;
-    isAssistantAudioPlayingRef.current = false;
     setIsSpeaking(false);
   }, []);
 
-  // Check if recognized text is an echo of the assistant's own output
-  const isSelfEcho = useCallback((text: string): boolean => {
-    const lower = text.toLowerCase().trim();
-    if (!lower) return true;
-
-    // Reject short audio artifacts (e.g. "hi", "uh", "yes", "hear", "me", "i", "can") if spoken right around assistant speech
-    const now = Date.now();
-    if (now - lastAssistantSpokenTimeRef.current < 2500) {
-      const trivialWords = ['hi', 'uh', 'yes', 'hear', 'me', 'i', 'can', 'yeah', 'so', 'ok', 'okay', 'hum'];
-      if (trivialWords.includes(lower)) {
-        return true;
-      }
-    }
-
-    // Common phrases spoken by Itaú Concierge or mistranscribed by Web Speech API
-    const assistantEchoPatterns = [
-      'how can i assist',
-      'how can i help',
-      'ready to assist',
-      'i am ready to assist',
-      'i am itau concierge',
-      'sou o itau concierge',
-      'posso ajudar',
-      'posso te ajudar',
-      'pronto para ajudar',
-      'como posso ajudar',
-      'assist you with your accounts',
-      'would you like assistance',
-      'assistance with your accounts',
-      'assist with your',
-      'listening mr silva',
-      'mr silva yeah',
-      'can i insist you',
-      'insist you with your accounts',
-      'mr silva',
-      'sr silva',
-      'scheduled debits next thursday',
-      'debitos agendados na proxima quinta'
-    ];
-
-    for (const pattern of assistantEchoPatterns) {
-      if (lower.includes(pattern)) {
-        return true;
-      }
-    }
-
-    // Compare against recent assistant spoken text
-    if (recentAssistantTextRef.current) {
-      const assistantWords = recentAssistantTextRef.current.toLowerCase();
-      const userWords = lower.split(/\s+/).filter(w => w.length > 3);
-      if (userWords.length >= 2) {
-        const matches = userWords.filter(w => assistantWords.includes(w)).length;
-        if (matches / userWords.length >= 0.7) {
-          return true;
-        }
-      }
-    }
-
-    return false;
-  }, []);
-
-  // Convert Base64 PCM (16-bit LE, 24kHz) to Float32Array
-  const decodePCM24k = useCallback((base64Data: string): Float32Array => {
-    const binaryString = atob(base64Data);
-    const len = binaryString.length;
-    const bytes = new Uint8Array(len);
-    for (let i = 0; i < len; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-    const int16Array = new Int16Array(bytes.buffer);
-    const float32Array = new Float32Array(int16Array.length);
-    for (let i = 0; i < int16Array.length; i++) {
-      float32Array[i] = int16Array[i] / 32768.0;
-    }
-    return float32Array;
-  }, []);
-
-  // Safe restart of speech recognition after playback completes
-  const safeRestartRecognitionRef = useRef<() => void>(() => {});
-
-  // Play continuous PCM chunks without gaps
-  const queueAndPlayPCM = useCallback((pcmChunk: Float32Array, turnId?: number) => {
-    // Drop chunks if this turn was aborted by user barge-in
-    if (turnId !== undefined && turnId <= abortedTurnIdRef.current) {
-      console.log(`[Audio] Ignored chunk from aborted Turn ${turnId} (aborted up to: ${abortedTurnIdRef.current})`);
-      return;
-    }
-
+  // Play continuous 24kHz PCM chunks seamlessly
+  const queueAndPlayPCM = useCallback((pcmChunk: Float32Array) => {
     const ctx = getPlaybackContext();
     if (!ctx) return;
 
-    // Immediately stop & abort recognition so it doesn't hear the speaker output!
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.abort();
-      } catch {}
+    if (playbackEndTimerRef.current) {
+      clearTimeout(playbackEndTimerRef.current);
+      playbackEndTimerRef.current = null;
     }
 
     isSpeakingRef.current = true;
-    isAssistantAudioPlayingRef.current = true;
     setIsSpeaking(true);
-
-    if (playbackCooldownTimerRef.current) {
-      clearTimeout(playbackCooldownTimerRef.current);
-      playbackCooldownTimerRef.current = null;
-    }
 
     const buffer = ctx.createBuffer(1, pcmChunk.length, 24000);
     buffer.copyToChannel(pcmChunk, 0);
@@ -228,7 +184,7 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
     source.start(startTime);
     nextPlayTimeRef.current = startTime + buffer.duration;
 
-    // Waveform reactivity
+    // Live audio waveform reactive energy
     let sum = 0;
     for (let i = 0; i < pcmChunk.length; i += 20) {
       sum += Math.abs(pcmChunk[i]);
@@ -248,30 +204,46 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
 
     source.onended = () => {
       activeSourcesRef.current = activeSourcesRef.current.filter(s => s !== source);
-
-      // Check if all queued audio has finished playing
-      if (ctx.currentTime >= nextPlayTimeRef.current - 0.08 || activeSourcesRef.current.length === 0) {
-        lastAssistantSpokenTimeRef.current = Date.now();
-        if (playbackCooldownTimerRef.current) {
-          clearTimeout(playbackCooldownTimerRef.current);
+      if (activeSourcesRef.current.length === 0) {
+        if (playbackEndTimerRef.current) {
+          clearTimeout(playbackEndTimerRef.current);
         }
-        // Minimal 100ms buffer just to let final audio chunk finish
-        playbackCooldownTimerRef.current = setTimeout(() => {
-          if (activeSourcesRef.current.length === 0) {
+        playbackEndTimerRef.current = setTimeout(() => {
+          if (activeSourcesRef.current.length === 0 && ctx.currentTime >= nextPlayTimeRef.current - 0.05) {
             isSpeakingRef.current = false;
-            isAssistantAudioPlayingRef.current = false;
-            isTurnActiveRef.current = false; // Turn is officially over!
             setIsSpeaking(false);
             setAudioLevels([15, 25, 40, 20, 35, 15, 30, 20, 25]);
-            // Restart recognition immediately so user can respond without lag!
-            if (!isManuallyStoppedRef.current && isListeningRef.current) {
-              safeRestartRecognitionRef.current();
-            }
           }
         }, 100);
       }
     };
   }, [getPlaybackContext]);
+
+  // Send text query (for button interactions or typed input)
+  const sendTextQuery = useCallback((text: string) => {
+    const cleanText = text.trim();
+    if (!cleanText) return;
+
+    stopAllAudioPlayback();
+
+    if (onUserQueryRef.current) {
+      onUserQueryRef.current(cleanText);
+    }
+
+    setTranscript(prev => [...prev, { role: 'user', text: cleanText }]);
+    setIsProcessing(true);
+
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({
+        text_input: cleanText
+      }));
+    } else {
+      pendingPromptRef.current = cleanText;
+      if (!wsRef.current || wsRef.current.readyState === WebSocket.CLOSED) {
+        connect();
+      }
+    }
+  }, [stopAllAudioPlayback]);
 
   // Connect WebSocket
   const connect = useCallback((initialPrompt?: string) => {
@@ -298,7 +270,6 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
     ws.onopen = () => {
       console.log("Connected to Gemini Live WebSocket!");
       setIsConnected(true);
-      isProcessingRef.current = false;
       setIsProcessing(false);
 
       if (pendingPromptRef.current) {
@@ -313,28 +284,44 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
       try {
         const data = JSON.parse(event.data);
 
-        // Turn ID gating: record server turn and ignore old aborted turns
-        if (data.turn_id !== undefined) {
-          latestServerTurnRef.current = data.turn_id;
-          if (data.turn_id <= abortedTurnIdRef.current) {
-            return;
+        // 1. Interruption / Barge-in
+        if (data.interrupted) {
+          console.log("[Gemini Live] Interrupted by cardholder voice");
+          stopAllAudioPlayback();
+          setIsSpeaking(false);
+          setIsProcessing(false);
+          setAudioLevels([15, 20, 15, 25, 15, 20, 15, 15, 10]);
+          return;
+        }
+
+        // 2. Cardholder Speech Transcript (from Gemini Live VAD)
+        if (data.user_transcript) {
+          const userText = data.user_transcript.trim();
+          if (userText) {
+            if (onUserQueryRef.current) {
+              onUserQueryRef.current(userText);
+            }
+            setTranscript(prev => {
+              const last = prev[prev.length - 1];
+              if (last && last.role === 'user' && !data.is_final) {
+                return [...prev.slice(0, -1), { role: 'user', text: userText }];
+              } else if (last && last.role === 'user' && last.text === userText) {
+                return prev;
+              } else {
+                return [...prev, { role: 'user', text: userText }];
+              }
+            });
           }
         }
 
-        // Raw Audio PCM chunk from Gemini Live
+        // 3. Raw Audio PCM chunk from Gemini Live
         if (data.audio_pcm_24k) {
-          // Immediately silence speech recognition so no speaker output leaks into mic!
-          if (recognitionRef.current) {
-            try { recognitionRef.current.abort(); } catch {}
-          }
-          isAssistantAudioPlayingRef.current = true;
           const pcm = decodePCM24k(data.audio_pcm_24k);
-          queueAndPlayPCM(pcm, data.turn_id);
+          queueAndPlayPCM(pcm);
         }
 
-        // Text transcript piece
+        // 4. Text transcript piece (assistant)
         if (data.text) {
-          recentAssistantTextRef.current += data.text;
           setTranscript(prev => {
             const last = prev[prev.length - 1];
             if (last && last.role === 'assistant') {
@@ -345,7 +332,7 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
           });
         }
 
-        // Tool call from Gemini Live
+        // 5. Tool call from Gemini Live
         if (data.tool_call) {
           console.log("Gemini Live Tool Call:", data.tool_call);
           if (onToolCallRef.current) {
@@ -356,8 +343,8 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
           }
         }
 
+        // 6. Turn complete
         if (data.turn_complete) {
-          isProcessingRef.current = false;
           setIsProcessing(false);
           if (onTurnCompleteRef.current) {
             onTurnCompleteRef.current();
@@ -379,176 +366,69 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
       setIsListening(false);
       setIsSpeaking(false);
       isSpeakingRef.current = false;
-      isAssistantAudioPlayingRef.current = false;
-      isProcessingRef.current = false;
-      isTurnActiveRef.current = false;
+      setIsProcessing(false);
       setAudioLevels([15, 20, 15, 25, 15, 20, 15, 15, 10]);
     };
 
     wsRef.current = ws;
-  }, [queueAndPlayPCM]);
+  }, [queueAndPlayPCM, sendTextQuery, stopAllAudioPlayback]);
 
-  // Send text query
-  const sendTextQuery = useCallback((text: string) => {
-    const cleanText = text.trim();
-    if (!cleanText) return;
-
-    // Deduplicate identical queries sent within 1.5 seconds
-    const now = Date.now();
-    if (lastSentQueryRef.current.text.toLowerCase() === cleanText.toLowerCase() && (now - lastSentQueryRef.current.time) < 1500) {
-      console.log("Suppressed duplicate query within 1.5s window:", cleanText);
-      return;
-    }
-    lastSentQueryRef.current = { text: cleanText, time: now };
-
-    // Abort previous server turn audio if new user query interrupts
-    if (latestServerTurnRef.current > 0) {
-      abortedTurnIdRef.current = latestServerTurnRef.current;
-    }
-    isTurnActiveRef.current = true;
-
-    // Barge-in: stop any playing assistant speech when new user query arrives
-    stopAllAudioPlayback();
-
-    if (onUserQueryRef.current) {
-      onUserQueryRef.current(cleanText);
-    }
-
-    setTranscript(prev => [...prev, { role: 'user', text: cleanText }]);
-    isProcessingRef.current = true;
-    setIsProcessing(true);
-
-    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({
-        text_input: cleanText
-      }));
-    } else {
-      pendingPromptRef.current = cleanText;
-      if (!wsRef.current || wsRef.current.readyState === WebSocket.CLOSED) {
-        connect();
-      }
-    }
-  }, [stopAllAudioPlayback, connect]);
-
-  // Disconnect WebSocket & teardown all mic streams
-  const disconnect = useCallback(() => {
+  // Stop microphone stream
+  const stopMicrophone = useCallback(() => {
     isManuallyStoppedRef.current = true;
     isListeningRef.current = false;
-    stopAllAudioPlayback();
+
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      try {
+        wsRef.current.send(JSON.stringify({ audio_stream_end: true }));
+      } catch {}
+    }
 
     if (animFrameIdRef.current) {
       cancelAnimationFrame(animFrameIdRef.current);
       animFrameIdRef.current = null;
     }
 
-    if (recognitionRef.current) {
-      try { recognitionRef.current.abort(); } catch {}
-      recognitionRef.current = null;
+    if (scriptProcessorRef.current) {
+      scriptProcessorRef.current.disconnect();
+      scriptProcessorRef.current.onaudioprocess = null;
+      scriptProcessorRef.current = null;
     }
+
+    if (muteGainRef.current) {
+      muteGainRef.current.disconnect();
+      muteGainRef.current = null;
+    }
+
+    if (inputSourceRef.current) {
+      inputSourceRef.current.disconnect();
+      inputSourceRef.current = null;
+    }
+
     if (audioContextRef.current) {
       audioContextRef.current.close();
       audioContextRef.current = null;
     }
+
     if (mediaStreamRef.current) {
       mediaStreamRef.current.getTracks().forEach(t => t.stop());
       mediaStreamRef.current = null;
     }
-    if (wsRef.current) {
-      wsRef.current.close();
-      wsRef.current = null;
-    }
-    if (playbackContextRef.current) {
-      playbackContextRef.current.close();
-      playbackContextRef.current = null;
-    }
-    setIsConnected(false);
-    setIsSpeaking(false);
-    setIsListening(false);
-    isSpeakingRef.current = false;
-    isAssistantAudioPlayingRef.current = false;
-    isProcessingRef.current = false;
-    pendingPromptRef.current = null;
-    setAudioLevels([15, 20, 15, 25, 15, 20, 15, 15, 10]);
-  }, [stopAllAudioPlayback]);
 
-  // Start continuous microphone with acoustic echo suppression
+    setIsListening(false);
+    setAudioLevels([15, 20, 15, 25, 15, 20, 15, 15, 10]);
+  }, []);
+
+  // Start continuous microphone stream with 16kHz PCM streaming to Gemini Live
   const startMicrophone = useCallback(async () => {
     isManuallyStoppedRef.current = false;
     isListeningRef.current = true;
+
     try {
       if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
         connect();
       }
 
-      // Initialize speech recognition with echo suppression filter
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      if (SpeechRecognition) {
-        const initRec = () => {
-          if (isManuallyStoppedRef.current || !isListeningRef.current) return;
-          if (isAssistantAudioPlayingRef.current || isSpeakingRef.current) {
-            console.log("[Mic] Delayed start because assistant is speaking.");
-            return;
-          }
-
-          if (recognitionRef.current) {
-            try { recognitionRef.current.abort(); } catch {}
-          }
-
-          const rec = new SpeechRecognition();
-          rec.lang = langRef.current === 'en' ? 'en-US' : 'pt-BR';
-          rec.continuous = false;
-          rec.interimResults = false;
-
-          rec.onresult = (e: any) => {
-            // Ignore if assistant is actively speaking to prevent echo
-            if (isAssistantAudioPlayingRef.current || isSpeakingRef.current) {
-              return;
-            }
-
-            const spokenText = e.results?.[0]?.[0]?.transcript;
-            if (!spokenText || !spokenText.trim()) return;
-
-            const cleanText = spokenText.trim();
-            if (isSelfEcho(cleanText)) {
-              return;
-            }
-
-            latestSpokenTextRef.current = cleanText;
-            if (speechDebounceTimerRef.current) {
-              clearTimeout(speechDebounceTimerRef.current);
-            }
-            speechDebounceTimerRef.current = setTimeout(() => {
-              const textToSend = latestSpokenTextRef.current;
-              if (textToSend) {
-                console.log("[Mic] Sending complete cardholder phrase:", textToSend);
-                sendTextQuery(textToSend);
-                latestSpokenTextRef.current = '';
-              }
-            }, 350);
-          };
-
-          rec.onend = () => {
-            // Restart immediately if still in call and assistant is not speaking
-            if (!isManuallyStoppedRef.current && isListeningRef.current && !isAssistantAudioPlayingRef.current && !isSpeakingRef.current) {
-              try {
-                rec.start();
-              } catch {}
-            }
-          };
-
-          recognitionRef.current = rec;
-          try {
-            rec.start();
-          } catch (err) {
-            console.warn("SpeechRec start note:", err);
-          }
-        };
-
-        safeRestartRecognitionRef.current = initRec;
-        initRec();
-      }
-
-      // Setup Web Audio input analyzer for glowing waveform animation
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           channelCount: 1,
@@ -560,14 +440,63 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
       mediaStreamRef.current = stream;
 
       const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-      const audioCtx = new AudioCtx();
+      let audioCtx: AudioContext;
+      try {
+        audioCtx = new AudioCtx({ sampleRate: 16000 });
+      } catch {
+        audioCtx = new AudioCtx();
+      }
       audioContextRef.current = audioCtx;
 
+      if (audioCtx.state === 'suspended') {
+        await audioCtx.resume();
+      }
+
+      const source = audioCtx.createMediaStreamSource(stream);
+      inputSourceRef.current = source;
+
+      // Analyser for waveform visualization
       const analyser = audioCtx.createAnalyser();
       analyser.fftSize = 64;
-      const source = audioCtx.createMediaStreamSource(stream);
       source.connect(analyser);
 
+      // ScriptProcessor node for streaming audio chunks
+      const processor = audioCtx.createScriptProcessor(2048, 1, 1);
+      scriptProcessorRef.current = processor;
+
+      // Silent gain node to keep processor running
+      const muteGain = audioCtx.createGain();
+      muteGain.gain.value = 0;
+      muteGainRef.current = muteGain;
+
+      source.connect(processor);
+      processor.connect(muteGain);
+      muteGain.connect(audioCtx.destination);
+
+      processor.onaudioprocess = (e) => {
+        if (isManuallyStoppedRef.current || !isListeningRef.current) return;
+        if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
+
+        // Acoustic Echo Shield: Do not feed speaker output back into Gemini Live while assistant is speaking
+        if (isSpeakingRef.current) return;
+
+        const inputChannel = e.inputBuffer.getChannelData(0);
+
+        const resampled = audioCtx.sampleRate === 16000
+          ? inputChannel
+          : resampleTo16k(inputChannel, audioCtx.sampleRate);
+
+        const pcm16 = floatTo16BitPCM(resampled);
+        const base64Pcm = base64EncodeUint8(pcm16);
+
+        try {
+          wsRef.current.send(JSON.stringify({
+            realtime_audio_pcm_16k: base64Pcm
+          }));
+        } catch {}
+      };
+
+      // Waveform volume loop
       const bufferLength = analyser.frequencyBinCount;
       const dataArray = new Uint8Array(bufferLength);
 
@@ -579,9 +508,8 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
           sum += dataArray[i];
         }
         const avg = Math.min(100, (sum / bufferLength) * 1.5);
-        
-        // Only update mic waveform when user is speaking and model is NOT speaking
-        if (!isSpeakingRef.current && !isAssistantAudioPlayingRef.current && avg > 5) {
+
+        if (!isSpeakingRef.current && avg > 5) {
           setAudioLevels([
             Math.max(10, avg * 0.5),
             Math.max(20, avg * 0.8),
@@ -600,40 +528,64 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
 
       setIsListening(true);
     } catch (err) {
-      console.error("Failed to start mic stream:", err);
+      console.error("Failed to start microphone stream:", err);
       setIsListening(false);
     }
-  }, [connect, isSelfEcho, sendTextQuery]);
+  }, [connect]);
 
-  // Stop microphone
-  const stopMicrophone = useCallback(() => {
-    isManuallyStoppedRef.current = true;
-    if (animFrameIdRef.current) {
-      cancelAnimationFrame(animFrameIdRef.current);
-      animFrameIdRef.current = null;
-    }
-    if (recognitionRef.current) {
-      try { recognitionRef.current.abort(); } catch {}
-      recognitionRef.current = null;
-    }
-    if (audioContextRef.current) {
-      audioContextRef.current.close();
-      audioContextRef.current = null;
-    }
-    if (mediaStreamRef.current) {
-      mediaStreamRef.current.getTracks().forEach(t => t.stop());
-      mediaStreamRef.current = null;
-    }
-    setIsListening(false);
+  // Barge-in interrupt: stops assistant speech and notifies server
+  const interrupt = useCallback(() => {
+    console.log("[Gemini Live] Interruption triggered");
+    stopAllAudioPlayback();
+    setIsSpeaking(false);
+    setIsProcessing(false);
     setAudioLevels([15, 20, 15, 25, 15, 20, 15, 15, 10]);
-  }, []);
 
-  // Comprehensive lifecycle cleanup on hook unmount
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      try {
+        wsRef.current.send(JSON.stringify({ interrupt: true }));
+      } catch {}
+    }
+  }, [stopAllAudioPlayback]);
+
+  // Disconnect WebSocket & teardown audio
+  const disconnect = useCallback(() => {
+    stopMicrophone();
+    stopAllAudioPlayback();
+
+    if (wsRef.current) {
+      wsRef.current.close();
+      wsRef.current = null;
+    }
+    if (playbackContextRef.current) {
+      playbackContextRef.current.close();
+      playbackContextRef.current = null;
+    }
+
+    setIsConnected(false);
+    setIsSpeaking(false);
+    setIsListening(false);
+    isSpeakingRef.current = false;
+    setIsProcessing(false);
+    pendingPromptRef.current = null;
+    setAudioLevels([15, 20, 15, 25, 15, 20, 15, 15, 10]);
+  }, [stopMicrophone, stopAllAudioPlayback]);
+
+  // Clean teardown only when component unmounts
   useEffect(() => {
     return () => {
-      disconnect();
+      stopMicrophone();
+      stopAllAudioPlayback();
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
+      }
+      if (playbackContextRef.current) {
+        playbackContextRef.current.close();
+        playbackContextRef.current = null;
+      }
     };
-  }, [disconnect]);
+  }, [stopMicrophone, stopAllAudioPlayback]);
 
   return {
     isConnected,
@@ -648,5 +600,7 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
     startMicrophone,
     stopMicrophone,
     sendTextQuery,
+    interrupt,
   };
 };
+

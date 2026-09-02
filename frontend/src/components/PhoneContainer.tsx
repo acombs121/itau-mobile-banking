@@ -76,6 +76,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
     disconnect,
     startMicrophone,
     stopMicrophone,
+    interrupt,
   } = useGeminiLive({
     lang: currentLang,
     onToolCall: (toolName, toolArgs, toolPayload) => {
@@ -186,24 +187,24 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
           {isLocked ? (
             /* Executive Smartphone Lock Screen with Predictive Balance Alert */
             <div className="flex-1 w-full flex flex-col justify-between p-5 select-none relative overflow-hidden animate-fadeIn">
-              <div className="absolute inset-0 bg-gradient-to-b from-[#18181E] via-[#0E0E12] to-[#070708] -z-10" />
+              <div className={`absolute inset-0 ${isDark ? 'bg-gradient-to-b from-[#18181E] via-[#0E0E12] to-[#070708]' : 'bg-gradient-to-b from-[#F8FAFC] via-[#EEF2F6] to-[#E2E8F0]'}`} />
 
               {/* Lock Header: Padlock, Big Clock, Date */}
-              <div className="flex flex-col items-center pt-2">
-                <div className="flex items-center gap-1.5 text-white/50 text-[11px] font-medium mb-1">
+              <div className="relative z-10 flex flex-col items-center pt-2">
+                <div className={`flex items-center gap-1.5 text-[11px] font-medium mb-1 ${isDark ? 'text-white/50' : 'text-slate-500'}`}>
                   <Lock className="w-3.5 h-3.5 text-brand-orange" />
                   <span>{currentLang === 'en' ? 'Locked' : 'Bloqueado'}</span>
                 </div>
-                <div className="text-5xl sm:text-6xl font-light tracking-tight text-white mb-1 font-sans">
+                <div className={`text-5xl sm:text-6xl font-light tracking-tight mb-1 font-sans ${isDark ? 'text-white' : 'text-slate-900'}`}>
                   14:32
                 </div>
-                <div className="text-xs font-medium text-white/70 tracking-wide">
+                <div className={`text-xs font-medium tracking-wide ${isDark ? 'text-white/70' : 'text-slate-600'}`}>
                   {currentLang === 'en' ? 'Thursday, August 28' : 'Quinta-feira, 28 de agosto'}
                 </div>
               </div>
 
               {/* Center Lock Screen Notification Banner: Predictive Balance Alert */}
-              <div className="my-auto py-2">
+              <div className="relative z-10 my-auto py-2">
                 <div 
                   onClick={() => {
                     if (onPredictiveAlertClick) {
@@ -212,30 +213,34 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                       onUnlock();
                     }
                   }}
-                  className="w-full bg-[#1A1A22]/95 backdrop-blur-xl border border-brand-orange/40 hover:border-brand-orange rounded-[18px] p-4 shadow-[0_12px_40px_rgba(0,0,0,0.85),0_0_24px_rgba(255,100,35,0.18)] cursor-pointer hover:scale-[1.02] active:scale-[0.99] transition-all duration-200 group"
+                  className={`w-full rounded-[18px] p-4 cursor-pointer hover:scale-[1.02] active:scale-[0.99] transition-all duration-200 group backdrop-blur-xl border ${
+                    isDark
+                      ? 'bg-[#1A1A22]/95 border-brand-orange/40 hover:border-brand-orange shadow-[0_12px_40px_rgba(0,0,0,0.85),0_0_24px_rgba(255,100,35,0.18)]'
+                      : 'bg-white/95 border-brand-orange/50 hover:border-brand-orange shadow-[0_12px_32px_rgba(0,0,0,0.08),0_0_20px_rgba(255,100,35,0.12)]'
+                  }`}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <div className="w-5 h-5 rounded-[5px] bg-brand-orange text-white font-black text-[9px] flex items-center justify-center shadow-sm">
                         itau
                       </div>
-                      <span className="text-[10px] font-bold tracking-wider text-white/90 uppercase font-sans">
+                      <span className={`text-[10px] font-bold tracking-wider uppercase font-sans ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
                         ITAÚ PERSONNALITÉ
                       </span>
                     </div>
-                    <span className="text-[10px] font-mono text-white/40">
+                    <span className={`text-[10px] font-mono ${isDark ? 'text-white/40' : 'text-slate-400'}`}>
                       {currentLang === 'en' ? 'now' : 'agora'}
                     </span>
                   </div>
 
                   <div className="flex items-center gap-2 mb-1.5">
                     <span className="w-2 h-2 rounded-full bg-brand-orange animate-pulse flex-shrink-0" />
-                    <h4 className="text-xs font-bold text-white tracking-tight group-hover:text-brand-orange transition-colors">
+                    <h4 className={`text-xs font-bold tracking-tight group-hover:text-brand-orange transition-colors ${isDark ? 'text-white' : 'text-slate-900'}`}>
                       {currentLang === 'en' ? 'Predictive Balance Alert' : 'Alerta Preventivo de Saldo'}
                     </h4>
                   </div>
 
-                  <p className="text-[11px] text-white/80 leading-relaxed">
+                  <p className={`text-[11px] leading-relaxed ${isDark ? 'text-white/80' : 'text-slate-600'}`}>
                     {currentLang === 'en'
                       ? 'Scheduled debits of R$ 38,000.00 on Thursday will exceed your checking balance. Tap to review with Cash Flow Agent.'
                       : 'Débitos agendados de R$ 38.000,00 na quinta-feira excederão o saldo em conta corrente. Toque para revisar com o Agente de Fluxo de Caixa.'}
@@ -244,16 +249,20 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
               </div>
 
               {/* Bottom Actions & Unlock Handle */}
-              <div className="flex flex-col items-center gap-3 pb-1">
+              <div className="relative z-10 flex flex-col items-center gap-3 pb-1">
                 <div className="w-full flex items-center justify-between px-2">
                   <div 
-                    className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white/80"
+                    className={`w-10 h-10 rounded-full backdrop-blur-md flex items-center justify-center transition-colors ${
+                      isDark ? 'bg-white/10 text-white/80' : 'bg-black/5 text-slate-700 border border-slate-200'
+                    }`}
                     title="Flashlight"
                   >
                     <Flashlight className="w-4 h-4" />
                   </div>
                   <div 
-                    className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white/80"
+                    className={`w-10 h-10 rounded-full backdrop-blur-md flex items-center justify-center transition-colors ${
+                      isDark ? 'bg-white/10 text-white/80' : 'bg-black/5 text-slate-700 border border-slate-200'
+                    }`}
                     title="Camera"
                   >
                     <Camera className="w-4 h-4" />
@@ -264,10 +273,10 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                   onClick={() => onUnlock?.()}
                   className="flex flex-col items-center gap-1.5 cursor-pointer opacity-75 hover:opacity-100 transition-opacity"
                 >
-                  <span className="text-[9.5px] text-white/50 font-medium">
+                  <span className={`text-[9.5px] font-medium ${isDark ? 'text-white/50' : 'text-slate-500'}`}>
                     {currentLang === 'en' ? 'Tap alert above or click bar to unlock' : 'Toque no alerta ou na barra para desbloquear'}
                   </span>
-                  <div className="w-28 h-1 bg-white/50 rounded-full hover:bg-white transition-colors" />
+                  <div className={`w-28 h-1 rounded-full transition-colors ${isDark ? 'bg-white/50 hover:bg-white' : 'bg-slate-400 hover:bg-slate-600'}`} />
                 </div>
               </div>
             </div>
@@ -582,14 +591,9 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                 <div className="space-y-2.5 text-xs font-sans">
                   {/* Total Itaú Liquid Balance Hero Box */}
                   <div className={`p-2.5 rounded-[10px] ${isDark ? 'bg-white/[0.04] border border-white/[0.08]' : 'bg-slate-50 border border-slate-200'}`}>
-                    <div className="flex items-center justify-between">
-                      <span className={`text-[10px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>
-                        {currentLang === 'en' ? 'Total Liquid Balance with Itaú' : 'Saldo Total no Banco Itaú'}
-                      </span>
-                      <span className={`text-[9px] font-sans px-1.5 py-0.5 rounded font-semibold ${isDark ? 'bg-brand-orange/20 text-brand-orange' : 'bg-brand-orange/10 text-brand-orange'}`}>
-                        Ag. 7749 • CC 00912-8
-                      </span>
-                    </div>
+                    <span className={`text-[10px] block mb-0.5 ${isDark ? 'text-white/50' : 'text-slate-500'}`}>
+                      {currentLang === 'en' ? 'Total Liquid Balance with Itaú' : 'Saldo Total no Banco Itaú'}
+                    </span>
                     <span className={`text-2xl font-black font-sans tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
                       R$ 133.950,20
                     </span>
@@ -682,8 +686,10 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                   </button>
                 </div>
 
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[9px] font-mono font-bold mb-2.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-mono font-bold mb-2.5 ${
+                  isDark ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-400' : 'bg-emerald-50 border border-emerald-200 text-emerald-700'
+                }`}>
+                  <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${isDark ? 'bg-emerald-400' : 'bg-emerald-600'}`} />
                   <span>{currentLang === 'en' ? 'CONNECTED VIA BACEN OPEN FINANCE' : 'CONECTADO VIA OPEN FINANCE BACEN'}</span>
                 </div>
 
@@ -854,7 +860,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
               }`}>
                 <div className={`flex items-center justify-between mb-3 pb-2 border-b ${isDark ? 'border-white/[0.06]' : 'border-slate-100'}`}>
                   <div className="flex items-center gap-2">
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                    <ShieldCheck className={`w-3.5 h-3.5 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
                     <span className={`text-[10.5px] font-mono font-bold tracking-wide uppercase ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
                       {currentLang === 'en' ? 'TRANSFER CONFIRMED' : 'TRANSFERÊNCIA CONFIRMADA'}
                     </span>
@@ -870,7 +876,9 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                 </div>
 
                 <div className="space-y-2.5 text-xs text-center py-1">
-                  <div className="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 mx-auto flex items-center justify-center border border-emerald-500/30">
+                  <div className={`w-12 h-12 rounded-full mx-auto flex items-center justify-center border ${
+                    isDark ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-emerald-50 text-emerald-600 border-emerald-200'
+                  }`}>
                     <Check className="w-6 h-6" />
                   </div>
 
@@ -878,7 +886,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                     <span className={`text-base font-black font-sans block ${isDark ? 'text-white' : 'text-slate-900'}`}>
                       R$ 330.000,00 {currentLang === 'en' ? 'Transferred' : 'Transferidos'}
                     </span>
-                    <span className="text-[11px] text-emerald-400 font-bold block mt-0.5">
+                    <span className={`text-[11px] font-bold block mt-0.5 ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>
                       {currentLang === 'en' ? 'Now Earning 100% of CDI (Liquidez Diária)' : 'Agora Rendendo 100% do CDI (Liquidez Diária)'}
                     </span>
                   </div>
@@ -886,7 +894,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                   <div className={`p-2.5 rounded-[8px] text-left space-y-1 ${isDark ? 'bg-white/[0.02] border border-white/[0.05]' : 'bg-slate-50 border border-slate-200'}`}>
                     <div className="flex justify-between text-[10.5px]">
                       <span className={isDark ? 'text-white/60' : 'text-slate-500'}>{currentLang === 'en' ? 'Annual Yield Gain:' : 'Ganho Anual Adicional:'}</span>
-                      <span className="font-mono font-bold text-emerald-400">+R$ 5.940,00 / ano</span>
+                      <span className={`font-mono font-bold ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>+R$ 5.940,00 / ano</span>
                     </div>
                     <div className="flex justify-between text-[10.5px]">
                       <span className={isDark ? 'text-white/60' : 'text-slate-500'}>{currentLang === 'en' ? 'New Itaú Liquid Total:' : 'Novo Patrimônio Total Itaú:'}</span>
@@ -957,14 +965,16 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                       isDark ? 'bg-white/[0.03] border-white/10' : 'bg-slate-50 border-slate-200'
                     }`}>
                       <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 rounded-full bg-emerald-500/15 flex items-center justify-center flex-shrink-0">
-                          <Check className="w-2.5 h-2.5 text-emerald-400" />
+                        <div className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 ${
+                          isDark ? 'bg-emerald-500/15' : 'bg-emerald-100'
+                        }`}>
+                          <Check className={`w-2.5 h-2.5 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
                         </div>
                         <span className={`font-semibold ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
                           {currentLang === 'en' ? 'CDB Sweep Scheduled' : 'Resgate CDB Agendado'}
                         </span>
                       </div>
-                      <span className="font-mono text-[11px] text-emerald-400 font-semibold">
+                      <span className={`font-mono text-[11px] font-semibold ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>
                         {currentLang === 'en' ? 'R$ 15k on Thu' : 'R$ 15k na Quinta'}
                       </span>
                     </div>
@@ -1017,7 +1027,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                     </div>
                     <div className={`p-2 rounded-[8px] ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}>
                       <span className={`text-[9px] block ${isDark ? 'text-white/40' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Declines' : 'Recusas'}</span>
-                      <span className="font-semibold font-mono text-[11px] text-emerald-400">{currentLang === 'en' ? 'Pre-Suppressed' : 'Suprimidas'}</span>
+                      <span className={`font-semibold font-mono text-[11px] ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>{currentLang === 'en' ? 'Pre-Suppressed' : 'Suprimidas'}</span>
                     </div>
                   </div>
 
@@ -1026,14 +1036,16 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                       isDark ? 'bg-white/[0.03] border-white/10' : 'bg-slate-50 border-slate-200'
                     }`}>
                       <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 rounded-full bg-emerald-500/15 flex items-center justify-center flex-shrink-0">
-                          <Check className="w-2.5 h-2.5 text-emerald-400" />
+                        <div className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 ${
+                          isDark ? 'bg-emerald-500/15' : 'bg-emerald-100'
+                        }`}>
+                          <Check className={`w-2.5 h-2.5 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
                         </div>
                         <span className={`font-semibold ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
                           {currentLang === 'en' ? 'Travel Shield Active' : 'Aviso de Viagem Ativo'}
                         </span>
                       </div>
-                      <span className="font-mono text-[11px] text-emerald-400 font-semibold">
+                      <span className={`font-mono text-[11px] font-semibold ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>
                         {currentLang === 'en' ? 'Limit: R$ 50k' : 'Limite: R$ 50k'}
                       </span>
                     </div>
@@ -1140,7 +1152,9 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                       <span className={`text-xs font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
                         {currentLang === 'en' ? 'Debt Refinancing' : 'Refinanciamento de Dívida'}
                       </span>
-                      <span className="text-[10px] font-mono font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 whitespace-nowrap">
+                      <span className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded border whitespace-nowrap ${
+                        isDark ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' : 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                      }`}>
                         {currentLang === 'en' ? 'Save R$ 14,280' : 'Economia R$ 14.280'}
                       </span>
                     </div>
@@ -1168,7 +1182,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                       <span className={isDark ? 'text-white/50' : 'text-slate-500'}>
                         {currentLang === 'en' ? 'Monthly Savings' : 'Economia Mensal'}
                       </span>
-                      <span className="font-mono font-medium text-emerald-400 whitespace-nowrap">
+                      <span className={`font-mono font-medium whitespace-nowrap ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>
                         -9,51% a.m. (R$ 680,40/mês)
                       </span>
                     </div>
@@ -1180,7 +1194,9 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                       <span className={`text-xs font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
                         {currentLang === 'en' ? 'CDB Yield Difference' : 'Rendimento CDB DI'}
                       </span>
-                      <span className="text-[10px] font-mono font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 whitespace-nowrap">
+                      <span className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded border whitespace-nowrap ${
+                        isDark ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' : 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                      }`}>
                         {currentLang === 'en' ? '+R$ 5,940 / yr' : '+R$ 5.940 / ano'}
                       </span>
                     </div>
@@ -1208,7 +1224,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                       <span className={isDark ? 'text-white/50' : 'text-slate-500'}>
                         {currentLang === 'en' ? 'Yield Advantage' : 'Ganho Adicional'}
                       </span>
-                      <span className="font-mono font-medium text-emerald-400 whitespace-nowrap">
+                      <span className={`font-mono font-medium whitespace-nowrap ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>
                         +15% CDI (Liquidez Diária)
                       </span>
                     </div>
@@ -1220,14 +1236,16 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                       isDark ? 'bg-white/[0.03] border-white/10' : 'bg-slate-50 border-slate-200'
                     }`}>
                       <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 rounded-full bg-emerald-500/15 flex items-center justify-center flex-shrink-0">
-                          <Check className="w-2.5 h-2.5 text-emerald-400" />
+                        <div className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 ${
+                          isDark ? 'bg-emerald-500/15' : 'bg-emerald-100'
+                        }`}>
+                          <Check className={`w-2.5 h-2.5 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
                         </div>
                         <span className={`font-semibold ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
                           {currentLang === 'en' ? 'Digital CCB Registered' : 'CCB Digital Registrada'}
                         </span>
                       </div>
-                      <span className="font-mono text-[11px] text-emerald-400 font-semibold">
+                      <span className={`font-mono text-[11px] font-semibold ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>
                         {currentLang === 'en' ? 'R$ 14,280 Saved' : 'R$ 14.280 Salvos'}
                       </span>
                     </div>
@@ -1257,8 +1275,12 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
           <div className={`relative px-4 py-2 border-t flex items-center justify-between flex-shrink-0 transition-colors ${
             isDark ? 'border-white/[0.08] bg-[#121217]' : 'border-slate-200 bg-slate-100/90'
           }`}>
-            {/* Left Column: Branding & Status */}
-            <div className="flex items-center gap-2 z-10 select-none min-w-0">
+            {/* Left Column: Branding & Status (Click to interrupt when speaking) */}
+            <div 
+              onClick={isSpeaking ? interrupt : undefined}
+              className={`flex items-center gap-2 z-10 select-none min-w-0 ${isSpeaking ? 'cursor-pointer' : ''}`}
+              title={isSpeaking ? (currentLang === 'en' ? "Tap to interrupt" : "Toque para interromper") : undefined}
+            >
               <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isSpeaking ? 'bg-emerald-400 animate-ping' : isListening ? 'bg-brand-orange animate-pulse' : 'bg-brand-orange'}`}></div>
               <span className={`text-xs font-semibold tracking-tight truncate ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
                 {isSpeaking
@@ -1269,30 +1291,54 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
               </span>
             </div>
 
-            {/* Center Column: Live Audio Waveform (Memoized & isolated from PhoneContainer re-renders) */}
-            <AudioWaveformVisualizer
-              audioLevels={audioLevels}
-              isVoiceCallActive={isVoiceCallActive}
-              isSpeaking={isSpeaking}
-              isListening={isListening}
-            />
+            {/* Center Column: Live Audio Waveform (Click to interrupt when speaking) */}
+            <div 
+              onClick={isSpeaking ? interrupt : undefined}
+              className={isSpeaking ? 'cursor-pointer' : ''}
+              title={isSpeaking ? (currentLang === 'en' ? "Tap to interrupt" : "Toque para interromper") : undefined}
+            >
+              <AudioWaveformVisualizer
+                audioLevels={audioLevels}
+                isVoiceCallActive={isVoiceCallActive}
+                isSpeaking={isSpeaking}
+                isListening={isListening}
+              />
+            </div>
 
             {/* Right Column: Mic Trigger Button */}
             <div className="flex items-center justify-end z-10">
               <button
-                onClick={onToggleVoiceCall}
+                onClick={() => {
+                  if (isVoiceCallActive && isSpeaking) {
+                    interrupt();
+                  } else {
+                    onToggleVoiceCall();
+                  }
+                }}
                 className={`w-8 h-8 rounded-full flex items-center justify-center transition-all flex-shrink-0 ${
                   isVoiceCallActive
                     ? isSpeaking
-                      ? 'bg-brand-orange text-white ring-4 ring-brand-orange/40 shadow-[0_0_15px_#FF6423]'
+                      ? 'bg-brand-orange text-white ring-4 ring-brand-orange/40 shadow-[0_0_15px_#FF6423] cursor-pointer'
                       : isListening
                       ? 'bg-brand-orange text-white ring-4 ring-brand-orange/40 shadow-[0_0_15px_#FF6423]'
                       : 'bg-brand-orange text-white shadow-md'
                     : 'bg-brand-orange hover:bg-brand-orange-hover text-white shadow-sm'
                 }`}
-                title={isVoiceCallActive ? "Itaú Concierge Voice Active (Click to End)" : "Start Itaú Concierge Voice"}
+                title={
+                  isVoiceCallActive
+                    ? isSpeaking
+                      ? (currentLang === 'en' ? "Tap to Interrupt Assistant" : "Toque para Interromper")
+                      : (currentLang === 'en' ? "End Call" : "Encerrar Chamada")
+                    : (currentLang === 'en' ? "Start Itaú Concierge Voice" : "Iniciar Itaú Concierge Voz")
+                }
               >
-                {isVoiceCallActive && !isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                {isVoiceCallActive && isSpeaking ? (
+                  <MicOff className="w-4 h-4 animate-pulse" />
+                ) : isVoiceCallActive && !isListening ? (
+                  <MicOff className="w-4 h-4" />
+                ) : (
+                  <Mic className="w-4 h-4" />
+                )}
               </button>
             </div>
           </div>
@@ -1328,7 +1374,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
           </div>
 
           {/* iOS Bottom Home Bar */}
-          <div className="w-28 h-1 bg-white/20 rounded-full mx-auto my-1 flex-shrink-0" />
+          <div className={`w-28 h-1 rounded-full mx-auto my-1 flex-shrink-0 ${isDark ? 'bg-white/20' : 'bg-slate-300'}`} />
 
         </>
         )}

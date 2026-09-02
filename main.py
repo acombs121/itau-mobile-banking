@@ -8,6 +8,7 @@ import os
 import json
 import base64
 import asyncio
+import time
 import logging
 from typing import Optional, Dict, Any, Literal
 from fastapi import FastAPI, Request, HTTPException, Depends, status, WebSocket, WebSocketDisconnect
@@ -486,19 +487,24 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
     - Spoken response:
       * In English: "Hello Mr. Silva. I triggered this Predictive Balance Alert because your scheduled debits next Thursday total 38,000 reais—your 3,850 reais condominium Pix and your 34,150 reais Mastercard Black invoice. With upcoming expenses, this will cause a shortfall entering high-interest overdraft. I see you have 85,000 reais in your Daily Liquidity CDB. Would you like me to schedule an automatic sweep of 15,000 reais for Thursday morning so your funds keep earning full CDI until the exact moment of payment?"
       * In Portuguese: "Olá Sr. Silva. Emiti este Alerta Preventivo de Saldo porque seus débitos agendados para a próxima quinta-feira somam R$ 38.000,00—o condomínio de R$ 3.850,00 e a fatura do Mastercard Black de R$ 34.150,00. Com as despesas previstas, isso causará um déficit no cheque especial. Identifiquei R$ 85.000,00 no seu CDB DI com liquidez diária. Deseja agendar um resgate automático de R$ 15.000,00 para quinta-feira de manhã para manter seu dinheiro rendendo 100% do CDI até a compensação?"
-    - (If user confirms sweep right here: Call `confirm_cdb_sweep`, acknowledge with brevity, and wait for next question).
+    STEP 1B. CARDHOLDER CONFIRMS SWEEP:
+    - Trigger: Cardholder confirms the sweep (e.g. "Yes", "Let's do that", "Please schedule that", "Sim", "pode agendar").
+    - Action: Call `confirm_cdb_sweep`.
+    - Spoken response: ALWAYS speak this confirmation clearly out loud! Never output silence or empty speech!
+      * In English: "All set, Mr. Silva! I have scheduled the automatic sweep of 15,000 reais from your Daily Liquidity CDB for Thursday morning at 6 AM. Your checking account is protected from overdraft, and your funds will keep earning 100% of CDI until then. Would you like to review your current balances?"
+      * In Portuguese: "Tudo pronto, Sr. Silva! Agendei o resgate automático de R$ 15.000,00 do seu CDB DI para quinta-feira de manhã às 6h. Sua conta corrente está protegida do cheque especial e seus recursos continuam rendendo 100% do CDI até lá. Gostaria de revisar seus saldos atuais?"
 
     STEP 2. ASK TO SEE BALANCES (STRICTLY ONLY BALANCES WITH ITAÚ):
-    - Trigger: Cardholder asks to see or hear their balances (e.g. "Can I see my balances?", "Show me my balances", "Quero ver meus saldos").
+    - Trigger: Cardholder asks to see or hear their balances (e.g. "Can I see my balances?", "Show me my balances", "Quero ver meus saldos", "Yes, review balances").
     - Action: Call `get_account_info`.
     - CRITICAL RULE: Read off ONLY balances with Itaú! Do NOT mention or show any Open Finance data!
       * Itaú Checking: R$ 48.950,20
       * Itaú Daily Liquidity CDB DI (100% CDI): R$ 85.000,00
       * Total Itaú: R$ 133.950,20
-    - MUST THEN STATE: You can pull Open Finance data if they would like to check if they are getting the best rates.
-    - Spoken response:
-      * In English: "Mr. Silva, at Banco Itaú you currently have 133,950 reais in total liquid assets: 48,950 reais in your checking account, and 85,000 reais in your Daily Liquidity CDB earning 100% of CDI. I can also pull your Open Finance data if you would like to check if you are getting the best rates across the market."
-      * In Portuguese: "Sr. Silva, no Banco Itaú você possui atualmente R$ 133.950,20 em patrimônio líquido: R$ 48.950,20 na conta corrente e R$ 85.000,00 no CDB DI com liquidez diária rendendo 100% do CDI. Eu posso puxar seus dados do Open Finance se você quiser verificar se está recebendo as melhores taxas do mercado."
+    - MUST THEN STATE: You can pull Open Finance data to check if they are getting the best rates, AND explicitly ask if they want you to pull it!
+    - Spoken response: Speak the full text completely through to the end:
+      * In English: "Mr. Silva, at Banco Itaú you currently have 133,950 reais in total liquid assets: 48,950 reais in your checking account, and 85,000 reais in your Daily Liquidity CDB earning 100% of CDI. I can also pull your Open Finance data if you would like to check if you are getting the best rates across the market. Would you like me to pull your Open Finance data?"
+      * In Portuguese: "Sr. Silva, no Banco Itaú você possui atualmente R$ 133.950,20 em patrimônio líquido: R$ 48.950,20 na conta corrente e R$ 85.000,00 no CDB DI com liquidez diária rendendo 100% do CDI. Eu posso puxar seus dados do Open Finance se você quiser verificar se está recebendo as melhores taxas do mercado. Gostaria que eu consultasse para você?"
 
     STEP 3. CARDHOLDER SAYS YES TO PULLING OPEN FINANCE:
     - Trigger: Cardholder says "yes", "sure", "sim", "pode puxar", "quero ver".
@@ -541,11 +547,19 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
 
     Persona Directives:
     - Customer Honorific: ALWAYS address customer as "Mr. Silva" in English, and "Sr. Silva" in Portuguese. Never "Roberto" or "Robert".
+    - COMPLETE SCRIPT EXECUTION & ZERO-SILENCE DIRECTIVE:
+      * ALWAYS deliver the complete designated spoken response for each step in full from beginning to end. Never truncate, cut short, or stop mid-sentence.
+      * Whenever invoking an action tool (like `confirm_cdb_sweep` or `confirm_cdi_transfer`), ALWAYS speak the designated confirmation out loud. NEVER output empty speech, `<no speech>`, or remain silent after calling a tool.
+      * Always finish each response with the designated follow-up question so the conversation flows naturally into the next step of the demo.
+      * Do not repeat the same response back-to-back once you have finished delivering it.
+    - ZERO-THOUGHT & ZERO-FILLER DIRECTIVE:
+      * NEVER vocalize internal thoughts, meta-reasoning, or commentary out loud (such as "This insight doesn't require narration", "Checking the latest totals for you", "Per my protocol", etc.).
+      * Call tools silently and speak ONLY the designated polished response for that step.
     - Currency & Pronunciation:
       * Currency is Brazilian Real / Reais (written BRL or R$). ALWAYS say "Real" (singular) or "reais" (plural). NEVER say dollars or pounds.
       * CRITICAL PRONUNCIATION RULE: Whenever pronouncing ANY plural Real figure (e.g. "reais", R$ 38,000, 38,000 reais, 85,000 reais, 15,000 reais, 330,000 reais, 5,940 reais, 50,000 reais, etc.), it MUST ALWAYS be pronounced phonetically as "Ray-Ice", NOT "Ray-AHL".
       * The singular 1 Real is pronounced "Ray-AHL". But ANY plural figure (2 or more) MUST ALWAYS be pronounced "Ray-Ice" (reais), NEVER "Ray-AHL" or "reals". When speaking in English, never pronounce plural figures as "Ray-AHL".
-    - Brevity & Style: Natural, confident executive cadence. Direct and warm.
+    - Brevity & Style: Natural, confident executive cadence. Direct, polished, and warm.
     - Native Tools: ALWAYS invoke the corresponding native tool so the phone UI stays 100% in sync.
     """
 
@@ -557,34 +571,34 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
             )
         ),
         system_instruction=types.Content(parts=[types.Part.from_text(text=system_prompt)]),
-        tools=live_tools
+        tools=live_tools,
+        input_audio_transcription=types.AudioTranscriptionConfig(),
+        output_audio_transcription=types.AudioTranscriptionConfig(),
+        realtime_input_config=types.RealtimeInputConfig(
+            activity_handling=types.ActivityHandling.START_OF_ACTIVITY_INTERRUPTS
+        )
     )
 
     try:
         if gemini_client:
             async with gemini_client.aio.live.connect(model=GEMINI_LIVE_MODEL, config=live_config) as session:
-                turn_counter = 0
-                tool_in_flight = False
-
                 async def client_to_gemini():
-                    nonlocal turn_counter, tool_in_flight
                     try:
                         while True:
                             try:
                                 raw_msg = await websocket.receive_text()
                                 msg = json.loads(raw_msg)
                                 
+                                # Client-initiated manual interruption / barge-in
+                                if msg.get("interrupt"):
+                                    logger.info("Cardholder manual interruption triggered")
+
                                 # Text input from browser
-                                if "text_input" in msg:
+                                elif "text_input" in msg:
                                     raw_text = msg["text_input"].strip()
                                     if not raw_text:
                                         continue
-
-                                    turn_counter += 1
-                                    current_turn = turn_counter
-                                    tool_in_flight = False
-                                    logger.info(f"[Turn {current_turn}] Cardholder Input: '{raw_text}'")
-                                    
+                                    logger.info(f"Cardholder Text Input: '{raw_text}'")
                                     await session.send_client_content(
                                         turns=types.Content(
                                             role="user",
@@ -593,7 +607,7 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
                                         turn_complete=True
                                     )
                                 
-                                # 16kHz PCM Realtime Audio from microphone
+                                # 16kHz PCM Realtime Audio from microphone (Full Duplex)
                                 elif "realtime_audio_pcm_16k" in msg:
                                     base64_pcm = msg["realtime_audio_pcm_16k"]
                                     raw_bytes = base64.b64decode(base64_pcm)
@@ -608,50 +622,38 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
                             except WebSocketDisconnect:
                                 break
                             except Exception as inner_e:
-                                logger.warning(f"Warning in client_to_gemini message turn: {inner_e}")
+                                logger.warning(f"Warning in client_to_gemini message: {inner_e}")
                     except Exception as e:
                         logger.error(f"Error in client_to_gemini task: {e}")
 
                 async def gemini_to_client():
-                    nonlocal turn_counter, tool_in_flight
                     try:
                         while True:
                             async for response in session.receive():
                                 try:
-                                    active_id = turn_counter
-                                    if response.server_content:
-                                        model_turn = response.server_content.model_turn
-                                        if model_turn:
-                                            for part in model_turn.parts:
-                                                # Audio 24kHz PCM chunk
-                                                if part.inline_data:
-                                                    b64_audio = base64.b64encode(part.inline_data.data).decode("utf-8")
-                                                    await websocket.send_json({
-                                                        "turn_id": active_id,
-                                                        "audio_pcm_24k": b64_audio
-                                                    })
-                                                # Text transcript piece
-                                                if part.text:
-                                                    await websocket.send_json({
-                                                        "turn_id": active_id,
-                                                        "text": part.text
-                                                    })
-                                        
-                                        # Only dispatch turn_complete to client if we are NOT waiting for tool execution!
-                                        if response.server_content.turn_complete:
-                                            if not tool_in_flight:
-                                                await websocket.send_json({
-                                                    "turn_id": active_id,
-                                                    "turn_complete": True
-                                                })
+                                    # 1. Interruption / Barge-in detection from Gemini Live VAD
+                                    if response.server_content and response.server_content.interrupted:
+                                        logger.info("Model turn INTERRUPTED by cardholder voice jump-in")
+                                        await websocket.send_json({
+                                            "interrupted": True
+                                        })
 
-                                    # Handle Tool Call from Gemini Live
-                                    if response.tool_call:
-                                        tool_in_flight = True
+                                    # 2. Cardholder speech transcription from Gemini Live VAD
+                                    if response.server_content and response.server_content.input_transcription and response.server_content.input_transcription.text:
+                                        user_text = response.server_content.input_transcription.text.strip()
+                                        if user_text:
+                                            logger.info(f"VAD User Heard: '{user_text}'")
+                                            await websocket.send_json({
+                                                "user_transcript": user_text,
+                                                "is_final": getattr(response.server_content.input_transcription, "finished", True)
+                                            })
+
+                                    # 3. Tool Call execution
+                                    if response.tool_call and response.tool_call.function_calls:
                                         for fc in response.tool_call.function_calls:
                                             tool_name = fc.name
                                             tool_args = fc.args or {}
-                                            logger.info(f"[Turn {active_id}] Sub-Agent Tool Call: {tool_name} with args: {tool_args}")
+                                            logger.info(f"Tool Call: {tool_name} with args: {tool_args}")
                                             
                                             handler = TOOL_HANDLERS.get(tool_name)
                                             if handler:
@@ -663,10 +665,9 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
                                             else:
                                                 tool_result_payload = {"status": "success", "result": f"Executed {tool_name} successfully"}
 
-                                            # Send tool call event to frontend phone UI
+                                            # Send tool call event to frontend phone UI immediately
                                             try:
                                                 await websocket.send_json({
-                                                    "turn_id": active_id,
                                                     "tool_call": {
                                                         "name": tool_name,
                                                         "args": tool_args,
@@ -687,11 +688,45 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
                                                         )
                                                     ]
                                                 )
-                                                # Tool response is now submitted, Gemini will now speak the final explanation turn
-                                                tool_in_flight = False
                                             except Exception as gemini_err:
                                                 logger.error(f"Failed to send tool response to Gemini Live: {gemini_err}")
-                                                tool_in_flight = False
+
+                                    # 4. Server Content (Audio chunks & transcriptions)
+                                    if response.server_content:
+                                        sent_transcription = False
+                                        if response.server_content.output_transcription and response.server_content.output_transcription.text:
+                                            out_text = response.server_content.output_transcription.text
+                                            if out_text:
+                                                sent_transcription = True
+                                                logger.info(f"Assistant Output: '{out_text}'")
+                                                await websocket.send_json({
+                                                    "text": out_text
+                                                })
+
+                                        model_turn = response.server_content.model_turn
+                                        if model_turn:
+                                            for part in model_turn.parts:
+                                                # Discard internal thoughts or meta-reasoning
+                                                if getattr(part, 'thought', False):
+                                                    continue
+                                                # Audio 24kHz PCM chunk
+                                                if part.inline_data:
+                                                    b64_audio = base64.b64encode(part.inline_data.data).decode("utf-8")
+                                                    await websocket.send_json({
+                                                        "audio_pcm_24k": b64_audio
+                                                    })
+                                                # Text transcript piece (fallback if output_transcription was not sent)
+                                                if part.text and not sent_transcription:
+                                                    await websocket.send_json({
+                                                        "text": part.text
+                                                    })
+                                        
+                                        # Turn complete signal
+                                        if response.server_content.turn_complete:
+                                            await websocket.send_json({
+                                                "turn_complete": True
+                                            })
+
                                 except WebSocketDisconnect:
                                     return
                                 except Exception as chunk_e:

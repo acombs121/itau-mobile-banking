@@ -158,11 +158,11 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
             >
               {selectedAgentDetail ? (
                 <div className="flex flex-col h-full min-h-0">
-                  <div className="flex justify-between items-center mb-3 pb-2.5 border-b border-white/[0.08] flex-shrink-0">
+                  <div className={`flex justify-between items-center mb-3 pb-2.5 border-b flex-shrink-0 ${isDark ? 'border-white/[0.08]' : 'border-slate-200'}`}>
                     <span className="font-bold text-brand-orange text-xs sm:text-[12.5px] uppercase tracking-wide">
                       {selectedAgentDetail.id}
                     </span>
-                    <span className="text-xs text-white/40">
+                    <span className={`text-xs ${isDark ? 'text-white/40' : 'text-slate-500'}`}>
                       {selectedAgentDetail.lastRun || '14:52:10 BRT'}
                     </span>
                   </div>
@@ -172,7 +172,7 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
                   </pre>
                 </div>
               ) : (
-                <div className="flex items-center justify-center h-full text-white/30 text-xs">
+                <div className={`flex items-center justify-center h-full text-xs ${isDark ? 'text-white/30' : 'text-slate-400'}`}>
                   {t.subagents.selectPrompt}
                 </div>
               )}
