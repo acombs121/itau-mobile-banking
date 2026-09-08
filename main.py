@@ -68,6 +68,7 @@ allowed_origins = [
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
+    allow_origin_regex=r"https://.*\.run\.app",
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
@@ -525,10 +526,15 @@ async def websocket_live_endpoint(
     """
     # Origin validation against allowed origins
     client_origin = websocket.headers.get("origin")
+    host_header = websocket.headers.get("host", "").lower()
     if client_origin:
         origin_lower = client_origin.lower()
         is_allowed = False
         if "localhost" in origin_lower or "127.0.0.1" in origin_lower:
+            is_allowed = True
+        elif ".run.app" in origin_lower:
+            is_allowed = True
+        elif host_header and host_header in origin_lower:
             is_allowed = True
         elif any(origin_lower.startswith(allowed.lower()) for allowed in allowed_origins):
             is_allowed = True

@@ -512,13 +512,13 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
           </div>
 
           {/* Bottom Voice Concierge Bar (Placed above Footer Nav) */}
-          <div className={`relative px-4 py-2 border-t flex items-center justify-between flex-shrink-0 transition-colors ${
+          <div className={`px-3.5 py-2 border-t flex items-center justify-between gap-2.5 flex-shrink-0 transition-colors ${
             isDark ? 'border-white/[0.08] bg-[#121217]' : 'border-slate-200 bg-slate-100/90'
           }`}>
             {/* Left Column: Branding & Status (Click to interrupt when speaking) */}
             <div 
               onClick={isSpeaking ? interrupt : undefined}
-              className={`flex items-center gap-2 z-10 select-none min-w-0 ${isSpeaking ? 'cursor-pointer' : ''}`}
+              className={`flex items-center gap-2 select-none min-w-0 flex-1 ${isSpeaking ? 'cursor-pointer' : ''}`}
               title={isSpeaking ? (currentLang === 'en' ? "Tap to interrupt" : "Toque para interromper") : undefined}
             >
               <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isSpeaking ? 'bg-emerald-400 animate-ping' : isListening ? 'bg-brand-orange animate-pulse' : 'bg-brand-orange'}`}></div>
@@ -531,22 +531,24 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
               </span>
             </div>
 
-            {/* Center Column: Live Audio Waveform (Click to interrupt when speaking) */}
-            <div 
-              onClick={isSpeaking ? interrupt : undefined}
-              className={isSpeaking ? 'cursor-pointer' : ''}
-              title={isSpeaking ? (currentLang === 'en' ? "Tap to interrupt" : "Toque para interromper") : undefined}
-            >
-              <AudioWaveformVisualizer
-                subscribeAudioLevels={subscribeAudioLevels}
-                isVoiceCallActive={isVoiceCallActive}
-                isSpeaking={isSpeaking}
-                isListening={isListening}
-              />
-            </div>
+            {/* Center Column: Live Audio Waveform (Inline, non-overlapping) */}
+            {isVoiceCallActive && (
+              <div 
+                onClick={isSpeaking ? interrupt : undefined}
+                className={`flex items-center justify-center shrink-0 ${isSpeaking ? 'cursor-pointer' : ''}`}
+                title={isSpeaking ? (currentLang === 'en' ? "Tap to interrupt" : "Toque para interromper") : undefined}
+              >
+                <AudioWaveformVisualizer
+                  subscribeAudioLevels={subscribeAudioLevels}
+                  isVoiceCallActive={isVoiceCallActive}
+                  isSpeaking={isSpeaking}
+                  isListening={isListening}
+                />
+              </div>
+            )}
 
             {/* Right Column: Mic Trigger Button */}
-            <div className="flex items-center justify-end z-10">
+            <div className="flex items-center justify-end shrink-0">
               <button
                 onClick={() => {
                   if (isVoiceCallActive && isSpeaking) {

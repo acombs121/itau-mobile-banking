@@ -29,8 +29,8 @@ export const AudioWaveformVisualizer: React.FC<AudioWaveformVisualizerProps> = R
   const currentLevels = propAudioLevels || levels;
 
   return (
-    <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-      <div className="flex items-center gap-1 h-6 px-3 bg-black/40 rounded-full border border-white/10 animate-fadeIn shadow-sm pointer-events-auto">
+    <div className="flex items-center justify-center">
+      <div className="flex items-center gap-1 h-6 px-2.5 bg-black/50 rounded-full border border-white/15 animate-fadeIn shadow-sm">
         {currentLevels.slice(0, 9).map((level, i) => (
           <div
             key={i}
@@ -42,7 +42,7 @@ export const AudioWaveformVisualizer: React.FC<AudioWaveformVisualizerProps> = R
             className={`w-1 rounded-full ${
               isSpeaking || isListening
                 ? 'bg-brand-orange'
-                : 'bg-white/20'
+                : 'bg-white/30'
             }`}
           />
         ))}
