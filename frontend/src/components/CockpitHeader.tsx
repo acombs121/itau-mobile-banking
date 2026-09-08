@@ -198,15 +198,6 @@ export const CockpitHeader: React.FC<CockpitHeaderProps> = React.memo(({
           <Settings className="w-4 h-4 transition-transform duration-300 hover:rotate-90" />
         </button>
 
-        {/* Live Status Indicator Dot (Far Right) */}
-        <div 
-          onClick={onOpenAdmin}
-          className="w-8 h-8 flex items-center justify-center cursor-pointer hover:opacity-90 transition-opacity ml-0.5"
-          title="Gemini Enterprise Agent Platform (fka Vertex AI Platform) • Active"
-        >
-          <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 ring-4 ring-emerald-400/20 animate-pulse" />
-        </div>
-
       </div>
 
     </header>

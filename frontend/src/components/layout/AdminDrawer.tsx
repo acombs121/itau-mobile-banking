@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useBrand, getBrandAccountPrefix } from '../../context/BrandContext';
 import { AdminConfig, BrandingProfile, COLOR_PALETTE_PRESETS, DEFAULT_BRAND_PROFILES } from '../../types/brand';
-import { updateAdminConfig, fetchUserProfile, fetchHealthInfo, UserProfile } from '../../lib/api';
+import { updateAdminConfig } from '../../lib/api';
 import { useBrandEditorForm } from '../../hooks/useBrandEditorForm';
 import { 
   X, 
@@ -113,24 +113,9 @@ export const AdminDrawer: React.FC<AdminDrawerProps> = ({
   const [brandKitModalOpen, setBrandKitModalOpen] = useState<boolean>(false);
   const [demoScriptOpen, setDemoScriptOpen] = useState<boolean>(false);
 
-  // Telemetry & Identity State
-  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
-  const [healthInfo, setHealthInfo] = useState<{ gcp_project?: string; environment?: string; service?: string } | null>(null);
-
   const fileInputRef = useRef<HTMLInputElement>(null);
   const activeBrandFileInputRef = useRef<HTMLInputElement>(null);
   const jsonImportRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (isOpen) {
-      fetchUserProfile()
-        .then(data => setCurrentUser(data))
-        .catch(err => console.warn('Failed to load user profile:', err));
-      fetchHealthInfo()
-        .then(data => setHealthInfo(data))
-        .catch(err => console.warn('Failed to load health info:', err));
-    }
-  }, [isOpen]);
 
   useEffect(() => {
     if (initialTab) {
@@ -607,11 +592,7 @@ export const AdminDrawer: React.FC<AdminDrawerProps> = ({
                       )}
                       <div className="flex flex-col min-w-0">
                         <div className="flex items-center gap-1.5">
-                          <span className="text-[10px] font-mono uppercase text-emerald-400 font-bold flex items-center gap-1">
-                            <CheckCircle2 className="size-3" />
-                            <span>{lang === 'pt' ? 'Marca Ativa' : 'Active Brand'}</span>
-                          </span>
-                          <span className="text-[10px] font-mono text-[#798B97]">• {activeBrand.primaryColor}</span>
+                          <span className="text-[10px] font-mono text-[#798B97]">{activeBrand.primaryColor}</span>
                         </div>
                         <strong className="text-xs text-white font-bold truncate">{activeBrand.name}</strong>
                         <span className="text-[10px] text-[#798B97] truncate">
@@ -1405,30 +1386,6 @@ export const AdminDrawer: React.FC<AdminDrawerProps> = ({
             </div>
           )}
 
-        </div>
-
-        {/* Telemetry & Identity Display (Cloud Run Demo Specification) */}
-        <div className="pt-3.5 border-t border-white/10 text-[11px] font-mono text-[#798B97] flex flex-col gap-1.5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5 truncate max-w-[240px]">
-              <span className="size-1.5 rounded-full bg-emerald-400 shrink-0" />
-              <span className="text-white/80 truncate">
-                {currentUser?.email || (lang === 'pt' ? 'Usuário IAP Conectado' : 'Authenticated IAP User')}
-              </span>
-              {currentUser?.is_mock && (
-                <span className="text-[9px] px-1 py-0.5 rounded bg-amber-500/20 text-amber-300 font-sans">
-                  DEV
-                </span>
-              )}
-            </div>
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/10 text-white/90">
-              {healthInfo?.gcp_project || 'itau-banking-alerts'}
-            </span>
-          </div>
-          <div className="flex items-center justify-between text-[10px] text-white/60">
-            <span>{activeBrand.name} ({mode.toUpperCase()})</span>
-            <span className="text-emerald-400 font-medium">Gemini Enterprise Agent Platform (fka Vertex AI Platform)</span>
-          </div>
         </div>
       </div>
 
