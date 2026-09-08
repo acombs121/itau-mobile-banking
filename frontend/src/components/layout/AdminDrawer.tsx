@@ -57,8 +57,7 @@ export const AdminDrawer: React.FC<AdminDrawerProps> = ({
     updateActiveBrandLogo,
     resetActiveBrandLogo,
     updateActiveBrandLightHeader,
-    syncAllToCloud,
-    cloudSyncStatus
+    syncAllToCloud
   } = useBrand();
 
   const [activeTab, setActiveTab] = useState<'branding' | 'ai' | 'script'>(initialTab);
@@ -114,7 +113,6 @@ export const AdminDrawer: React.FC<AdminDrawerProps> = ({
   const [demoScriptOpen, setDemoScriptOpen] = useState<boolean>(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const activeBrandFileInputRef = useRef<HTMLInputElement>(null);
   const jsonImportRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -259,19 +257,6 @@ export const AdminDrawer: React.FC<AdminDrawerProps> = ({
         setBrandSavedToast(true);
         setTimeout(() => setBrandSavedToast(false), 2500);
       }
-    });
-    e.target.value = '';
-  };
-
-  const handleActiveBrandQuickLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    processImageFile(file, (optimized) => {
-      updateActiveBrandLogo(optimized);
-      setFormLogoUrl(optimized);
-      setBrandSavedToast(true);
-      setTimeout(() => setBrandSavedToast(false), 2500);
     });
     e.target.value = '';
   };
@@ -531,138 +516,6 @@ export const AdminDrawer: React.FC<AdminDrawerProps> = ({
               {/* CATALOG VIEW */}
               {studioMode === 'catalog' && (
                 <div className="flex flex-col gap-3">
-                  
-                  {/* Google Cloud Firestore / Datastore Live Status Bar */}
-                  <div className="px-3 py-2 rounded-[5px] bg-gradient-to-r from-sky-950/40 via-slate-900/60 to-slate-900/40 border border-sky-500/25 flex items-center justify-between text-[11px]">
-                    <div className="flex items-center gap-2">
-                      <span className="size-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="font-semibold text-white">Cloud Sync:</span>
-                        <span className="font-mono text-sky-300 bg-sky-950/60 px-1.5 py-0.5 rounded-[3px] border border-sky-500/20 text-[10px]">
-                          Firestore (cait-db)
-                        </span>
-                        <span className="text-white/30">•</span>
-                        <span className="font-mono text-slate-300 bg-white/5 px-1.5 py-0.5 rounded-[3px] border border-white/10 text-[10px]">
-                          Datastore ((default))
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      {cloudSyncStatus.lastSyncedAt && (
-                        <span className="text-[10px] text-emerald-400 font-mono hidden sm:inline">
-                          ✓ {cloudSyncStatus.lastSyncedAt}
-                        </span>
-                      )}
-                      <span className="text-[10px] text-white/60 font-mono">{brandProfiles.length} {lang === 'pt' ? 'marcas' : 'brands'}</span>
-                      <button
-                        type="button"
-                        onClick={handleSyncToCloud}
-                        disabled={syncingCloud}
-                        className="text-[10px] text-sky-400 hover:text-sky-300 font-semibold underline cursor-pointer"
-                      >
-                        {syncingCloud ? (lang === 'pt' ? 'Gravando...' : 'Saving...') : (lang === 'pt' ? 'Sincronizar Agora' : 'Sync to Cloud')}
-                      </button>
-                    </div>
-                  </div>
-                  
-                  {/* Quick Active Brand & Logo Strip */}
-                  <div className="p-3 rounded-[6px] bg-white/5 border border-white/10 flex items-center justify-between gap-3 shadow-xs">
-                    <div className="flex items-center gap-3 min-w-0">
-                      {activeBrand.logoUrl ? (
-                        <div 
-                          className="h-9 min-w-24 max-w-36 rounded-[4px] p-1 flex items-center justify-center border border-white/15 shrink-0"
-                          style={{ backgroundColor: activeBrand.lightHeader ? '#FFFFFF' : activeBrand.primaryColor }}
-                        >
-                          <img 
-                            src={activeBrand.logoUrl} 
-                            alt={activeBrand.name} 
-                            className="max-h-full max-w-full object-contain" 
-                          />
-                        </div>
-                      ) : (
-                        <div 
-                          className="h-9 px-3 rounded-[4px] font-black text-sm tracking-tight flex items-center justify-center shrink-0 shadow-xs"
-                          style={{ 
-                            backgroundColor: activeBrand.lightHeader ? '#FFFFFF' : activeBrand.primaryColor, 
-                            color: activeBrand.lightHeader ? '#070707' : (activeBrand.secondaryTextColor || '#FFFFFF') 
-                          }}
-                        >
-                          {activeBrand.id === 'itau' ? 'itau' : getBrandAccountPrefix(activeBrand.id)}
-                        </div>
-                      )}
-                      <div className="flex flex-col min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-[10px] font-mono text-[#798B97]">{activeBrand.primaryColor}</span>
-                        </div>
-                        <strong className="text-xs text-white font-bold truncate">{activeBrand.name}</strong>
-                        <span className="text-[10px] text-[#798B97] truncate">
-                          {activeBrand.logoUrl 
-                            ? (lang === 'pt' ? 'Logotipo customizado ativo' : 'Custom logo active') 
-                            : (lang === 'pt' ? 'Usando badge textual padrão' : 'Using standard text badge')}
-                          {activeBrand.lightHeader ? (lang === 'pt' ? ' • Fundo Branco' : ' • White Header') : ''}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      {/* Quick White Header toggle */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const next = !activeBrand.lightHeader;
-                          updateActiveBrandLightHeader(next);
-                          setFormLightHeader(next);
-                          setToastMessage(next 
-                            ? (lang === 'pt' ? 'Cabeçalho claro (fundo branco) ativado!' : 'White header activated!') 
-                            : (lang === 'pt' ? 'Cabeçalho colorido ativado!' : 'Brand color header activated!'));
-                          setBrandSavedToast(true);
-                          setTimeout(() => {
-                            setBrandSavedToast(false);
-                            setToastMessage(null);
-                          }, 2000);
-                        }}
-                        className={`px-2.5 py-1.5 rounded-[4px] text-xs font-semibold border flex items-center gap-1.5 transition-all cursor-pointer ${
-                          activeBrand.lightHeader
-                            ? 'bg-white text-neutral-900 border-white shadow-xs'
-                            : 'bg-white/5 hover:bg-white/10 text-white/80 border-white/15'
-                        }`}
-                        title={lang === 'pt' ? 'Alternar Cabeçalho Claro (Fundo Branco)' : 'Toggle Light Header (White Background)'}
-                      >
-                        <span 
-                          className="size-2 rounded-full border border-neutral-400" 
-                          style={{ backgroundColor: activeBrand.lightHeader ? '#FFFFFF' : activeBrand.primaryColor }} 
-                        />
-                        <span>{activeBrand.lightHeader ? (lang === 'pt' ? 'Fundo Branco Ativo' : 'White Header On') : (lang === 'pt' ? 'Fundo Branco' : 'White Header')}</span>
-                      </button>
-
-                      <input 
-                        ref={activeBrandFileInputRef}
-                        type="file"
-                        accept="image/*,.svg"
-                        onChange={handleActiveBrandQuickLogoUpload}
-                        className="hidden"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => activeBrandFileInputRef.current?.click()}
-                        className="btn-itau px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 shadow-sm cursor-pointer"
-                        title={lang === 'pt' ? 'Fazer upload de logotipo para esta marca' : 'Upload logo for this brand'}
-                      >
-                        <Upload className="size-3.5" />
-                        <span>{activeBrand.logoUrl ? (lang === 'pt' ? 'Trocar Logo' : 'Change Logo') : (lang === 'pt' ? 'Upload Logo' : 'Upload Logo')}</span>
-                      </button>
-                      {activeBrand.logoUrl && (
-                        <button
-                          type="button"
-                          onClick={handleResetCurrentLogo}
-                          className="p-1.5 rounded-[4px] bg-white/5 hover:bg-red-500/20 text-white/60 hover:text-red-400 border border-white/10 transition-all cursor-pointer"
-                          title={lang === 'pt' ? 'Resetar logotipo da marca' : 'Reset brand logo'}
-                        >
-                          <RotateCcw className="size-3.5" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
                   <div className="relative">
                     <Search className="size-3.5 text-white/40 absolute left-2.5 top-1/2 -translate-y-1/2" />
                     <input
