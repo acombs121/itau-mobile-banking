@@ -21,7 +21,8 @@ import {
   CheckCircle2,
   Search,
   Edit2,
-  Download
+  Download,
+  Cloud
 } from 'lucide-react';
 
 interface BrandKitModalProps {
@@ -41,13 +42,16 @@ export const BrandKitModal: React.FC<BrandKitModalProps> = ({ isOpen, onClose })
     exportBrandJson,
     importBrandJson,
     updateActiveBrandLogo,
-    updateActiveBrandLightHeader
+    updateActiveBrandLightHeader,
+    syncAllToCloud
   } = useBrand();
 
   const [activeTab, setActiveTab] = useState<'presets' | 'studio' | 'colors' | 'typography' | 'voice' | 'spec'>('presets');
   const [copiedHex, setCopiedHex] = useState<string | null>(null);
   const [copiedAll, setCopiedAll] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [syncingCloud, setSyncingCloud] = useState(false);
+  const [cloudSyncToast, setCloudSyncToast] = useState<string | null>(null);
 
   // Brand Studio Form State via reusable hook
   const {
@@ -105,6 +109,25 @@ export const BrandKitModal: React.FC<BrandKitModalProps> = ({ isOpen, onClose })
     } else {
       setCopiedAll(true);
       setTimeout(() => setCopiedAll(false), 2000);
+    }
+  };
+
+  const handleSyncToCloud = async () => {
+    setSyncingCloud(true);
+    try {
+      const res = await syncAllToCloud();
+      if (res.success) {
+        setCloudSyncToast(lang === 'pt' 
+          ? `✓ Sincronizado com Firestore (cait-db) e Datastore! (${res.count} marcas)` 
+          : `✓ Synced with Firestore (cait-db) & Datastore! (${res.count} brands)`);
+        setTimeout(() => setCloudSyncToast(null), 3500);
+      } else {
+        alert(lang === 'pt' ? `Erro ao sincronizar: ${res.message}` : `Cloud sync error: ${res.message}`);
+      }
+    } catch (e: any) {
+      alert(e.message || 'Sync failed');
+    } finally {
+      setSyncingCloud(false);
     }
   };
 
@@ -475,6 +498,16 @@ export const BrandKitModal: React.FC<BrandKitModalProps> = ({ isOpen, onClose })
 
           <div className="flex items-center gap-2">
             <button
+              onClick={handleSyncToCloud}
+              disabled={syncingCloud}
+              title={lang === 'pt' ? 'Sincronizar marcas com o Google Cloud Firestore' : 'Sync brands to Google Cloud Firestore'}
+              className="px-2.5 py-1.5 rounded-[4px] bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 border border-sky-500/30 transition-all cursor-pointer flex items-center gap-1.5 text-xs font-semibold"
+            >
+              <Cloud className={`size-3.5 ${syncingCloud ? 'animate-pulse text-sky-400' : ''}`} />
+              <span className="hidden sm:inline">{syncingCloud ? (lang === 'pt' ? 'Gravando...' : 'Syncing...') : (lang === 'pt' ? 'Sync Nuvem' : 'Sync Cloud')}</span>
+            </button>
+
+            <button
               onClick={handleExportJson}
               title={lang === 'pt' ? 'Exportar Perfis JSON' : 'Export Profiles JSON'}
               className="p-2 rounded-[4px] bg-white/5 hover:bg-white/10 text-white/80 border border-white/15 transition-all cursor-pointer"
@@ -513,6 +546,14 @@ export const BrandKitModal: React.FC<BrandKitModalProps> = ({ isOpen, onClose })
             </button>
           </div>
         </div>
+
+        {/* Cloud Sync Toast */}
+        {cloudSyncToast && (
+          <div className="px-4 py-2 bg-emerald-950/90 border-b border-emerald-500/40 text-emerald-300 text-xs font-semibold flex items-center gap-2 animate-in fade-in">
+            <Check className="size-4" />
+            <span>{cloudSyncToast}</span>
+          </div>
+        )}
 
         {/* Tab Navigation */}
         <div className="flex border-b border-white/10 bg-black/40 px-4 sm:px-6 gap-2 overflow-x-auto">

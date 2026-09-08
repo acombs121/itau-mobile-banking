@@ -130,9 +130,29 @@ def get_project_id() -> str:
         or "itau-banking-alerts"
     )
 
-def get_firestore_url(doc_path: str = "") -> str:
+def get_firestore_databases() -> List[str]:
+    """
+    Returns the list of Firestore Native database IDs to sync to.
+    Avoids '(default)' when it is in Datastore mode.
+    """
+    configured = os.environ.get("FIRESTORE_DATABASE")
     project_id = get_project_id()
-    db_id = os.environ.get("FIRESTORE_DATABASE", "(default)")
+    dbs = []
+    if configured and configured != "(default)":
+        dbs.append(configured)
+    if project_id == "edgar-rag-demo" and "cait-db" not in dbs:
+        dbs.append("cait-db")
+    if not dbs:
+        dbs.append("cait-db")
+    return dbs
+
+def get_firestore_url(doc_path: str = "", database: Optional[str] = None) -> str:
+    project_id = get_project_id()
+    if database:
+        db_id = database
+    else:
+        dbs = get_firestore_databases()
+        db_id = dbs[0] if dbs else "cait-db"
     base = f"https://firestore.googleapis.com/v1/projects/{project_id}/databases/{db_id}/documents"
     if doc_path:
         return f"{base}/{doc_path.lstrip('/')}"
@@ -232,6 +252,113 @@ def datastore_value_to_python(val_obj):
         return val_obj["timestampValue"]
     return val_obj
 
+# --- Cloud Persistence Helpers ---
+
+async def persist_brand_to_cloud(profile_data: dict, access_token: str, project_id: str) -> Dict[str, Any]:
+    brand_id = profile_data["id"]
+    results = {"datastore": False, "firestore": False, "databases": []}
+
+    # 1. Google Cloud Datastore REST (Database: (default))
+    try:
+        commit_url = f"https://datastore.googleapis.com/v1/projects/{project_id}:commit"
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json"
+        }
+        ds_props = {k: python_to_datastore_value(v, k) for k, v in profile_data.items() if v is not None}
+        mutation = {
+            "mode": "NON_TRANSACTIONAL",
+            "mutations": [
+                {
+                    "upsert": {
+                        "key": {
+                            "path": [{"kind": KIND_NAME, "name": brand_id}]
+                        },
+                        "properties": ds_props
+                    }
+                }
+            ]
+        }
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.post(commit_url, headers=headers, json=mutation)
+            if resp.status_code == 200:
+                results["datastore"] = True
+                results["databases"].append("datastore:(default)")
+            else:
+                logger.debug(f"Datastore commit returned {resp.status_code}: {resp.text}")
+    except Exception as e:
+        logger.debug(f"Datastore save error for {brand_id}: {e}")
+
+    # 2. Google Cloud Firestore Native REST (Database: cait-db / FIRESTORE_DATABASE)
+    fs_dbs = get_firestore_databases()
+    fs_fields = {k: python_to_firestore_value(v) for k, v in profile_data.items() if v is not None}
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
+    for db_id in fs_dbs:
+        try:
+            url = get_firestore_url(f"{KIND_NAME}/{brand_id}", database=db_id)
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                resp = await client.patch(url, headers=headers, json={"fields": fs_fields})
+                if resp.status_code in (200, 201):
+                    results["firestore"] = True
+                    results["databases"].append(f"firestore:{db_id}")
+                else:
+                    logger.debug(f"Firestore ({db_id}) patch returned {resp.status_code}: {resp.text}")
+        except Exception as e:
+            logger.debug(f"Firestore save error ({db_id}) for {brand_id}: {e}")
+
+    return results
+
+async def delete_brand_from_cloud(brand_id: str, access_token: str, project_id: str) -> Dict[str, Any]:
+    results = {"datastore": False, "firestore": False, "databases": []}
+
+    # 1. Delete from Datastore
+    try:
+        commit_url = f"https://datastore.googleapis.com/v1/projects/{project_id}:commit"
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json"
+        }
+        mutation = {
+            "mode": "NON_TRANSACTIONAL",
+            "mutations": [
+                {
+                    "delete": {
+                        "path": [{"kind": KIND_NAME, "name": brand_id}]
+                    }
+                }
+            ]
+        }
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.post(commit_url, headers=headers, json=mutation)
+            if resp.status_code == 200:
+                results["datastore"] = True
+                results["databases"].append("datastore:(default)")
+    except Exception as e:
+        logger.debug(f"Datastore delete error for {brand_id}: {e}")
+
+    # 2. Delete from Firestore Native
+    fs_dbs = get_firestore_databases()
+    headers = {"Authorization": f"Bearer {access_token}"}
+    for db_id in fs_dbs:
+        try:
+            url = get_firestore_url(f"{KIND_NAME}/{brand_id}", database=db_id)
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                resp = await client.delete(url, headers=headers)
+                if resp.status_code in (200, 204, 404):
+                    results["firestore"] = True
+                    results["databases"].append(f"firestore:{db_id}")
+        except Exception as e:
+            logger.debug(f"Firestore delete error ({db_id}) for {brand_id}: {e}")
+
+    return results
+
+class BatchSyncBrandsPayload(BaseModel):
+    profiles: List[BrandProfileModel]
+    activeBrandId: Optional[str] = None
+
 # --- API Endpoints ---
 
 @router.get("/me")
@@ -244,15 +371,14 @@ async def get_current_user_endpoint(request: Request, user: Dict[str, Any] = Dep
 async def list_brands_endpoint(request: Request, user: Dict[str, Any] = Depends(get_authenticated_user)):
     """
     List all brand profiles.
-    Queries Firestore / Datastore in the cloud and merges with local disk cache.
+    Queries both Datastore and Firestore Native in the cloud and merges with local disk cache.
     """
     access_token = get_valid_gcp_token()
     project_id = get_project_id()
     profiles_dict = dict(_local_brands_cache)
 
-    datastore_succeeded = False
     if access_token:
-        # 1. Try Google Cloud Datastore REST Query
+        # 1. Query Datastore REST
         try:
             ds_url = f"https://datastore.googleapis.com/v1/projects/{project_id}:runQuery"
             headers = {
@@ -263,7 +389,6 @@ async def list_brands_endpoint(request: Request, user: Dict[str, Any] = Depends(
             async with httpx.AsyncClient(timeout=10.0) as client:
                 resp = await client.post(ds_url, headers=headers, json=body)
                 if resp.status_code == 200:
-                    datastore_succeeded = True
                     entities = resp.json().get("batch", {}).get("entityResults", [])
                     for res in entities:
                         ent = res.get("entity", {})
@@ -275,18 +400,18 @@ async def list_brands_endpoint(request: Request, user: Dict[str, Any] = Depends(
                             p["id"] = str(doc_id)
                             profiles_dict[str(doc_id)] = p
                             _local_brands_cache[str(doc_id)] = p
-                    save_local_brands_to_disk(_local_brands_cache)
         except Exception as e:
             logger.debug(f"Datastore list error for {KIND_NAME}: {e}")
 
-        # 2. Try Firestore Native REST fallback (only if Datastore did not succeed)
-        if not datastore_succeeded:
+        # 2. Query Firestore Native REST
+        fs_dbs = get_firestore_databases()
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json"
+        }
+        for db_id in fs_dbs:
             try:
-                url = get_firestore_url(KIND_NAME)
-                headers = {
-                    "Authorization": f"Bearer {access_token}",
-                    "Content-Type": "application/json"
-                }
+                url = get_firestore_url(KIND_NAME, database=db_id)
                 async with httpx.AsyncClient(timeout=10.0) as client:
                     resp = await client.get(url, headers=headers)
                     if resp.status_code == 200:
@@ -299,12 +424,22 @@ async def list_brands_endpoint(request: Request, user: Dict[str, Any] = Depends(
                                 p["id"] = str(doc_id)
                                 profiles_dict[str(doc_id)] = p
                                 _local_brands_cache[str(doc_id)] = p
-                        save_local_brands_to_disk(_local_brands_cache)
             except Exception as e:
-                logger.debug(f"Firestore list error for {KIND_NAME}: {e}")
+                logger.debug(f"Firestore list error ({db_id}) for {KIND_NAME}: {e}")
+
+        save_local_brands_to_disk(_local_brands_cache)
 
     profile_list = list(profiles_dict.values())
-    return {"profiles": profile_list, "brands": profile_list}
+    return {
+        "profiles": profile_list, 
+        "brands": profile_list,
+        "cloud_sync": {
+            "project": project_id,
+            "datastore_mode_db": "(default)",
+            "firestore_native_db": get_firestore_databases()[0] if get_firestore_databases() else "cait-db",
+            "count": len(profile_list)
+        }
+    }
 
 @router.get("/brands/{brand_id}")
 async def get_brand_endpoint(
@@ -318,7 +453,6 @@ async def get_brand_endpoint(
 
     if access_token:
         # 1. Try Datastore lookup
-        ds_checked = False
         try:
             lookup_url = f"https://datastore.googleapis.com/v1/projects/{project_id}:lookup"
             headers = {
@@ -331,7 +465,6 @@ async def get_brand_endpoint(
             async with httpx.AsyncClient(timeout=10.0) as client:
                 resp = await client.post(lookup_url, headers=headers, json=body)
                 if resp.status_code == 200:
-                    ds_checked = True
                     found = resp.json().get("found", [])
                     if found:
                         props = found[0].get("entity", {}).get("properties", {})
@@ -343,10 +476,11 @@ async def get_brand_endpoint(
         except Exception as e:
             logger.debug(f"Datastore lookup error for {brand_id}: {e}")
 
-        # 2. Try Firestore lookup (only if Datastore query was not executed)
-        if not ds_checked:
+        # 2. Try Firestore lookup
+        fs_dbs = get_firestore_databases()
+        for db_id in fs_dbs:
             try:
-                url = get_firestore_url(f"{KIND_NAME}/{brand_id}")
+                url = get_firestore_url(f"{KIND_NAME}/{brand_id}", database=db_id)
                 headers = {
                     "Authorization": f"Bearer {access_token}",
                     "Content-Type": "application/json"
@@ -361,10 +495,8 @@ async def get_brand_endpoint(
                         _local_brands_cache[brand_id] = profile
                         save_local_brands_to_disk(_local_brands_cache)
                         return profile
-                    elif resp.status_code == 404 and brand_id == "itau":
-                        return DEFAULT_ITAU_PROFILE
             except Exception as e:
-                logger.debug(f"Firestore get error for {brand_id}: {e}")
+                logger.debug(f"Firestore get error ({db_id}) for {brand_id}: {e}")
 
     if brand_id in _local_brands_cache:
         return _local_brands_cache[brand_id]
@@ -378,7 +510,7 @@ async def get_brand_endpoint(
 async def save_brand_endpoint(payload: BrandProfileModel, request: Request, user: Dict[str, Any] = Depends(get_authenticated_user)):
     """
     Save or update a brand profile.
-    Persists to Google Cloud Datastore / Firestore and the local disk cache.
+    Persists to Google Cloud Datastore ((default)), Firestore Native (cait-db), and local disk cache.
     """
     current_user = user.get("email") or resolve_user_identity(request)
     profile_data = payload.model_dump()
@@ -403,59 +535,15 @@ async def save_brand_endpoint(payload: BrandProfileModel, request: Request, user
     _local_brands_cache[brand_id] = profile_data
     save_local_brands_to_disk(_local_brands_cache)
 
-    # Persist to Google Cloud Datastore / Firestore
+    # Persist concurrently to Google Cloud Datastore and Firestore Native
     access_token = get_valid_gcp_token()
     project_id = get_project_id()
+    cloud_sync = {}
 
     if access_token:
-        # 1. Save to Datastore REST
-        ds_saved = False
-        try:
-            commit_url = f"https://datastore.googleapis.com/v1/projects/{project_id}:commit"
-            headers = {
-                "Authorization": f"Bearer {access_token}",
-                "Content-Type": "application/json"
-            }
-            ds_props = {k: python_to_datastore_value(v, k) for k, v in profile_data.items() if v is not None}
-            mutation = {
-                "mode": "NON_TRANSACTIONAL",
-                "mutations": [
-                    {
-                        "upsert": {
-                            "key": {
-                                "path": [{"kind": KIND_NAME, "name": brand_id}]
-                            },
-                            "properties": ds_props
-                        }
-                    }
-                ]
-            }
-            async with httpx.AsyncClient(timeout=10.0) as client:
-                resp = await client.post(commit_url, headers=headers, json=mutation)
-                if resp.status_code == 200:
-                    ds_saved = True
-                else:
-                    logger.debug(f"Datastore commit returned {resp.status_code}: {resp.text}")
-        except Exception as e:
-            logger.debug(f"Datastore save error for {brand_id}: {e}")
+        cloud_sync = await persist_brand_to_cloud(profile_data, access_token, project_id)
 
-        # 2. Save to Firestore Native REST as fallback (only if Datastore did not save)
-        if not ds_saved:
-            try:
-                url = get_firestore_url(f"{KIND_NAME}/{brand_id}")
-                headers = {
-                    "Authorization": f"Bearer {access_token}",
-                    "Content-Type": "application/json"
-                }
-                fs_fields = {k: python_to_firestore_value(v) for k, v in profile_data.items() if v is not None}
-                async with httpx.AsyncClient(timeout=10.0) as client:
-                    resp = await client.patch(url, headers=headers, json={"fields": fs_fields})
-                    if resp.status_code not in (200, 201):
-                        logger.debug(f"Firestore patch returned {resp.status_code}: {resp.text}")
-            except Exception as e:
-                logger.debug(f"Firestore save error for {brand_id}: {e}")
-
-    return {"status": "ok", "profile": profile_data}
+    return {"status": "ok", "profile": profile_data, "cloud_sync": cloud_sync}
 
 @router.delete("/brands/{brand_id}")
 async def delete_brand_endpoint(
@@ -475,47 +563,92 @@ async def delete_brand_endpoint(
 
     access_token = get_valid_gcp_token()
     project_id = get_project_id()
+    cloud_sync = {}
 
     if access_token:
-        # 1. Delete from Datastore
-        ds_deleted = False
-        try:
-            commit_url = f"https://datastore.googleapis.com/v1/projects/{project_id}:commit"
-            headers = {
-                "Authorization": f"Bearer {access_token}",
-                "Content-Type": "application/json"
-            }
-            mutation = {
-                "mode": "NON_TRANSACTIONAL",
-                "mutations": [
-                    {
-                        "delete": {
-                            "path": [{"kind": KIND_NAME, "name": brand_id}]
-                        }
-                    }
-                ]
-            }
-            async with httpx.AsyncClient(timeout=10.0) as client:
-                resp = await client.post(commit_url, headers=headers, json=mutation)
-                if resp.status_code == 200:
-                    ds_deleted = True
-                else:
-                    logger.debug(f"Datastore delete returned {resp.status_code}: {resp.text}")
-        except Exception as e:
-            logger.debug(f"Datastore delete error for {brand_id}: {e}")
+        cloud_sync = await delete_brand_from_cloud(brand_id, access_token, project_id)
 
-        # 2. Delete from Firestore Native (only if Datastore delete was not performed)
-        if not ds_deleted:
-            try:
-                url = get_firestore_url(f"{KIND_NAME}/{brand_id}")
-                headers = {
-                    "Authorization": f"Bearer {access_token}"
-                }
-                async with httpx.AsyncClient(timeout=10.0) as client:
-                    resp = await client.delete(url, headers=headers)
-                    if resp.status_code not in (200, 204, 404):
-                        logger.debug(f"Firestore delete returned {resp.status_code}: {resp.text}")
-            except Exception as e:
-                logger.debug(f"Firestore delete error for {brand_id}: {e}")
+    return {"status": "ok", "deleted": brand_id, "cloud_sync": cloud_sync}
 
-    return {"status": "ok", "deleted": brand_id}
+@router.post("/brands/sync-all")
+async def sync_all_brands_endpoint(
+    payload: BatchSyncBrandsPayload, 
+    request: Request, 
+    user: Dict[str, Any] = Depends(get_authenticated_user)
+):
+    """
+    Synchronously persist a collection of brand profiles (e.g. from browser localStorage)
+    to Google Cloud Datastore ((default)), Firestore Native (cait-db), and local disk cache.
+    """
+    current_user = user.get("email") or resolve_user_identity(request)
+    access_token = get_valid_gcp_token()
+    project_id = get_project_id()
+    now_iso = datetime.datetime.now(datetime.timezone.utc).isoformat()
+
+    saved_profiles = []
+    cloud_results = []
+
+    for item in payload.profiles:
+        profile_data = item.model_dump()
+        brand_id = profile_data["id"].strip()
+        if not brand_id:
+            brand_id = f"custom-{int(datetime.datetime.now().timestamp() * 1000)}"
+            profile_data["id"] = brand_id
+
+        existing = _local_brands_cache.get(brand_id)
+        if existing and existing.get("creator"):
+            profile_data["creator"] = existing.get("creator")
+        elif not profile_data.get("creator"):
+            profile_data["creator"] = current_user
+
+        if not profile_data.get("createdAt"):
+            profile_data["createdAt"] = existing.get("createdAt") if existing else now_iso
+        if not profile_data.get("updatedAt"):
+            profile_data["updatedAt"] = now_iso
+
+        _local_brands_cache[brand_id] = profile_data
+        saved_profiles.append(profile_data)
+
+        if access_token:
+            res = await persist_brand_to_cloud(profile_data, access_token, project_id)
+            cloud_results.append({brand_id: res})
+
+    save_local_brands_to_disk(_local_brands_cache)
+
+    return {
+        "status": "ok",
+        "synced_count": len(saved_profiles),
+        "saved_ids": [p["id"] for p in saved_profiles],
+        "project_id": project_id,
+        "firestore_databases": get_firestore_databases(),
+        "cloud_results": cloud_results,
+        "profiles": saved_profiles
+    }
+
+@router.post("/brands/seed")
+async def seed_brands_endpoint(
+    request: Request,
+    user: Dict[str, Any] = Depends(get_authenticated_user)
+):
+    """
+    Force-seed all brand profiles in data/brand_profiles.json to Datastore and Firestore Native.
+    """
+    access_token = get_valid_gcp_token()
+    project_id = get_project_id()
+    disk_brands = load_local_brands_from_disk()
+
+    results = []
+    for brand_id, profile in disk_brands.items():
+        _local_brands_cache[brand_id] = profile
+        if access_token:
+            res = await persist_brand_to_cloud(profile, access_token, project_id)
+            results.append({brand_id: res})
+
+    return {
+        "status": "ok",
+        "seeded_count": len(disk_brands),
+        "project_id": project_id,
+        "firestore_databases": get_firestore_databases(),
+        "results": results
+    }
+

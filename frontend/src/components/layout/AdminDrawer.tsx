@@ -24,7 +24,8 @@ import {
   Edit2,
   Download,
   Search,
-  Eye
+  Eye,
+  Cloud
 } from 'lucide-react';
 import { DemoScriptModal } from '../admin/DemoScriptModal';
 import { BrandKitModal } from '../admin/BrandKitModal';
@@ -55,10 +56,13 @@ export const AdminDrawer: React.FC<AdminDrawerProps> = ({
     importBrandJson,
     updateActiveBrandLogo,
     resetActiveBrandLogo,
-    updateActiveBrandLightHeader
+    updateActiveBrandLightHeader,
+    syncAllToCloud,
+    cloudSyncStatus
   } = useBrand();
 
   const [activeTab, setActiveTab] = useState<'branding' | 'ai' | 'script'>(initialTab);
+  const [syncingCloud, setSyncingCloud] = useState(false);
 
   // AI Configuration State
   const [mode, setMode] = useState<'hybrid' | 'live' | 'simulated'>('hybrid');
@@ -338,6 +342,29 @@ export const AdminDrawer: React.FC<AdminDrawerProps> = ({
     e.target.value = '';
   };
 
+  const handleSyncToCloud = async () => {
+    setSyncingCloud(true);
+    try {
+      const res = await syncAllToCloud();
+      if (res.success) {
+        setToastMessage(lang === 'pt' 
+          ? `✓ Sincronizado com Firestore (cait-db) e Datastore! (${res.count} marcas)` 
+          : `✓ Synced with Firestore (cait-db) & Datastore! (${res.count} brands)`);
+        setBrandSavedToast(true);
+        setTimeout(() => {
+          setBrandSavedToast(false);
+          setToastMessage(null);
+        }, 3500);
+      } else {
+        alert(lang === 'pt' ? `Erro ao sincronizar: ${res.message}` : `Cloud sync error: ${res.message}`);
+      }
+    } catch (e: any) {
+      alert(e.message || 'Sync failed');
+    } finally {
+      setSyncingCloud(false);
+    }
+  };
+
   const filteredBrands = brandProfiles.filter(p => {
     if (!searchBrand.trim()) return true;
     const q = searchBrand.toLowerCase();
@@ -465,6 +492,17 @@ export const AdminDrawer: React.FC<AdminDrawerProps> = ({
                 <div className="flex items-center gap-1.5">
                   <button
                     type="button"
+                    onClick={handleSyncToCloud}
+                    disabled={syncingCloud}
+                    title={lang === 'pt' ? 'Sincronizar marcas com o Google Cloud Firestore' : 'Sync brands to Google Cloud Firestore'}
+                    className="px-2.5 py-1.5 rounded-[4px] bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 border border-sky-500/30 transition-all cursor-pointer flex items-center gap-1.5 text-xs font-semibold"
+                  >
+                    <Cloud className={`size-3.5 ${syncingCloud ? 'animate-pulse text-sky-400' : ''}`} />
+                    <span>{syncingCloud ? (lang === 'pt' ? 'Sincronizando...' : 'Syncing...') : (lang === 'pt' ? 'Sync Nuvem' : 'Sync Cloud')}</span>
+                  </button>
+
+                  <button
+                    type="button"
                     onClick={handleExportJson}
                     title={lang === 'pt' ? 'Exportar Marcas (JSON)' : 'Export Brands (JSON)'}
                     className="p-1.5 rounded-[4px] bg-white/5 hover:bg-white/10 text-white/80 border border-white/10 transition-all cursor-pointer"
@@ -508,6 +546,39 @@ export const AdminDrawer: React.FC<AdminDrawerProps> = ({
               {/* CATALOG VIEW */}
               {studioMode === 'catalog' && (
                 <div className="flex flex-col gap-3">
+                  
+                  {/* Google Cloud Firestore / Datastore Live Status Bar */}
+                  <div className="px-3 py-2 rounded-[5px] bg-gradient-to-r from-sky-950/40 via-slate-900/60 to-slate-900/40 border border-sky-500/25 flex items-center justify-between text-[11px]">
+                    <div className="flex items-center gap-2">
+                      <span className="size-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="font-semibold text-white">Cloud Sync:</span>
+                        <span className="font-mono text-sky-300 bg-sky-950/60 px-1.5 py-0.5 rounded-[3px] border border-sky-500/20 text-[10px]">
+                          Firestore (cait-db)
+                        </span>
+                        <span className="text-white/30">•</span>
+                        <span className="font-mono text-slate-300 bg-white/5 px-1.5 py-0.5 rounded-[3px] border border-white/10 text-[10px]">
+                          Datastore ((default))
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {cloudSyncStatus.lastSyncedAt && (
+                        <span className="text-[10px] text-emerald-400 font-mono hidden sm:inline">
+                          ✓ {cloudSyncStatus.lastSyncedAt}
+                        </span>
+                      )}
+                      <span className="text-[10px] text-white/60 font-mono">{brandProfiles.length} {lang === 'pt' ? 'marcas' : 'brands'}</span>
+                      <button
+                        type="button"
+                        onClick={handleSyncToCloud}
+                        disabled={syncingCloud}
+                        className="text-[10px] text-sky-400 hover:text-sky-300 font-semibold underline cursor-pointer"
+                      >
+                        {syncingCloud ? (lang === 'pt' ? 'Gravando...' : 'Saving...') : (lang === 'pt' ? 'Sincronizar Agora' : 'Sync to Cloud')}
+                      </button>
+                    </div>
+                  </div>
                   
                   {/* Quick Active Brand & Logo Strip */}
                   <div className="p-3 rounded-[6px] bg-white/5 border border-white/10 flex items-center justify-between gap-3 shadow-xs">

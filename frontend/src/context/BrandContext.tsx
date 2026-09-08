@@ -14,6 +14,8 @@ interface BrandContextType {
   updateActiveBrandLogo: (logoUrl: string | undefined, scale?: number, x?: number, y?: number) => BrandingProfile;
   resetActiveBrandLogo: () => BrandingProfile;
   updateActiveBrandLightHeader: (lightHeader: boolean) => BrandingProfile;
+  syncAllToCloud: () => Promise<{ success: boolean; count: number; message: string }>;
+  cloudSyncStatus: { isSyncing: boolean; lastSyncedAt: string | null; error: string | null };
 }
 
 const BrandContext = createContext<BrandContextType | undefined>(undefined);
@@ -356,18 +358,21 @@ export const BrandProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
         const mergedList = Array.from(mergedMap.values());
 
-        // 3. Upload any local custom profiles that don't exist on server yet (or newer)
-        for (const localBrand of prevLocal) {
+        // 3. Upload any local custom profiles that don't exist on server yet (or are newer)
+        const toUpload = prevLocal.filter(localBrand => {
           const serverMatch = serverProfiles.find(s => s.id === localBrand.id);
-          if (!serverMatch) {
-            syncBrandToCloud(localBrand);
-          } else {
-            const serverTime = serverMatch.updatedAt ? new Date(serverMatch.updatedAt).getTime() : 0;
-            const localTime = localBrand.updatedAt ? new Date(localBrand.updatedAt).getTime() : 0;
-            if (localTime > serverTime) {
-              syncBrandToCloud(localBrand);
-            }
-          }
+          if (!serverMatch) return true;
+          const serverTime = serverMatch.updatedAt ? new Date(serverMatch.updatedAt).getTime() : 0;
+          const localTime = localBrand.updatedAt ? new Date(localBrand.updatedAt).getTime() : 0;
+          return localTime > serverTime;
+        });
+
+        if (toUpload.length > 0) {
+          fetch('/api/brands/sync-all', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ profiles: toUpload })
+          }).catch(err => console.warn('[BrandSync] Batch sync to cloud error:', err));
         }
 
         setCustomBrands(mergedList);
@@ -596,6 +601,72 @@ export const BrandProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return false;
   }, [saveBrand, selectBrand]);
 
+  const [cloudSyncStatus, setCloudSyncStatus] = useState<{
+    isSyncing: boolean;
+    lastSyncedAt: string | null;
+    error: string | null;
+  }>({
+    isSyncing: false,
+    lastSyncedAt: null,
+    error: null
+  });
+
+  const syncAllToCloud = useCallback(async (): Promise<{ success: boolean; count: number; message: string }> => {
+    setCloudSyncStatus(prev => ({ ...prev, isSyncing: true, error: null }));
+    try {
+      let storedCustoms: BrandingProfile[] = [];
+      try {
+        const raw = localStorage.getItem(STORAGE_CUSTOM_BRANDS_KEY);
+        if (raw) storedCustoms = JSON.parse(raw);
+      } catch (e) {
+        console.warn('Error reading localStorage for sync', e);
+      }
+
+      const map = new Map<string, BrandingProfile>();
+      for (const b of customBrandsRef.current) map.set(b.id, b);
+      for (const b of storedCustoms) map.set(b.id, b);
+      if (activeBrand.isCustom || activeBrand.logoUrl || activeBrand.lightHeader) {
+        map.set(activeBrand.id, activeBrand);
+      }
+
+      const profilesToSync = Array.from(map.values());
+      if (profilesToSync.length === 0) {
+        profilesToSync.push(activeBrand);
+      }
+
+      const res = await fetch('/api/brands/sync-all', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          profiles: profilesToSync,
+          activeBrandId: activeBrandId
+        })
+      });
+
+      if (!res.ok) {
+        throw new Error(`Server returned HTTP ${res.status}`);
+      }
+
+      const data = await res.json();
+      const nowStr = new Date().toLocaleTimeString();
+      setCloudSyncStatus({
+        isSyncing: false,
+        lastSyncedAt: nowStr,
+        error: null
+      });
+
+      return {
+        success: true,
+        count: data.synced_count || profilesToSync.length,
+        message: `Synced ${data.synced_count || profilesToSync.length} brands to Google Cloud Firestore (cait-db) & Datastore`
+      };
+    } catch (err: any) {
+      const msg = err?.message || 'Sync failed';
+      setCloudSyncStatus(prev => ({ ...prev, isSyncing: false, error: msg }));
+      return { success: false, count: 0, message: msg };
+    }
+  }, [activeBrand, activeBrandId]);
+
   const templatize = useCallback((text: string): string => {
     return templatizeBrandText(text, activeBrand);
   }, [activeBrand]);
@@ -613,7 +684,9 @@ export const BrandProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       templatize,
       updateActiveBrandLogo,
       resetActiveBrandLogo,
-      updateActiveBrandLightHeader
+      updateActiveBrandLightHeader,
+      syncAllToCloud,
+      cloudSyncStatus
     }}>
       {children}
     </BrandContext.Provider>
