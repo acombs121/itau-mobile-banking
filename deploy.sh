@@ -127,18 +127,20 @@ if ! gcloud iam service-accounts describe "${SERVICE_ACCOUNT_EMAIL}" --project="
     --project="${GCP_PROJECT}" --quiet
 fi
 
-# 7. Grant Gemini Enterprise Agent Platform (fka Vertex AI Platform) user role to the runtime Service Account (with propagation retry)
-echo "--> Granting roles/aiplatform.user to Service Account..."
-for i in {1..5}; do
-  if gcloud projects add-iam-policy-binding "${GCP_PROJECT}" \
-    --member="serviceAccount:${SERVICE_ACCOUNT_EMAIL}" \
-    --role="roles/aiplatform.user" \
-    --condition=None \
-    --quiet >/dev/null 2>&1; then
-    break
-  fi
-  echo "    Waiting for IAM service account propagation (attempt $i/5)..."
-  sleep 5
+# 7. Grant Gemini Enterprise Agent Platform and Firestore/Datastore user roles to the runtime Service Account
+echo "--> Granting roles/aiplatform.user and roles/datastore.user to Service Account..."
+for ROLE in "roles/aiplatform.user" "roles/datastore.user"; do
+  for i in {1..5}; do
+    if gcloud projects add-iam-policy-binding "${GCP_PROJECT}" \
+      --member="serviceAccount:${SERVICE_ACCOUNT_EMAIL}" \
+      --role="${ROLE}" \
+      --condition=None \
+      --quiet >/dev/null 2>&1; then
+      break
+    fi
+    echo "    Waiting for IAM service account propagation for ${ROLE} (attempt $i/5)..."
+    sleep 5
+  done
 done
 
 # 8. Check Secret Manager for required secrets (with non-interactive CI guard)
