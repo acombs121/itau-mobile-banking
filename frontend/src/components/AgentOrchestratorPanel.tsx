@@ -1,12 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { SubAgent, SecurityActionItem, TelemetryLog, ScenarioId } from '../types/itau_concierge';
-import { Language, translations } from '../i18n/translations';
+import React, { useState, useEffect, useMemo } from 'react';
+import { ScenarioId } from '../types/itau_concierge';
+import { Language } from '../i18n/translations';
+import { useLanguage } from '../context/LanguageContext';
+import { useBrand, templatizeBrandObject } from '../context/BrandContext';
 
 interface AgentOrchestratorPanelProps {
-  subAgents?: SubAgent[];
-  actionItems?: SecurityActionItem[];
-  telemetryLogs?: TelemetryLog[];
-  currentLang: Language;
+  currentLang?: Language;
   theme: 'dark' | 'light';
   activeScenario: ScenarioId;
   onTriggerAgent?: (agentId: string) => void;
@@ -15,8 +14,8 @@ interface AgentOrchestratorPanelProps {
   agentStates?: Record<string, { status: 'idle' | 'running' | 'completed'; lastRun?: string; liveResult?: Record<string, any> }>;
 }
 
-export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
-  currentLang,
+export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = React.memo(({
+  currentLang: _currentLang,
   theme,
   activeScenario,
   onTriggerAgent: _onTriggerAgent,
@@ -24,7 +23,8 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
   activeRunningAgentId = null,
   agentStates = {}
 }) => {
-  const t = translations[currentLang];
+  const { t, lang: currentLang } = useLanguage();
+  const { activeBrand } = useBrand();
   const isDark = theme === 'dark';
 
   const activeScenarioDef = t.scenarios.find(s => s.id === activeScenario) || t.scenarios[0];
@@ -42,22 +42,25 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
     setSelectedAgentId(activeScenarioDef.agentId);
   }, [activeScenario]);
 
-  // Merge localized subagents with live runtime state
-  const localizedSubAgents = t.subagents.list.map(localizedAgent => {
-    const liveState = agentStates[localizedAgent.id];
-    const isRunning = (activeRunningAgentId === localizedAgent.id) || (isProcessingAgent === localizedAgent.id) || (liveState?.status === 'running');
-    const isCompleted = liveState?.status === 'completed';
+  // Merge localized subagents with live runtime state (memoized to avoid recursive regex parsing on every render)
+  const localizedSubAgents = useMemo(() => {
+    return t.subagents.list.map(localizedAgent => {
+      const liveState = agentStates[localizedAgent.id];
+      const isRunning = (activeRunningAgentId === localizedAgent.id) || (isProcessingAgent === localizedAgent.id) || (liveState?.status === 'running');
+      const isCompleted = liveState?.status === 'completed';
 
-    const status = isRunning ? 'processing' : isCompleted ? 'completed' : 'idle';
-    const resultData = liveState?.liveResult || localizedAgent.defaultResult;
+      const status = isRunning ? 'processing' : isCompleted ? 'completed' : 'idle';
+      const rawResult = liveState?.liveResult || localizedAgent.defaultResult;
+      const resultData = templatizeBrandObject(rawResult, activeBrand);
 
-    return {
-      ...localizedAgent,
-      status,
-      lastRun: liveState?.lastRun,
-      resultData
-    };
-  });
+      return {
+        ...localizedAgent,
+        status,
+        lastRun: liveState?.lastRun,
+        resultData
+      };
+    });
+  }, [t.subagents.list, agentStates, activeRunningAgentId, isProcessingAgent, activeBrand]);
 
   const selectedAgentDetail = localizedSubAgents.find(a => a.id === selectedAgentId) || localizedSubAgents[0];
 
@@ -103,9 +106,14 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
                 <div
                   key={agent.id}
                   onClick={() => setSelectedAgentId(agent.id)}
+                  style={{
+                    boxShadow: isRunning
+                      ? '0 0 20px rgb(var(--brand-orange-rgb) / 0.35)'
+                      : undefined
+                  }}
                   className={`flex-1 flex flex-col justify-center rounded-[12px] px-6 sm:px-7 py-3 sm:py-3.5 border transition-all cursor-pointer relative ${
                     isRunning
-                      ? 'bg-brand-orange/[0.12] border-brand-orange ring-2 ring-brand-orange shadow-[0_0_20px_rgba(255,100,35,0.35)]'
+                      ? 'bg-brand-orange/[0.12] border-brand-orange ring-2 ring-brand-orange'
                       : isSelected
                       ? isDark
                         ? 'bg-white/[0.05] border-white/20'
@@ -118,9 +126,14 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
                   <div className="flex items-center justify-between mb-1.5">
                     <div className="flex items-center gap-2.5 min-w-0">
                       <span
+                        style={{
+                          boxShadow: isRunning
+                            ? '0 0 8px rgb(var(--brand-orange-rgb) / 0.8)'
+                            : undefined
+                        }}
                         className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
                           isRunning
-                            ? 'bg-brand-orange shadow-[0_0_8px_rgba(255,100,35,0.8)]'
+                            ? 'bg-brand-orange'
                             : isDark ? 'bg-white/20' : 'bg-slate-300'
                         }`}
                       />
@@ -184,4 +197,6 @@ export const AgentOrchestratorPanel: React.FC<AgentOrchestratorPanelProps> = ({
 
     </div>
   );
-};
+});
+
+AgentOrchestratorPanel.displayName = 'AgentOrchestratorPanel';

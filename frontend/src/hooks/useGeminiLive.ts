@@ -7,10 +7,13 @@ export interface GeminiLiveState {
   isProcessing: boolean;
   transcript: Array<{ role: 'assistant' | 'user'; text: string }>;
   audioLevels: number[];
+  subscribeAudioLevels?: (callback: (levels: number[]) => void) => () => void;
 }
 
 export interface UseGeminiLiveOptions {
   lang: 'pt' | 'en';
+  brandId?: string;
+  brandName?: string;
   onToolCall?: (toolName: string, args: Record<string, any>, payload?: Record<string, any>) => void;
   onActionTriggered?: (action: string) => void;
   onUserQuery?: (query: string) => void;
@@ -75,16 +78,36 @@ const decodePCM24k = (base64Data: string): Float32Array => {
   return float32Array;
 };
 
-export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery, onTurnComplete }: UseGeminiLiveOptions) => {
+export const useGeminiLive = ({ lang, brandId, brandName, onToolCall, onActionTriggered, onUserQuery, onTurnComplete }: UseGeminiLiveOptions) => {
   const [isConnected, setIsConnected] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [transcript, setTranscript] = useState<Array<{ role: 'assistant' | 'user'; text: string }>>([]);
-  const [audioLevels, setAudioLevels] = useState<number[]>([15, 25, 40, 20, 35, 15, 30, 20, 25]);
+  const audioLevelsRef = useRef<number[]>([15, 25, 40, 20, 35, 15, 30, 20, 25]);
+  const audioLevelListenersRef = useRef<Set<(levels: number[]) => void>>(new Set());
+
+  const subscribeAudioLevels = useCallback((callback: (levels: number[]) => void) => {
+    audioLevelListenersRef.current.add(callback);
+    callback(audioLevelsRef.current);
+    return () => {
+      audioLevelListenersRef.current.delete(callback);
+    };
+  }, []);
+
+  const setAudioLevels = useCallback((levels: number[]) => {
+    audioLevelsRef.current = levels;
+    audioLevelListenersRef.current.forEach(cb => {
+      try {
+        cb(levels);
+      } catch {}
+    });
+  }, []);
 
   // Keep references to options so callbacks don't change identity
   const langRef = useRef(lang);
+  const brandIdRef = useRef(brandId);
+  const brandNameRef = useRef(brandName);
   const onToolCallRef = useRef(onToolCall);
   const onActionTriggeredRef = useRef(onActionTriggered);
   const onUserQueryRef = useRef(onUserQuery);
@@ -93,6 +116,11 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
   useEffect(() => {
     langRef.current = lang;
   }, [lang]);
+
+  useEffect(() => {
+    brandIdRef.current = brandId;
+    brandNameRef.current = brandName;
+  }, [brandId, brandName]);
 
   useEffect(() => {
     onToolCallRef.current = onToolCall;
@@ -115,6 +143,7 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
   const playbackContextRef = useRef<AudioContext | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const scriptProcessorRef = useRef<ScriptProcessorNode | null>(null);
+  const audioWorkletNodeRef = useRef<AudioWorkletNode | null>(null);
   const muteGainRef = useRef<GainNode | null>(null);
   const inputSourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
 
@@ -126,6 +155,7 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
   const playbackEndTimerRef = useRef<any>(null);
   const pendingPromptRef = useRef<string | null>(null);
   const animFrameIdRef = useRef<number | null>(null);
+  const lastSpeechEndTimeRef = useRef<number>(0);
 
   // Initialize or get playback AudioContext (24kHz standard for Gemini Live audio)
   const getPlaybackContext = useCallback(() => {
@@ -154,6 +184,7 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
     activeSourcesRef.current = [];
     nextPlayTimeRef.current = 0;
     isSpeakingRef.current = false;
+    lastSpeechEndTimeRef.current = Date.now();
     setIsSpeaking(false);
   }, []);
 
@@ -211,10 +242,11 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
         playbackEndTimerRef.current = setTimeout(() => {
           if (activeSourcesRef.current.length === 0 && ctx.currentTime >= nextPlayTimeRef.current - 0.05) {
             isSpeakingRef.current = false;
+            lastSpeechEndTimeRef.current = Date.now();
             setIsSpeaking(false);
             setAudioLevels([15, 25, 40, 20, 35, 15, 30, 20, 25]);
           }
-        }, 100);
+        }, 120);
       }
     };
   }, [getPlaybackContext]);
@@ -262,7 +294,9 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const host = window.location.host;
     const currentLang = langRef.current;
-    const wsUrl = `${protocol}//${host}/ws/live?lang=${currentLang}`;
+    const activeBrandId = brandIdRef.current || 'itau';
+    const activeBrandName = brandNameRef.current || '';
+    const wsUrl = `${protocol}//${host}/ws/live?lang=${currentLang}&brand=${encodeURIComponent(activeBrandId)}&brand_name=${encodeURIComponent(activeBrandName)}`;
 
     console.log(`Connecting to Gemini Live WebSocket: ${wsUrl}`);
     const ws = new WebSocket(wsUrl);
@@ -395,6 +429,12 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
       scriptProcessorRef.current = null;
     }
 
+    if (audioWorkletNodeRef.current) {
+      audioWorkletNodeRef.current.disconnect();
+      audioWorkletNodeRef.current.port.onmessage = null;
+      audioWorkletNodeRef.current = null;
+    }
+
     if (muteGainRef.current) {
       muteGainRef.current.disconnect();
       muteGainRef.current = null;
@@ -460,27 +500,15 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
       analyser.fftSize = 64;
       source.connect(analyser);
 
-      // ScriptProcessor node for streaming audio chunks
-      const processor = audioCtx.createScriptProcessor(2048, 1, 1);
-      scriptProcessorRef.current = processor;
-
-      // Silent gain node to keep processor running
-      const muteGain = audioCtx.createGain();
-      muteGain.gain.value = 0;
-      muteGainRef.current = muteGain;
-
-      source.connect(processor);
-      processor.connect(muteGain);
-      muteGain.connect(audioCtx.destination);
-
-      processor.onaudioprocess = (e) => {
+      // Common audio processor handler
+      const handleAudioData = (inputChannel: Float32Array) => {
         if (isManuallyStoppedRef.current || !isListeningRef.current) return;
         if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
 
-        // Acoustic Echo Shield: Do not feed speaker output back into Gemini Live while assistant is speaking
-        if (isSpeakingRef.current) return;
-
-        const inputChannel = e.inputBuffer.getChannelData(0);
+        // Acoustic Echo Shield: Do not feed speaker output back into Gemini Live while assistant is speaking,
+        // or during the 500ms acoustic reverberation window after speech ends
+        const now = Date.now();
+        if (isSpeakingRef.current || (now - lastSpeechEndTimeRef.current < 500)) return;
 
         const resampled = audioCtx.sampleRate === 16000
           ? inputChannel
@@ -495,6 +523,43 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
           }));
         } catch {}
       };
+
+      // 1. Try AudioWorkletNode (dedicated audio thread via pcm-processor.js)
+      let workletInitialized = false;
+      if (audioCtx.audioWorklet) {
+        try {
+          await audioCtx.audioWorklet.addModule('/pcm-processor.js');
+          const workletNode = new AudioWorkletNode(audioCtx, 'pcm-processor');
+          audioWorkletNodeRef.current = workletNode;
+          workletNode.port.onmessage = (event) => {
+            if (event.data instanceof Float32Array) {
+              handleAudioData(event.data);
+            }
+          };
+          source.connect(workletNode);
+          workletInitialized = true;
+        } catch (workletErr) {
+          console.warn('[Gemini Live] AudioWorklet init failed, falling back to ScriptProcessor:', workletErr);
+        }
+      }
+
+      // 2. Fallback to ScriptProcessorNode if AudioWorklet unavailable
+      if (!workletInitialized) {
+        const processor = audioCtx.createScriptProcessor(2048, 1, 1);
+        scriptProcessorRef.current = processor;
+
+        const muteGain = audioCtx.createGain();
+        muteGain.gain.value = 0;
+        muteGainRef.current = muteGain;
+
+        source.connect(processor);
+        processor.connect(muteGain);
+        muteGain.connect(audioCtx.destination);
+
+        processor.onaudioprocess = (e) => {
+          handleAudioData(e.inputBuffer.getChannelData(0));
+        };
+      }
 
       // Waveform volume loop
       const bufferLength = analyser.frequencyBinCount;
@@ -594,7 +659,8 @@ export const useGeminiLive = ({ lang, onToolCall, onActionTriggered, onUserQuery
     isProcessing,
     transcript,
     setTranscript,
-    audioLevels,
+    audioLevels: audioLevelsRef.current,
+    subscribeAudioLevels,
     connect,
     disconnect,
     startMicrophone,

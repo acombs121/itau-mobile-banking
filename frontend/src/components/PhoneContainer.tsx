@@ -1,10 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import { QrCode, ArrowUpRight, ArrowDownLeft, CreditCard, Mic, MicOff, X, Check, ShieldCheck, Plane, TrendingUp, ShieldPlus, Car, MapPin, Calendar, Building2, ChevronRight, Lock, Flashlight, Camera } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { QrCode, ArrowUpRight, ArrowDownLeft, CreditCard, Mic, MicOff, Lock, Flashlight, Camera } from 'lucide-react';
+import {
+  CheckingBalanceCard,
+  ScheduledPaymentsCard,
+  CdbInvestmentsCard,
+  CreditCardDetailCard,
+  InstitutionBalancesCard,
+  OpenFinanceSelectCard,
+  OpenFinanceCdiCard,
+  OpenFinanceTransferConfirmedCard,
+  OpenFinanceOptimizerCard,
+  CashFlowForecastCard,
+  TravelShieldCard,
+  CardBenefitsCard,
+} from './phone/cards';
 import { BankingProfile } from '../types/banking';
 import { ScenarioId } from '../types/itau_concierge';
-import { Language, translations } from '../i18n/translations';
+import { Language } from '../i18n/translations';
 import { useGeminiLive } from '../hooks/useGeminiLive';
 import { AudioWaveformVisualizer } from './AudioWaveformVisualizer';
+import { useBrand, getBrandSegment, getBrandAccountPrefix } from '../context/BrandContext';
+import { useLanguage } from '../context/LanguageContext';
 
 interface PhoneContainerProps {
   profile: BankingProfile;
@@ -32,7 +48,7 @@ interface PhoneContainerProps {
 
 export const PhoneContainer: React.FC<PhoneContainerProps> = ({
   profile,
-  currentLang,
+  currentLang: _currentLang,
   theme,
   activeScenario: _activeScenario,
   isVoiceCallActive,
@@ -55,8 +71,32 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
   const [activeNavTab, setActiveNavTab] = useState<'home' | 'extrato' | 'pix' | 'cartoes'>('home');
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
 
-  const t = translations[currentLang];
+  const { activeBrand } = useBrand();
+  const { t, lang: currentLang } = useLanguage();
   const isDark = theme === 'dark';
+
+  const competitorsSummary = useMemo(() => {
+    const bId = activeBrand.id.toLowerCase();
+    if (bId.includes('btg')) {
+      return {
+        short_pt: 'Itaú e XP',
+        short_en: 'Itaú and XP',
+        detailed: 'Banco Itaú (R$ 120k) + XP Investimentos (R$ 210k)'
+      };
+    }
+    if (bId === 'itau') {
+      return {
+        short_pt: 'BTG Pactual e XP',
+        short_en: 'BTG Pactual and XP',
+        detailed: 'BTG Pactual (R$ 120k) + XP Investimentos (R$ 210k)'
+      };
+    }
+    return {
+      short_pt: 'Itaú e BTG Pactual',
+      short_en: 'Itaú and BTG Pactual',
+      detailed: 'Banco Itaú (R$ 120k) + BTG Pactual (R$ 210k)'
+    };
+  }, [activeBrand.id]);
 
   // Automatically pop up relevant dynamic card when an agent runs or completes
   useEffect(() => {
@@ -71,7 +111,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
   const {
     isListening,
     isSpeaking,
-    audioLevels,
+    subscribeAudioLevels,
     connect,
     disconnect,
     startMicrophone,
@@ -79,6 +119,8 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
     interrupt,
   } = useGeminiLive({
     lang: currentLang,
+    brandId: activeBrand.id,
+    brandName: activeBrand.name,
     onToolCall: (toolName, toolArgs, toolPayload) => {
       console.log("Executing sub-agent tool call:", toolName, toolArgs, toolPayload);
       onActionClick(toolName, undefined, { ...toolPayload, query_type: toolArgs?.query_type });
@@ -215,17 +257,26 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                   }}
                   className={`w-full rounded-[18px] p-4 cursor-pointer hover:scale-[1.02] active:scale-[0.99] transition-all duration-200 group backdrop-blur-xl border ${
                     isDark
-                      ? 'bg-[#1A1A22]/95 border-brand-orange/40 hover:border-brand-orange shadow-[0_12px_40px_rgba(0,0,0,0.85),0_0_24px_rgba(255,100,35,0.18)]'
-                      : 'bg-white/95 border-brand-orange/50 hover:border-brand-orange shadow-[0_12px_32px_rgba(0,0,0,0.08),0_0_20px_rgba(255,100,35,0.12)]'
+                      ? 'bg-[#1A1A22]/95 border-brand-orange/40 hover:border-brand-orange'
+                      : 'bg-white/95 border-brand-orange/50 hover:border-brand-orange'
                   }`}
+                  style={{
+                    boxShadow: isDark
+                      ? '0 12px 40px rgba(0,0,0,0.85), 0 0 24px rgb(var(--brand-orange-rgb) / 0.18)'
+                      : '0 12px 32px rgba(0,0,0,0.08), 0 0 20px rgb(var(--brand-orange-rgb) / 0.12)'
+                  }}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <div className="w-5 h-5 rounded-[5px] bg-brand-orange text-white font-black text-[9px] flex items-center justify-center shadow-sm">
-                        itau
+                      <div className="w-5 h-5 rounded-[5px] bg-brand-orange text-white font-black text-[9px] flex items-center justify-center shadow-sm overflow-hidden">
+                        {activeBrand.logoUrl ? (
+                          <img src={activeBrand.logoUrl} alt={activeBrand.name} className="max-h-3.5 object-contain" />
+                        ) : (
+                          getBrandAccountPrefix(activeBrand.id)
+                        )}
                       </div>
                       <span className={`text-[10px] font-bold tracking-wider uppercase font-sans ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
-                        ITAÚ PERSONNALITÉ
+                        {getBrandSegment(activeBrand).toUpperCase()}
                       </span>
                     </div>
                     <span className={`text-[10px] font-mono ${isDark ? 'text-white/40' : 'text-slate-400'}`}>
@@ -357,914 +408,103 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
             
             {/* 1. Specific Checking Balance Card */}
             {activeCardId === 'balance_checking' ? (
-              /* Specific Checking Balance Card */
-              <div className={`w-full rounded-[16px] p-4 border animate-fadeIn shadow-2xl relative ${
-                isDark ? 'bg-[#15151A] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-lg'
-              }`}>
-                <div className={`flex items-center justify-between mb-3 pb-2 border-b ${isDark ? 'border-white/[0.06]' : 'border-slate-100'}`}>
-                  <div className="flex items-center gap-2">
-                    <Building2 className="w-3.5 h-3.5 opacity-70" />
-                    <span className={`text-[11px] font-sans font-bold tracking-wider uppercase ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
-                      {currentLang === 'en' ? 'CHECKING ACCOUNT' : 'CONTA CORRENTE'}
-                    </span>
-                  </div>
-                  <button 
-                    onClick={() => setActiveCardId(null)}
-                    className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${
-                      isDark ? 'text-white/40 hover:text-white hover:bg-white/10' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
-                    }`}
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-
-                <div className="space-y-2.5">
-                  <div className={`p-3 rounded-[10px] ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
-                    <span className={`text-[10px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Available Balance' : 'Saldo Disponível'}</span>
-                    <span className={`text-2xl font-black font-sans tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>R$ 48.950,20</span>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div className={`p-2 rounded-[8px] ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}>
-                      <span className={`text-[9px] block ${isDark ? 'text-white/40' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Overdraft (LIS)' : 'Limite LIS'}</span>
-                      <span className={`font-sans font-bold text-xs ${isDark ? 'text-white/80' : 'text-slate-700'}`}>R$ 10.000,00</span>
-                    </div>
-                    <button 
-                       onClick={() => setActiveCardId('scheduled_payments')}
-                      className={`p-2 rounded-[8px] text-left transition-all hover:ring-1 hover:ring-brand-orange/40 cursor-pointer ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className={`text-[9px] block ${isDark ? 'text-white/40' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Debits Next Thu' : 'Débitos Quinta'}</span>
-                        <ChevronRight className="w-2.5 h-2.5 text-brand-orange/70" />
-                      </div>
-                      <span className="font-sans font-bold text-xs text-brand-orange">R$ 38.000,00</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <CheckingBalanceCard
+                isDark={isDark}
+                currentLang={currentLang}
+                onClose={() => setActiveCardId(null)}
+                onOpenScheduledPayments={() => setActiveCardId('scheduled_payments')}
+              />
             ) : (activeCardId === 'scheduled_payments' || activeCardId === 'balance_scheduled_payments') ? (
-              /* Scheduled Payments & Debits Itemized List Card - Simplified Executive Palette */
-              <div className={`w-full rounded-[16px] p-4 border animate-fadeIn shadow-2xl relative ${
-                isDark ? 'bg-[#15151A] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-lg'
-              }`}>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-3.5 h-3.5 opacity-70" />
-                    <span className={`text-[11px] font-sans font-bold tracking-wider uppercase ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
-                      {currentLang === 'en' ? 'SCHEDULED PAYMENTS' : 'PAGAMENTOS AGENDADOS'}
-                    </span>
-                  </div>
-                  <button 
-                    onClick={() => setActiveCardId(null)}
-                    className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${
-                      isDark ? 'text-white/40 hover:text-white hover:bg-white/10' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
-                    }`}
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-
-                <div className="space-y-2 text-xs font-sans">
-                  {/* Total Header Summary */}
-                  <div className={`p-2.5 rounded-[10px] flex items-center justify-between ${isDark ? 'bg-white/[0.03] border border-white/[0.05]' : 'bg-slate-50 border border-slate-200'}`}>
-                    <div>
-                      <span className={`text-[9.5px] block uppercase font-medium ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Total Scheduled for Thursday' : 'Total Agendado para Quinta'}</span>
-                      <span className={`text-2xl font-black font-sans tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>R$ 38.000,00</span>
-                    </div>
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-sans font-semibold ${isDark ? 'bg-white/[0.06] text-white/70 border border-white/[0.08]' : 'bg-slate-200 text-slate-700'}`}>
-                      2 {currentLang === 'en' ? 'Debits' : 'Débitos'}
-                    </span>
-                  </div>
-
-                  {/* Itemized Payment List */}
-                  <div className="space-y-1.5 mt-1">
-                    {/* Item 1: Mastercard Black Card Bill */}
-                    <div className={`p-2.5 rounded-[8px] flex items-center justify-between ${isDark ? 'bg-white/[0.02] border border-white/[0.05]' : 'bg-slate-50 border border-slate-200'}`}>
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-7 h-7 rounded-lg bg-brand-orange/15 flex items-center justify-center flex-shrink-0">
-                          <CreditCard className="w-3.5 h-3.5 text-brand-orange" />
-                        </div>
-                        <div className="min-w-0">
-                          <span className={`font-semibold block truncate ${isDark ? 'text-white/90' : 'text-slate-900'}`}>{currentLang === 'en' ? 'Mastercard Black Bill' : 'Fatura Mastercard Black'}</span>
-                          <span className={`text-[10px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Auto-debit • Aug 25' : 'Débito Automático • 25/08'}</span>
-                        </div>
-                      </div>
-                      <span className={`font-sans font-bold text-right ml-2 flex-shrink-0 ${isDark ? 'text-white' : 'text-slate-900'}`}>R$ 34.150,00</span>
-                    </div>
-
-                    {/* Item 2: Condomínio Edifício Jardins */}
-                    <div className={`p-2.5 rounded-[8px] flex items-center justify-between ${isDark ? 'bg-white/[0.02] border border-white/[0.05]' : 'bg-slate-50 border border-slate-200'}`}>
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-7 h-7 rounded-lg bg-brand-orange/15 flex items-center justify-center flex-shrink-0">
-                          <Building2 className="w-3.5 h-3.5 text-brand-orange" />
-                        </div>
-                        <div className="min-w-0">
-                          <span className={`font-semibold block truncate ${isDark ? 'text-white/90' : 'text-slate-900'}`}>{currentLang === 'en' ? 'Condomínio Ed. Jardins' : 'Condomínio Ed. Jardins'}</span>
-                          <span className={`text-[10px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Scheduled Boleto • Aug 25' : 'Boleto Agendado • 25/08'}</span>
-                        </div>
-                      </div>
-                      <span className={`font-sans font-bold text-right ml-2 flex-shrink-0 ${isDark ? 'text-white' : 'text-slate-900'}`}>R$ 3.850,00</span>
-                    </div>
-                  </div>
-
-                  {/* Coverage Verification Status */}
-                  <div className={`p-2 rounded-[8px] flex items-center justify-between text-[11px] mt-1 ${isDark ? 'bg-white/[0.02] border border-white/[0.05] text-white/70' : 'bg-slate-50 border border-slate-200 text-slate-700'}`}>
-                    <div className="flex items-center gap-1.5">
-                      <Check className="w-3.5 h-3.5 opacity-60" />
-                      <span>{currentLang === 'en' ? 'Checking Balance Covers 100%' : 'Saldo em Conta Cobre 100%'}</span>
-                    </div>
-                    <span className="font-sans font-bold">R$ 48.950,20</span>
-                  </div>
-                </div>
-              </div>
+              <ScheduledPaymentsCard
+                isDark={isDark}
+                currentLang={currentLang}
+                onClose={() => setActiveCardId(null)}
+              />
             ) : activeCardId === 'balance_cdb' ? (
-              /* Specific CDB Investments Card */
-              <div className={`w-full rounded-[16px] p-4 border animate-fadeIn shadow-2xl relative ${
-                isDark ? 'bg-[#15151A] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-lg'
-              }`}>
-                <div className={`flex items-center justify-between mb-3 pb-2 border-b ${isDark ? 'border-white/[0.06]' : 'border-slate-100'}`}>
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="w-3.5 h-3.5 opacity-70" />
-                    <span className={`text-[11px] font-sans font-bold tracking-wider uppercase ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
-                      {currentLang === 'en' ? 'CDB DI INVESTMENTS' : 'INVESTIMENTOS CDB DI'}
-                    </span>
-                  </div>
-                  <button 
-                    onClick={() => setActiveCardId(null)}
-                    className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${
-                      isDark ? 'text-white/40 hover:text-white hover:bg-white/10' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
-                    }`}
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-
-                <div className="space-y-2.5 font-sans">
-                  <div className={`p-3 rounded-[10px] ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
-                    <span className={`text-[10px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Daily Liquidity Balance' : 'Saldo com Liquidez Diária'}</span>
-                    <span className={`text-2xl font-black font-sans tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>R$ 85.000,00</span>
-                  </div>
-
-                  <div className={`p-2.5 rounded-[8px] ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}>
-                    <div className={`flex items-center gap-1.5 text-xs font-semibold ${isDark ? 'text-white/90' : 'text-slate-900'}`}>
-                      <TrendingUp className="w-3.5 h-3.5 text-brand-orange" />
-                      <span>{currentLang === 'en' ? 'Yield Rate: 100% of CDI' : 'Rentabilidade: 100% do CDI'}</span>
-                    </div>
-                    <div className={`text-[10px] mt-0.5 ml-5 ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Immediate withdrawal 24/7 without penalties.' : 'Resgate imediato 24/7 com liquidez diária.'}</div>
-                  </div>
-                </div>
-              </div>
+              <CdbInvestmentsCard
+                isDark={isDark}
+                currentLang={currentLang}
+                onClose={() => setActiveCardId(null)}
+              />
             ) : activeCardId === 'balance_card' ? (
-              /* Specific Mastercard Black Balance Card */
-              <div className={`w-full rounded-[16px] p-4 border animate-fadeIn shadow-2xl relative ${
-                isDark ? 'bg-[#15151A] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-lg'
-              }`}>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <CreditCard className="w-3.5 h-3.5 text-brand-orange" />
-                    <span className={`text-[11px] font-sans font-bold tracking-wider uppercase ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
-                      Mastercard Black (•••• 8841)
-                    </span>
-                  </div>
-                  <button 
-                    onClick={() => setActiveCardId(null)}
-                    className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${
-                      isDark ? 'text-white/40 hover:text-white hover:bg-white/10' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
-                    }`}
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-
-                <div className="space-y-2.5 font-sans">
-                  <div className={`p-3 rounded-[10px] ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
-                    <span className={`text-[10px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Available Limit' : 'Limite Disponível'}</span>
-                    <span className={`text-2xl font-black font-sans tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>R$ 72.569,50</span>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div className={`p-2 rounded-[8px] ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}>
-                      <span className={`text-[9px] block ${isDark ? 'text-white/40' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Total Card Limit' : 'Limite Total'}</span>
-                      <span className={`font-sans font-bold text-xs ${isDark ? 'text-white/80' : 'text-slate-700'}`}>R$ 85.000,00</span>
-                    </div>
-                    <div className={`p-2 rounded-[8px] ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}>
-                      <span className={`text-[9px] block ${isDark ? 'text-white/40' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Current Bill Due Thu' : 'Fatura Venc. Quinta'}</span>
-                      <span className="font-sans font-bold text-xs text-brand-orange">R$ 34.150,00</span>
-                    </div>
-                  </div>
-
-                  {/* Outstanding Balance & End of Next Month Due Date */}
-                  <div className={`p-2.5 rounded-[8px] flex items-center justify-between text-xs ${isDark ? 'bg-white/[0.02] border border-white/[0.05]' : 'bg-slate-50 border border-slate-200'}`}>
-                    <div>
-                      <span className={`text-[9.5px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Outstanding Balance (Next Bill)' : 'Fatura em Aberto (Próx. Mês)'}</span>
-                      <span className={`font-sans font-bold text-sm ${isDark ? 'text-white' : 'text-slate-900'}`}>R$ 12.430,50</span>
-                    </div>
-                    <div className="text-right">
-                      <span className={`text-[9.5px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Due Date' : 'Vencimento'}</span>
-                      <span className="font-sans font-bold text-[11.5px] text-brand-orange">{currentLang === 'en' ? 'Sep 28, 2026' : '28/09/2026'}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <CreditCardDetailCard
+                isDark={isDark}
+                currentLang={currentLang}
+                onClose={() => setActiveCardId(null)}
+              />
             ) : (activeCardId === 'itau_balances' || activeCardId === 'account_info_agent') ? (
-              /* Strictly Itaú Balances Card (No Open Finance Data Shown) */
-              <div className={`w-full rounded-[16px] p-3.5 border animate-fadeIn shadow-2xl relative ${
-                isDark ? 'bg-[#15151A] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-lg'
-              }`}>
-                <div className={`flex items-center justify-between mb-3 pb-2 border-b ${isDark ? 'border-white/[0.06]' : 'border-slate-100'}`}>
-                  <div className="flex items-center gap-2">
-                    <Building2 className="w-3.5 h-3.5 opacity-70 text-brand-orange" />
-                    <span className={`text-[11px] font-sans font-bold tracking-wider uppercase ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
-                      {currentLang === 'en' ? 'BANCO ITAÚ PERSONNALITÉ' : 'BANCO ITAÚ PERSONNALITÉ'}
-                    </span>
-                  </div>
-                  <button 
-                    onClick={() => setActiveCardId(null)}
-                    className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${
-                      isDark ? 'text-white/40 hover:text-white hover:bg-white/10' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
-                    }`}
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-
-                <div className="space-y-2.5 text-xs font-sans">
-                  {/* Total Itaú Liquid Balance Hero Box */}
-                  <div className={`p-2.5 rounded-[10px] ${isDark ? 'bg-white/[0.04] border border-white/[0.08]' : 'bg-slate-50 border border-slate-200'}`}>
-                    <span className={`text-[10px] block mb-0.5 ${isDark ? 'text-white/50' : 'text-slate-500'}`}>
-                      {currentLang === 'en' ? 'Total Liquid Balance with Itaú' : 'Saldo Total no Banco Itaú'}
-                    </span>
-                    <span className={`text-2xl font-black font-sans tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                      R$ 133.950,20
-                    </span>
-                  </div>
-
-                  {/* Itaú Balances Breakdown */}
-                  <div className="space-y-1.5">
-                    <div className={`p-2 rounded-[8px] flex justify-between items-center ${isDark ? 'bg-white/[0.02] border border-white/[0.04]' : 'bg-slate-50 border border-slate-200'}`}>
-                      <div>
-                        <span className={`text-[11px] font-semibold block ${isDark ? 'text-white/90' : 'text-slate-900'}`}>
-                          {currentLang === 'en' ? 'Checking Account' : 'Conta Corrente'}
-                        </span>
-                        <span className={`text-[9.5px] block ${isDark ? 'text-white/40' : 'text-slate-500'}`}>
-                          {currentLang === 'en' ? 'Available for immediate use' : 'Disponível para movimentação'}
-                        </span>
-                      </div>
-                      <span className="font-sans font-bold text-xs">R$ 48.950,20</span>
-                    </div>
-
-                    <div className={`p-2 rounded-[8px] flex justify-between items-center ${isDark ? 'bg-white/[0.02] border border-white/[0.04]' : 'bg-slate-50 border border-slate-200'}`}>
-                      <div>
-                        <span className={`text-[11px] font-semibold block ${isDark ? 'text-white/90' : 'text-slate-900'}`}>
-                          CDB DI (100% do CDI)
-                        </span>
-                        <span className={`text-[9.5px] block ${isDark ? 'text-white/40' : 'text-slate-500'}`}>
-                          {currentLang === 'en' ? 'Daily liquidity • 24/7' : 'Liquidez diária 24/7'}
-                        </span>
-                      </div>
-                      <span className="font-sans font-bold text-xs text-brand-orange">R$ 85.000,00</span>
-                    </div>
-
-                    <div className={`p-2 rounded-[8px] flex justify-between items-center ${isDark ? 'bg-white/[0.02] border border-white/[0.04]' : 'bg-slate-50 border border-slate-200'}`}>
-                      <div>
-                        <span className={`text-[11px] font-semibold block ${isDark ? 'text-white/90' : 'text-slate-900'}`}>
-                          Mastercard Black (•••• 8841)
-                        </span>
-                        <span className={`text-[9.5px] block ${isDark ? 'text-white/40' : 'text-slate-500'}`}>
-                          {currentLang === 'en' ? 'Available Limit / Total R$ 85k' : 'Limite Disponível / Total R$ 85k'}
-                        </span>
-                      </div>
-                      <span className="font-sans font-bold text-xs">R$ 72.569,50</span>
-                    </div>
-                  </div>
-
-                  {/* Open Finance Proactive Suggestion Banner */}
-                  <div className={`p-2.5 rounded-[10px] border flex flex-col gap-2 mt-1 ${
-                    isDark ? 'bg-brand-orange/10 border-brand-orange/25 text-white' : 'bg-orange-50/80 border-brand-orange/30 text-slate-900'
-                  }`}>
-                    <div className="flex items-start gap-2">
-                      <TrendingUp className="w-4 h-4 text-brand-orange flex-shrink-0 mt-0.5" />
-                      <div>
-                        <span className="text-[10px] font-bold block text-brand-orange uppercase tracking-wider">
-                          Open Finance
-                        </span>
-                        <p className={`text-[10.5px] leading-snug mt-0.5 ${isDark ? 'text-white/80' : 'text-slate-700'}`}>
-                          {currentLang === 'en'
-                            ? 'I can pull your Open Finance data to check if you are getting the best rates across other institutions.'
-                            : 'Posso consultar seus dados no Open Finance para verificar se você está recebendo as melhores taxas do mercado.'}
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => onActionClick('pull_open_finance')}
-                      className="w-full py-1.5 px-3 bg-brand-orange hover:bg-brand-orange-hover text-white text-[10.5px] font-bold rounded-[6px] shadow-sm transition-all flex items-center justify-center gap-1.5"
-                    >
-                      <span>{currentLang === 'en' ? 'Check Rates via Open Finance →' : 'Consultar Taxas via Open Finance →'}</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <InstitutionBalancesCard
+                isDark={isDark}
+                currentLang={currentLang}
+                activeBrand={activeBrand}
+                onClose={() => setActiveCardId(null)}
+                onPullOpenFinance={() => onActionClick('pull_open_finance')}
+              />
             ) : activeCardId === 'open_finance_select' ? (
-              /* Open Finance Category Selection Card (Debt vs CDI) */
-              <div className={`w-full rounded-[16px] p-4 border animate-fadeIn shadow-2xl relative ${
-                isDark ? 'bg-[#15151A] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-lg'
-              }`}>
-                <div className={`flex items-center justify-between mb-3 pb-2 border-b ${isDark ? 'border-white/[0.06]' : 'border-slate-100'}`}>
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="w-3.5 h-3.5 text-brand-orange" />
-                    <span className={`text-[10.5px] font-mono font-bold tracking-wide uppercase ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
-                      {currentLang === 'en' ? 'OPEN FINANCE — RATE ANALYSIS' : 'OPEN FINANCE — ANÁLISE DE TAXAS'}
-                    </span>
-                  </div>
-                  <button 
-                    onClick={() => setActiveCardId(null)}
-                    className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${
-                      isDark ? 'text-white/40 hover:text-white hover:bg-white/10' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
-                    }`}
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-
-                <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-mono font-bold mb-2.5 ${
-                  isDark ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-400' : 'bg-emerald-50 border border-emerald-200 text-emerald-700'
-                }`}>
-                  <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${isDark ? 'bg-emerald-400' : 'bg-emerald-600'}`} />
-                  <span>{currentLang === 'en' ? 'CONNECTED VIA BACEN OPEN FINANCE' : 'CONECTADO VIA OPEN FINANCE BACEN'}</span>
-                </div>
-
-                <p className={`text-xs mb-3 leading-relaxed ${isDark ? 'text-white/80' : 'text-slate-700'}`}>
-                  {currentLang === 'en'
-                    ? 'Which rate category would you like me to analyze across your connected accounts?'
-                    : 'Qual categoria de taxas você gostaria que eu analise nas suas contas conectadas?'}
-                </p>
-
-                <div className="space-y-2 text-xs">
-                  {/* Category 1: CDI Balances */}
-                  <div
-                    onClick={() => onActionClick('quote_open_finance_cdi')}
-                    className={`p-3 rounded-[10px] border cursor-pointer transition-all hover:scale-[1.01] ${
-                      isDark ? 'bg-white/[0.03] border-brand-orange/40 hover:border-brand-orange' : 'bg-orange-50/50 border-brand-orange/40 hover:border-brand-orange'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-bold text-brand-orange text-xs">
-                        {currentLang === 'en' ? '1. CDI Balances & Yield' : '1. Saldos e Rendimentos CDI'}
-                      </span>
-                      <span className={`text-[9px] px-2 py-0.5 rounded font-mono font-semibold ${isDark ? 'bg-brand-orange/20 text-brand-orange' : 'bg-brand-orange/15 text-brand-orange'}`}>
-                        {currentLang === 'en' ? 'Say "CDI"' : 'Diga "CDI"'}
-                      </span>
-                    </div>
-                    <p className={`text-[10.5px] leading-snug ${isDark ? 'text-white/60' : 'text-slate-600'}`}>
-                      {currentLang === 'en'
-                        ? 'Check whether your liquid funds at BTG Pactual and XP are earning 100% of CDI.'
-                        : 'Verificar se seus investimentos no BTG Pactual e XP estão rendendo 100% do CDI.'}
-                    </p>
-                  </div>
-
-                  {/* Category 2: Debt Balances */}
-                  <div
-                    onClick={() => onActionClick('refinance_open_finance')}
-                    className={`p-3 rounded-[10px] border cursor-pointer transition-all hover:scale-[1.01] ${
-                      isDark ? 'bg-white/[0.02] border-white/10 hover:border-white/20' : 'bg-slate-50 border-slate-200 hover:border-slate-300'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className={`font-bold text-xs ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
-                        {currentLang === 'en' ? '2. Outstanding Debt Balances' : '2. Saldos Devedores e Crédito'}
-                      </span>
-                      <span className={`text-[9px] px-2 py-0.5 rounded font-mono font-semibold ${isDark ? 'bg-white/10 text-white/70' : 'bg-slate-200 text-slate-700'}`}>
-                        {currentLang === 'en' ? 'Say "Debt"' : 'Diga "Dívidas"'}
-                      </span>
-                    </div>
-                    <p className={`text-[10.5px] leading-snug ${isDark ? 'text-white/60' : 'text-slate-600'}`}>
-                      {currentLang === 'en'
-                        ? 'Analyze competitor revolving debt for potential rate reduction via Itaú Sob Medida.'
-                        : 'Analisar dívidas rotativas externas para redução de juros via Itaú Sob Medida.'}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mt-3 text-center">
-                  <span className="font-mono text-[10px] text-brand-orange animate-pulse">
-                    {currentLang === 'en' ? 'Listening... Say "CDI" to quote yield improvements' : 'Ouvindo... Diga "CDI" para ver as melhorias de rentabilidade'}
-                  </span>
-                </div>
-              </div>
+              <OpenFinanceSelectCard
+                isDark={isDark}
+                currentLang={currentLang}
+                activeBrand={activeBrand}
+                competitorsSummary={competitorsSummary}
+                onClose={() => setActiveCardId(null)}
+                onActionClick={onActionClick}
+              />
             ) : activeCardId === 'open_finance_cdi' ? (
-              /* CDI Yield Improvements Quoted Card */
-              <div className={`w-full rounded-[16px] p-4 border animate-fadeIn shadow-2xl relative ${
-                isDark ? 'bg-[#15151A] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-lg'
-              }`}>
-                <div className={`flex items-center justify-between mb-3 pb-2 border-b ${isDark ? 'border-white/[0.06]' : 'border-slate-100'}`}>
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="w-3.5 h-3.5 text-brand-orange" />
-                    <span className={`text-[10.5px] font-mono font-bold tracking-wide uppercase ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
-                      {currentLang === 'en' ? 'CDI YIELD OPTIMIZATION' : 'OTIMIZAÇÃO DE RENDIMENTO CDI'}
-                    </span>
-                  </div>
-                  <button 
-                    onClick={() => setActiveCardId(null)}
-                    className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${
-                      isDark ? 'text-white/40 hover:text-white hover:bg-white/10' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
-                    }`}
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-
-                <div className="space-y-2.5 text-xs">
-                  {/* External Balance Notice */}
-                  <div className={`p-2.5 rounded-[8px] ${isDark ? 'bg-white/[0.03] border border-white/[0.06]' : 'bg-slate-50 border border-slate-200'}`}>
-                    <span className={`text-[10px] block font-mono uppercase ${isDark ? 'text-white/50' : 'text-slate-500'}`}>
-                      {currentLang === 'en' ? 'External Connected Liquidity' : 'Liquidez Externa Conectada'}
-                    </span>
-                    <span className={`text-base font-black font-sans ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                      R$ 330.000,00
-                    </span>
-                    <span className={`text-[10px] block mt-0.5 ${isDark ? 'text-white/50' : 'text-slate-500'}`}>
-                      BTG Pactual (R$ 120k) + XP Investimentos (R$ 210k)
-                    </span>
-                  </div>
-
-                  {/* Yield Comparison Grid */}
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div className={`p-2.5 rounded-[8px] border ${isDark ? 'bg-white/[0.02] border-white/10' : 'bg-white border-slate-200'}`}>
-                      <span className={`text-[9px] block uppercase font-mono tracking-wider ${isDark ? 'text-white/40' : 'text-slate-400'}`}>
-                        {currentLang === 'en' ? 'Competitors' : 'Concorrentes'}
-                      </span>
-                      <span className={`font-mono text-xs font-semibold ${isDark ? 'text-white/60' : 'text-slate-600'}`}>
-                        {currentLang === 'en' ? '85% of CDI' : '85% do CDI'}
-                      </span>
-                      <span className={`text-[9px] block mt-0.5 ${isDark ? 'text-white/40' : 'text-slate-400'}`}>
-                        {currentLang === 'en' ? 'Lower yield' : 'Rentabilidade menor'}
-                      </span>
-                    </div>
-
-                    <div className={`p-2.5 rounded-[8px] border ${isDark ? 'bg-brand-orange/10 border-brand-orange/30' : 'bg-orange-50 border-brand-orange/30'}`}>
-                      <span className="text-[9px] block uppercase font-mono tracking-wider text-brand-orange font-bold">
-                        Itaú CDB DI
-                      </span>
-                      <span className="font-mono text-xs font-black text-brand-orange">
-                        {currentLang === 'en' ? '100% of CDI' : '100% do CDI'}
-                      </span>
-                      <span className={`text-[9px] block mt-0.5 ${isDark ? 'text-brand-orange/80' : 'text-brand-orange'}`}>
-                        {currentLang === 'en' ? 'Daily Liquidity 24/7' : 'Liquidez Diária 24/7'}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Net Improvement Hero Banner - Clean 2-Liner */}
-                  <div className={`py-2 px-2.5 rounded-[8px] flex items-center justify-between border ${
-                    isDark ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                  }`}>
-                    <div className="min-w-0 flex-1 pr-1">
-                      <span className="text-[9px] uppercase font-mono font-bold block opacity-80 tracking-wider">
-                        {currentLang === 'en' ? 'Yield Spread Advantage' : 'Ganho Adicional Líquido'}
-                      </span>
-                      <div className="font-mono font-extrabold text-xs sm:text-[13px] whitespace-nowrap tracking-tight leading-normal mt-0.5">
-                        {currentLang === 'en'
-                          ? '+15% of CDI (+R$ 5,940/yr)'
-                          : '+15% do CDI (+R$ 5.940/ano)'}
-                      </div>
-                    </div>
-                    <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                      <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
-                    </div>
-                  </div>
-
-                  {/* Approval CTA Button */}
-                  <button
-                    onClick={() => onActionClick('confirm_cdi_transfer')}
-                    className="w-full py-2.5 px-2 rounded-[8px] font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1.5 bg-brand-orange hover:bg-brand-orange-hover text-white shadow-sm transition-all mt-1 whitespace-nowrap"
-                  >
-                    <Check className="w-3.5 h-3.5 flex-shrink-0" />
-                    <span className="truncate">
-                      {currentLang === 'en'
-                        ? 'Approve Transfer (R$ 330k → 100% CDI)'
-                        : 'Aprovar Mudança (R$ 330k → 100% CDI)'}
-                    </span>
-                  </button>
-
-                  <div className="text-center pt-0.5">
-                    <span className={`text-[10px] font-mono ${isDark ? 'text-white/50' : 'text-slate-500'}`}>
-                      {currentLang === 'en' ? 'Say: "ok, let\'s make that change" or "I approve"' : 'Diga: "ok, pode fazer a mudança" ou "aprovo"'}
-                    </span>
-                  </div>
-                </div>
-              </div>
+              <OpenFinanceCdiCard
+                isDark={isDark}
+                currentLang={currentLang}
+                activeBrand={activeBrand}
+                competitorsSummary={competitorsSummary}
+                onClose={() => setActiveCardId(null)}
+                onActionClick={onActionClick}
+              />
             ) : activeCardId === 'open_finance_transfer_confirmed' ? (
-              /* CDI Transfer Confirmed Success Card */
-              <div className={`w-full rounded-[16px] p-4 border animate-fadeIn shadow-2xl relative ${
-                isDark ? 'bg-[#15151A] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-lg'
-              }`}>
-                <div className={`flex items-center justify-between mb-3 pb-2 border-b ${isDark ? 'border-white/[0.06]' : 'border-slate-100'}`}>
-                  <div className="flex items-center gap-2">
-                    <ShieldCheck className={`w-3.5 h-3.5 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
-                    <span className={`text-[10.5px] font-mono font-bold tracking-wide uppercase ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
-                      {currentLang === 'en' ? 'TRANSFER CONFIRMED' : 'TRANSFERÊNCIA CONFIRMADA'}
-                    </span>
-                  </div>
-                  <button 
-                    onClick={() => setActiveCardId(null)}
-                    className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${
-                      isDark ? 'text-white/40 hover:text-white hover:bg-white/10' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
-                    }`}
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-
-                <div className="space-y-2.5 text-xs text-center py-1">
-                  <div className={`w-12 h-12 rounded-full mx-auto flex items-center justify-center border ${
-                    isDark ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-emerald-50 text-emerald-600 border-emerald-200'
-                  }`}>
-                    <Check className="w-6 h-6" />
-                  </div>
-
-                  <div>
-                    <span className={`text-base font-black font-sans block ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                      R$ 330.000,00 {currentLang === 'en' ? 'Transferred' : 'Transferidos'}
-                    </span>
-                    <span className={`text-[11px] font-bold block mt-0.5 ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>
-                      {currentLang === 'en' ? 'Now Earning 100% of CDI (Liquidez Diária)' : 'Agora Rendendo 100% do CDI (Liquidez Diária)'}
-                    </span>
-                  </div>
-
-                  <div className={`p-2.5 rounded-[8px] text-left space-y-1 ${isDark ? 'bg-white/[0.02] border border-white/[0.05]' : 'bg-slate-50 border border-slate-200'}`}>
-                    <div className="flex justify-between text-[10.5px]">
-                      <span className={isDark ? 'text-white/60' : 'text-slate-500'}>{currentLang === 'en' ? 'Annual Yield Gain:' : 'Ganho Anual Adicional:'}</span>
-                      <span className={`font-mono font-bold ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>+R$ 5.940,00 / ano</span>
-                    </div>
-                    <div className="flex justify-between text-[10.5px]">
-                      <span className={isDark ? 'text-white/60' : 'text-slate-500'}>{currentLang === 'en' ? 'New Itaú Liquid Total:' : 'Novo Patrimônio Total Itaú:'}</span>
-                      <span className="font-mono font-bold">R$ 463.950,20</span>
-                    </div>
-                    <div className="flex justify-between text-[10.5px]">
-                      <span className={isDark ? 'text-white/60' : 'text-slate-500'}>{currentLang === 'en' ? 'Settlement Rail:' : 'Canal de Liquidação:'}</span>
-                      <span className="font-mono text-[9.5px]">Open Finance / CIP</span>
-                    </div>
-                  </div>
-
-                  <div className={`p-2 rounded-[6px] text-[10px] ${isDark ? 'bg-white/[0.02] text-white/50' : 'bg-slate-100 text-slate-600'}`}>
-                    {currentLang === 'en' ? 'Funds secured with daily liquidity 24/7' : 'Recursos protegidos com liquidez diária 24/7'}
-                  </div>
-                </div>
-              </div>
+              <OpenFinanceTransferConfirmedCard
+                isDark={isDark}
+                currentLang={currentLang}
+                activeBrand={activeBrand}
+                onClose={() => setActiveCardId(null)}
+              />
             ) : activeCardId === 'cash_flow_forecast_agent' ? (
-              /* Cash Flow & Yield Optimization Dynamic Card */
-              <div className={`w-full rounded-[16px] p-4 border animate-fadeIn shadow-2xl relative ${
-                isDark ? 'bg-[#15151A] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-lg'
-              }`}>
-                <div className={`flex items-center justify-between mb-3 pb-2 border-b ${isDark ? 'border-white/[0.06]' : 'border-slate-100'}`}>
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-3.5 h-3.5 opacity-70" />
-                    <span className={`text-[10.5px] font-mono font-bold tracking-wide uppercase ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
-                      {currentLang === 'en' ? 'CASH FLOW & YIELD OPTIMIZER' : 'PREVISÃO DE SALDO & YIELD'}
-                    </span>
-                  </div>
-                  <button 
-                    onClick={() => setActiveCardId(null)}
-                    className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${
-                      isDark ? 'text-white/40 hover:text-white hover:bg-white/10' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
-                    }`}
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-brand-orange/15 border border-brand-orange/30 text-brand-orange text-[9px] font-mono font-bold mb-2.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-brand-orange animate-pulse" />
-                  <span>{currentLang === 'en' ? 'TRIGGERED BY PREDICTIVE BALANCE ALERT' : 'DISPARADO POR ALERTA PREVENTIVO'}</span>
-                </div>
-
-                <div className="space-y-2 text-xs">
-                  <div className={`p-2.5 rounded-[10px] border shadow-sm ${
-                    isDark 
-                      ? 'bg-white/10 border-white/15 text-red-400 backdrop-blur-sm' 
-                      : 'bg-white/90 border-red-200 text-red-600'
-                  }`}>
-                    <span className={`text-[10px] font-bold uppercase block ${isDark ? 'text-red-400' : 'text-red-600'}`}>
-                      {currentLang === 'en' ? 'D+4 Projected Shortfall' : 'Déficit Projetado D+4'}
-                    </span>
-                    <span className={`text-base font-bold font-mono ${isDark ? 'text-red-400' : 'text-red-600'}`}>
-                      -R$ 13.050,00
-                    </span>
-                    <p className={`text-[10px] mt-0.5 ${isDark ? 'text-red-300/80' : 'text-red-600/80'}`}>
-                      {currentLang === 'en' ? 'After Lisbon flight purchase & Thursday bill debits.' : 'Após compra de passagens e débitos de fatura na quinta.'}
-                    </p>
-                  </div>
-
-                  <div className={`p-2 rounded-[8px] ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
-                    <span className={`text-[10px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Yield Strategy' : 'Estratégia de Rendimento'}</span>
-                    <span className={`font-semibold ${isDark ? 'text-white' : 'text-slate-800'}`}>R$ 85k {currentLang === 'en' ? 'earning 100% CDI until 06:00 BRT' : 'rendendo 100% CDI até 06:00'}</span>
-                  </div>
-
-                  {isCdbSweepScheduled ? (
-                    <div className={`w-full py-2.5 px-3 rounded-[8px] border text-xs flex items-center justify-between mt-1 ${
-                      isDark ? 'bg-white/[0.03] border-white/10' : 'bg-slate-50 border-slate-200'
-                    }`}>
-                      <div className="flex items-center gap-2">
-                        <div className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 ${
-                          isDark ? 'bg-emerald-500/15' : 'bg-emerald-100'
-                        }`}>
-                          <Check className={`w-2.5 h-2.5 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
-                        </div>
-                        <span className={`font-semibold ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
-                          {currentLang === 'en' ? 'CDB Sweep Scheduled' : 'Resgate CDB Agendado'}
-                        </span>
-                      </div>
-                      <span className={`font-mono text-[11px] font-semibold ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>
-                        {currentLang === 'en' ? 'R$ 15k on Thu' : 'R$ 15k na Quinta'}
-                      </span>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => onActionClick('sweep_cdb')}
-                      className="w-full py-2.5 px-4 rounded-[8px] font-semibold text-xs flex items-center justify-center gap-2 bg-brand-orange hover:bg-brand-orange-hover text-white shadow-sm transition-all mt-1"
-                    >
-                      <TrendingUp className="w-3.5 h-3.5" />
-                      <span>{currentLang === 'en' ? 'Schedule CDB Sweep (R$ 15k)' : 'Agendar Resgate CDB (R$ 15k)'}</span>
-                    </button>
-                  )}
-                </div>
-              </div>
+              <CashFlowForecastCard
+                isDark={isDark}
+                currentLang={currentLang}
+                isCdbSweepScheduled={isCdbSweepScheduled}
+                onClose={() => setActiveCardId(null)}
+                onActionClick={onActionClick}
+              />
             ) : activeCardId === 'travel_shield_agent' ? (
-              /* Travel Shield Dynamic Card */
-              <div className={`w-full rounded-[16px] p-4 border animate-fadeIn shadow-2xl relative ${
-                isDark ? 'bg-[#15151A] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-lg'
-              }`}>
-                <div className={`flex items-center justify-between mb-3 pb-2 border-b ${isDark ? 'border-white/[0.06]' : 'border-slate-100'}`}>
-                  <div className="flex items-center gap-2">
-                    <Plane className="w-3.5 h-3.5 opacity-70" />
-                    <span className={`text-[10.5px] font-mono font-bold tracking-wide uppercase ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
-                      {currentLang === 'en' ? 'TRAVEL SHIELD & FRAUD DEFENSE' : 'AVISO VIAGEM & ANTIFRAUDE'}
-                    </span>
-                  </div>
-                  <button 
-                    onClick={() => setActiveCardId(null)}
-                    className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${
-                      isDark ? 'text-white/40 hover:text-white hover:bg-white/10' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
-                    }`}
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-
-                <div className="space-y-2 text-xs">
-                  <div className={`p-2.5 rounded-[10px] ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
-                    <span className={`text-[10px] block ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Destinations' : 'Destinos'}</span>
-                    <div className="flex items-center gap-1.5 mt-1">
-                      <MapPin className="w-3.5 h-3.5 text-brand-orange flex-shrink-0" />
-                      <span className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>Portugal (LIS) • Espanha (MAD)</span>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className={`p-2 rounded-[8px] ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}>
-                      <span className={`text-[9px] block ${isDark ? 'text-white/40' : 'text-slate-500'}`}>{currentLang === 'en' ? 'POS Spend Limit' : 'Limite POS'}</span>
-                      <span className="font-mono font-bold text-brand-orange">R$ 50.000,00</span>
-                    </div>
-                    <div className={`p-2 rounded-[8px] ${isDark ? 'bg-white/[0.02]' : 'bg-slate-50'}`}>
-                      <span className={`text-[9px] block ${isDark ? 'text-white/40' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Declines' : 'Recusas'}</span>
-                      <span className={`font-semibold font-mono text-[11px] ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>{currentLang === 'en' ? 'Pre-Suppressed' : 'Suprimidas'}</span>
-                    </div>
-                  </div>
-
-                  {isTravelModeActive ? (
-                    <div className={`w-full py-2.5 px-3 rounded-[8px] border text-xs flex items-center justify-between mt-1 ${
-                      isDark ? 'bg-white/[0.03] border-white/10' : 'bg-slate-50 border-slate-200'
-                    }`}>
-                      <div className="flex items-center gap-2">
-                        <div className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 ${
-                          isDark ? 'bg-emerald-500/15' : 'bg-emerald-100'
-                        }`}>
-                          <Check className={`w-2.5 h-2.5 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
-                        </div>
-                        <span className={`font-semibold ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
-                          {currentLang === 'en' ? 'Travel Shield Active' : 'Aviso de Viagem Ativo'}
-                        </span>
-                      </div>
-                      <span className={`font-mono text-[11px] font-semibold ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>
-                        {currentLang === 'en' ? 'Limit: R$ 50k' : 'Limite: R$ 50k'}
-                      </span>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => onActionClick('activate_travel_mode')}
-                      className="w-full py-2.5 px-4 rounded-[8px] font-semibold text-xs flex items-center justify-center gap-2 bg-brand-orange hover:bg-brand-orange-hover text-white shadow-sm transition-all mt-1"
-                    >
-                      <Plane className="w-3.5 h-3.5" />
-                      <span>{currentLang === 'en' ? 'Confirm Travel Notice' : 'Confirmar Aviso de Viagem'}</span>
-                    </button>
-                  )}
-
-                  {/* Proactive Card Benefits Action Button */}
-                  {isTravelModeActive && (
-                    <button
-                      onClick={() => onActionClick('get_card_benefits')}
-                      className={`w-full py-2 px-3 rounded-[8px] font-bold text-xs flex items-center justify-center gap-1.5 transition-all mt-1.5 ${
-                        isDark 
-                          ? 'bg-brand-orange hover:bg-brand-orange-hover text-white shadow-md' 
-                          : 'bg-brand-orange hover:bg-brand-orange-hover text-white shadow-md'
-                      }`}
-                    >
-                      <ShieldPlus className="w-3.5 h-3.5" />
-                      <span>{currentLang === 'en' ? 'Explore Mastercard Black Benefits →' : 'Ver Benefícios do Mastercard Black →'}</span>
-                    </button>
-                  )}
-                </div>
-              </div>
+              <TravelShieldCard
+                isDark={isDark}
+                currentLang={currentLang}
+                isTravelModeActive={isTravelModeActive}
+                onClose={() => setActiveCardId(null)}
+                onActionClick={onActionClick}
+              />
             ) : activeCardId === 'card_benefits_agent' ? (
-              /* Mastercard Black Benefits Dynamic Card */
-              <div className={`w-full rounded-[16px] p-4 border animate-fadeIn shadow-2xl relative ${
-                isDark ? 'bg-[#15151A] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-lg'
-              }`}>
-                <div className={`flex items-center justify-between mb-3 pb-2 border-b ${isDark ? 'border-white/[0.06]' : 'border-slate-100'}`}>
-                  <div className="flex items-center gap-2">
-                    <CreditCard className="w-3.5 h-3.5 opacity-70" />
-                    <span className={`text-[10.5px] font-mono font-bold tracking-wide uppercase ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
-                      {currentLang === 'en' ? 'MASTERCARD BLACK BENEFITS' : 'BENEFÍCIOS MASTERCARD BLACK'}
-                    </span>
-                  </div>
-                  <button 
-                    onClick={() => setActiveCardId(null)}
-                    className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${
-                      isDark ? 'text-white/40 hover:text-white hover:bg-white/10' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
-                    }`}
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-
-                <div className="space-y-2 text-xs">
-                  <div className={`p-2.5 rounded-[8px] flex items-start gap-2.5 ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
-                    <ShieldPlus className={`w-4 h-4 mt-0.5 flex-shrink-0 ${isDark ? 'text-white/90' : 'text-slate-700'}`} />
-                    <div>
-                      <div className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>{currentLang === 'en' ? 'Schengen Medical Insurance' : 'Seguro Médico Schengen'}</div>
-                      <div className={`text-[10px] ${isDark ? 'text-white/60' : 'text-slate-500'}`}>€30.000 / USD $150.000 {currentLang === 'en' ? 'coverage included' : 'cobertura inclusa'}</div>
-                    </div>
-                  </div>
-
-                  <div className={`p-2.5 rounded-[8px] flex items-start gap-2.5 ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
-                    <Plane className={`w-4 h-4 mt-0.5 flex-shrink-0 ${isDark ? 'text-white/90' : 'text-slate-700'}`} />
-                    <div>
-                      <div className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>{currentLang === 'en' ? 'VIP Airport Lounges' : 'Salas VIP Aeroportos'}</div>
-                      <div className={`text-[10px] ${isDark ? 'text-white/60' : 'text-slate-500'}`}>{currentLang === 'en' ? 'GRU T3 Unlimited + 4 LoungeKey passes' : 'GRU T3 Ilimitado + 4 passes LoungeKey'}</div>
-                    </div>
-                  </div>
-
-                  <div className={`p-2.5 rounded-[8px] flex items-start gap-2.5 ${isDark ? 'bg-white/[0.03]' : 'bg-slate-50'}`}>
-                    <Car className={`w-4 h-4 mt-0.5 flex-shrink-0 ${isDark ? 'text-white/90' : 'text-slate-700'}`} />
-                    <div>
-                      <div className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>{currentLang === 'en' ? 'Masterseguro Auto (CDW/LDW)' : 'Masterseguro de Automóveis'}</div>
-                      <div className={`text-[10px] ${isDark ? 'text-white/60' : 'text-slate-500'}`}>{currentLang === 'en' ? 'Rental car damage protection + 24/7 Concierge' : 'Cobertura de locação + Concierge 24h'}</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <CardBenefitsCard
+                isDark={isDark}
+                currentLang={currentLang}
+                onClose={() => setActiveCardId(null)}
+              />
             ) : activeCardId === 'open_finance_optimizer' ? (
-              /* Open Finance Rate Comparison & Yield Arbitrage Dynamic Card */
-              <div className={`w-full rounded-[16px] p-4 border animate-fadeIn shadow-2xl relative ${
-                isDark ? 'bg-[#15151A] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-lg'
-              }`}>
-                <div className={`flex items-center justify-between mb-3 pb-2 border-b ${isDark ? 'border-white/[0.06]' : 'border-slate-100'}`}>
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="w-3.5 h-3.5 opacity-70" />
-                    <span className={`text-[10.5px] font-mono font-bold tracking-wide uppercase ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
-                      {currentLang === 'en' ? 'OPEN FINANCE ARBITRAGE' : 'ARBITRAGEM OPEN FINANCE'}
-                    </span>
-                  </div>
-                  <button 
-                    onClick={() => setActiveCardId(null)}
-                    className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${
-                      isDark ? 'text-white/40 hover:text-white hover:bg-white/10' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
-                    }`}
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-
-                <div className="space-y-2.5 text-xs">
-                  {/* 1. Debt Interest Rate Comparison */}
-                  <div className={`p-3 rounded-[10px] space-y-2 ${isDark ? 'bg-white/[0.03] border border-white/[0.06]' : 'bg-slate-50 border border-slate-200'}`}>
-                    <div className="flex items-center justify-between gap-2">
-                      <span className={`text-xs font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                        {currentLang === 'en' ? 'Debt Refinancing' : 'Refinanciamento de Dívida'}
-                      </span>
-                      <span className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded border whitespace-nowrap ${
-                        isDark ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' : 'text-emerald-700 bg-emerald-50 border-emerald-200'
-                      }`}>
-                        {currentLang === 'en' ? 'Save R$ 14,280' : 'Economia R$ 14.280'}
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div className={`p-2 rounded-[6px] ${isDark ? 'bg-white/[0.02]' : 'bg-white'}`}>
-                        <span className={`text-[9px] block uppercase font-mono tracking-wider ${isDark ? 'text-white/40' : 'text-slate-400'}`}>
-                          {currentLang === 'en' ? 'Competitor' : 'Concorrente'}
-                        </span>
-                        <span className={`font-mono text-xs ${isDark ? 'text-white/60' : 'text-slate-600'}`}>
-                          11,20% a.m.
-                        </span>
-                      </div>
-                      <div className={`p-2 rounded-[6px] ${isDark ? 'bg-white/[0.02]' : 'bg-white'}`}>
-                        <span className={`text-[9px] block uppercase font-mono tracking-wider ${isDark ? 'text-white/40' : 'text-slate-400'}`}>
-                          Itaú Sob Medida
-                        </span>
-                        <span className={`font-mono text-xs font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                          1,69% a.m.
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className={`text-[10.5px] flex items-center justify-between pt-2 border-t ${isDark ? 'border-white/[0.06]' : 'border-slate-200'}`}>
-                      <span className={isDark ? 'text-white/50' : 'text-slate-500'}>
-                        {currentLang === 'en' ? 'Monthly Savings' : 'Economia Mensal'}
-                      </span>
-                      <span className={`font-mono font-medium whitespace-nowrap ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>
-                        -9,51% a.m. (R$ 680,40/mês)
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* 2. Savings & Fixed Income Yield Comparison */}
-                  <div className={`p-3 rounded-[10px] space-y-2 ${isDark ? 'bg-white/[0.03] border border-white/[0.06]' : 'bg-slate-50 border border-slate-200'}`}>
-                    <div className="flex items-center justify-between gap-2">
-                      <span className={`text-xs font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                        {currentLang === 'en' ? 'CDB Yield Difference' : 'Rendimento CDB DI'}
-                      </span>
-                      <span className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded border whitespace-nowrap ${
-                        isDark ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' : 'text-emerald-700 bg-emerald-50 border-emerald-200'
-                      }`}>
-                        {currentLang === 'en' ? '+R$ 5,940 / yr' : '+R$ 5.940 / ano'}
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div className={`p-2 rounded-[6px] ${isDark ? 'bg-white/[0.02]' : 'bg-white'}`}>
-                        <span className={`text-[9px] block uppercase font-mono tracking-wider ${isDark ? 'text-white/40' : 'text-slate-400'}`}>
-                          {currentLang === 'en' ? 'Competitor' : 'Concorrente'}
-                        </span>
-                        <span className={`font-mono text-xs ${isDark ? 'text-white/60' : 'text-slate-600'}`}>
-                          85% do CDI
-                        </span>
-                      </div>
-                      <div className={`p-2 rounded-[6px] ${isDark ? 'bg-white/[0.02]' : 'bg-white'}`}>
-                        <span className={`text-[9px] block uppercase font-mono tracking-wider ${isDark ? 'text-white/40' : 'text-slate-400'}`}>
-                          Itaú CDB DI
-                        </span>
-                        <span className={`font-mono text-xs font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                          100% do CDI
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className={`text-[10.5px] flex items-center justify-between pt-2 border-t ${isDark ? 'border-white/[0.06]' : 'border-slate-200'}`}>
-                      <span className={isDark ? 'text-white/50' : 'text-slate-500'}>
-                        {currentLang === 'en' ? 'Yield Advantage' : 'Ganho Adicional'}
-                      </span>
-                      <span className={`font-mono font-medium whitespace-nowrap ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>
-                        +15% CDI (Liquidez Diária)
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Refinance Action Button or Confirmed State */}
-                  {isOpenFinanceRefiDone ? (
-                    <div className={`w-full py-2.5 px-3 rounded-[8px] border text-xs flex items-center justify-between ${
-                      isDark ? 'bg-white/[0.03] border-white/10' : 'bg-slate-50 border-slate-200'
-                    }`}>
-                      <div className="flex items-center gap-2">
-                        <div className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 ${
-                          isDark ? 'bg-emerald-500/15' : 'bg-emerald-100'
-                        }`}>
-                          <Check className={`w-2.5 h-2.5 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
-                        </div>
-                        <span className={`font-semibold ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
-                          {currentLang === 'en' ? 'Digital CCB Registered' : 'CCB Digital Registrada'}
-                        </span>
-                      </div>
-                      <span className={`font-mono text-[11px] font-semibold ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>
-                        {currentLang === 'en' ? 'R$ 14,280 Saved' : 'R$ 14.280 Salvos'}
-                      </span>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => onActionClick('refinance_open_finance')}
-                      className="w-full py-2.5 px-4 rounded-[8px] font-semibold text-xs flex items-center justify-center gap-2 bg-brand-orange hover:bg-brand-orange-hover text-white shadow-sm transition-all mt-1"
-                    >
-                      <ShieldCheck className="w-4 h-4" />
-                      <span>{currentLang === 'en' ? 'Issue Digital CCB (Law 10,931)' : 'Emitir CCB Digital (Lei 10.931)'}</span>
-                    </button>
-                  )}
-                </div>
-              </div>
+              <OpenFinanceOptimizerCard
+                isDark={isDark}
+                currentLang={currentLang}
+                activeBrand={activeBrand}
+                isOpenFinanceRefiDone={isOpenFinanceRefiDone}
+                onClose={() => setActiveCardId(null)}
+                onActionClick={onActionClick}
+              />
             ) : (
-              /* Centered 70% Transparent Itaú Logo Watermark */
+              /* Centered 70% Transparent Brand Logo Watermark */
               <div className="my-auto flex items-center justify-center select-none pointer-events-none">
-                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-[28px] bg-brand-orange text-white flex items-center justify-center font-bold text-4xl sm:text-5xl opacity-30 shadow-2xl tracking-tighter">
-                  itau
+                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-[28px] bg-brand-orange text-white flex items-center justify-center font-bold text-4xl sm:text-5xl opacity-30 shadow-2xl tracking-tighter p-4 overflow-hidden">
+                  {activeBrand.logoUrl ? (
+                    <img src={activeBrand.logoUrl} alt={activeBrand.name} className="max-h-full max-w-full object-contain filter brightness-0 invert" />
+                  ) : (
+                    activeBrand.id === 'itau' ? 'itau' : getBrandAccountPrefix(activeBrand.id)
+                  )}
                 </div>
               </div>
             )}
@@ -1287,7 +527,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                   ? (currentLang === 'en' ? 'Speaking...' : 'Falando...')
                   : isListening
                   ? (currentLang === 'en' ? 'Listening...' : 'Ouvindo...')
-                  : 'Itaú Concierge'}
+                  : `${activeBrand.name.replace(/^Banco\s+/i, '')} Concierge`}
               </span>
             </div>
 
@@ -1298,7 +538,7 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
               title={isSpeaking ? (currentLang === 'en' ? "Tap to interrupt" : "Toque para interromper") : undefined}
             >
               <AudioWaveformVisualizer
-                audioLevels={audioLevels}
+                subscribeAudioLevels={subscribeAudioLevels}
                 isVoiceCallActive={isVoiceCallActive}
                 isSpeaking={isSpeaking}
                 isListening={isListening}
@@ -1318,18 +558,23 @@ export const PhoneContainer: React.FC<PhoneContainerProps> = ({
                 className={`w-8 h-8 rounded-full flex items-center justify-center transition-all flex-shrink-0 ${
                   isVoiceCallActive
                     ? isSpeaking
-                      ? 'bg-brand-orange text-white ring-4 ring-brand-orange/40 shadow-[0_0_15px_#FF6423] cursor-pointer'
+                      ? 'bg-brand-orange text-white ring-4 ring-brand-orange/40 cursor-pointer'
                       : isListening
-                      ? 'bg-brand-orange text-white ring-4 ring-brand-orange/40 shadow-[0_0_15px_#FF6423]'
+                      ? 'bg-brand-orange text-white ring-4 ring-brand-orange/40'
                       : 'bg-brand-orange text-white shadow-md'
                     : 'bg-brand-orange hover:bg-brand-orange-hover text-white shadow-sm'
                 }`}
+                style={{
+                  boxShadow: isVoiceCallActive && (isSpeaking || isListening)
+                    ? `0 0 18px ${activeBrand.primaryColor || 'var(--brand-primary)'}, 0 0 6px ${activeBrand.primaryColor || 'var(--brand-primary)'}`
+                    : undefined
+                }}
                 title={
                   isVoiceCallActive
                     ? isSpeaking
                       ? (currentLang === 'en' ? "Tap to Interrupt Assistant" : "Toque para Interromper")
                       : (currentLang === 'en' ? "End Call" : "Encerrar Chamada")
-                    : (currentLang === 'en' ? "Start Itaú Concierge Voice" : "Iniciar Itaú Concierge Voz")
+                    : (currentLang === 'en' ? `Start ${activeBrand.name.replace(/^Banco\s+/i, '')} Voice` : `Iniciar ${activeBrand.name.replace(/^Banco\s+/i, '')} Voz`)
                 }
               >
                 {isVoiceCallActive && isSpeaking ? (

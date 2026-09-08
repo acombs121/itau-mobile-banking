@@ -32,35 +32,3 @@ export interface BankingProfile {
   cards: BankingCard[];
   recent_transactions: Transaction[];
 }
-
-export interface SecurityAlert {
-  id: string;
-  severity: 'CRITICAL' | 'WARNING' | 'INFO';
-  category: string;
-  title: string;
-  timestamp: string;
-  description: string;
-  amount_brl?: number | null;
-  recipient?: string | null;
-  risk_score: number;
-  recommended_action: string;
-  status: string;
-  policy_matched: string;
-}
-
-export interface DecisionGraphData {
-  nodes: Array<{
-    id: string;
-    name: string;
-    group: string;
-    layer: 'Input' | 'Policy' | 'Decision' | 'Output';
-    color: string;
-    val: number;
-    details: string;
-  }>;
-  links: Array<{
-    source: string;
-    target: string;
-    label: string;
-  }>;
-}

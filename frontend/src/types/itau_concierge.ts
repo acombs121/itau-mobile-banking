@@ -21,15 +21,6 @@ export interface SecurityActionItem {
   details?: string;
 }
 
-export interface IOSNotification {
-  id: string;
-  app: string;
-  title: string;
-  subtitle: string;
-  icon?: string;
-  timestamp: string;
-}
-
 export interface TelemetryLog {
   id: string;
   timestamp: string;

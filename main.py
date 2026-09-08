@@ -10,6 +10,8 @@ import base64
 import asyncio
 import time
 import logging
+import re
+import copy
 from typing import Optional, Dict, Any, Literal
 from fastapi import FastAPI, Request, HTTPException, Depends, status, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
@@ -52,12 +54,17 @@ app = FastAPI(
 )
 
 # CORS Configuration
+_extra_origins = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "").split(",") if o.strip()]
 allowed_origins = [
     "http://127.0.0.1:8090",
     "http://localhost:8090",
     "http://127.0.0.1:5173",
     "http://localhost:5173",
-]
+    "http://127.0.0.1:5174",
+    "http://localhost:5174",
+    "http://127.0.0.1:5175",
+    "http://localhost:5175",
+] + _extra_origins
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
@@ -65,6 +72,10 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
+
+from routers import brands, admin
+app.include_router(brands.router)
+app.include_router(admin.router)
 
 # Defensive Security Headers Middleware
 @app.middleware("http")
@@ -187,6 +198,20 @@ ACTIVE_ALERTS = [
     }
 ]
 
+# Session-Scoped In-Memory State to Isolate Multi-Tenant Sessions
+_user_sessions: Dict[str, Dict[str, Any]] = {}
+
+def get_user_session_state(user_id: str) -> Dict[str, Any]:
+    """Provides isolated, user-scoped banking profile and alert state to prevent cross-tenant concurrency bleed."""
+    if user_id not in _user_sessions:
+        if len(_user_sessions) > 500:
+            _user_sessions.pop(next(iter(_user_sessions)))
+        _user_sessions[user_id] = {
+            "profile": copy.deepcopy(BANKING_PROFILE),
+            "alerts": copy.deepcopy(ACTIVE_ALERTS),
+        }
+    return _user_sessions[user_id]
+
 # Pydantic Schemas
 ActionType = Literal[
     "freeze_card",
@@ -219,42 +244,244 @@ async def get_user_profile(user: Dict[str, Any] = Depends(get_authenticated_user
     """Returns the authenticated IAP user identity."""
     return user
 
+# --- Dynamic Brand Profiling Helper for White-Label Concierge ---
+def get_brand_context(brand_id: Optional[str] = "itau", brand_name: Optional[str] = None) -> Dict[str, Any]:
+    b_id = (brand_id or "itau").lower().strip()
+    if brand_name:
+        brand_name = re.sub(r"[^\w\s\-\.\&À-ÿ]", "", brand_name.strip())[:50]
+    
+    KNOWN_BRANDS = {
+        "itau": {"name": "Banco Itaú", "short": "Itaú", "segment": "Itaú Personnalité", "code": "341", "id_code": "ITAU", "primary_color": "#FF6423"},
+        "btg": {"name": "Banco BTG Pactual", "short": "BTG Pactual", "segment": "BTG Pactual Private", "code": "208", "id_code": "BTG", "primary_color": "#001E62"},
+        "btg-pactual": {"name": "Banco BTG Pactual", "short": "BTG Pactual", "segment": "BTG Pactual Private", "code": "208", "id_code": "BTG", "primary_color": "#001E62"},
+        "santander": {"name": "Banco Santander", "short": "Santander", "segment": "Santander Select", "code": "033", "id_code": "SAN", "primary_color": "#EC0000"},
+        "bradesco": {"name": "Banco Bradesco", "short": "Bradesco", "segment": "Bradesco Prime", "code": "237", "id_code": "BBD", "primary_color": "#CC092F"},
+        "nubank": {"name": "Nubank", "short": "Nubank", "segment": "Nubank Ultravioleta", "code": "260", "id_code": "NU", "primary_color": "#820AD1"},
+        "banco-do-brasil": {"name": "Banco do Brasil", "short": "Banco do Brasil", "segment": "BB Estilo", "code": "001", "id_code": "BB", "primary_color": "#003DA5"},
+        "bb": {"name": "Banco do Brasil", "short": "Banco do Brasil", "segment": "BB Estilo", "code": "001", "id_code": "BB", "primary_color": "#003DA5"},
+        "cymbal-bank": {"name": "Cymbal Bank", "short": "Cymbal", "segment": "Cymbal Private Wealth", "code": "888", "id_code": "CYMBAL", "primary_color": "#009E25"},
+        "inter": {"name": "Banco Inter", "short": "Inter", "segment": "Inter Black", "code": "077", "id_code": "INTER", "primary_color": "#FF7A00"},
+        "c6": {"name": "C6 Bank", "short": "C6 Bank", "segment": "C6 Carbon", "code": "336", "id_code": "C6", "primary_color": "#242424"},
+        "safra": {"name": "Banco Safra", "short": "Safra", "segment": "Safra Private", "code": "422", "id_code": "SAFRA", "primary_color": "#001A33"},
+        "caixa": {"name": "Caixa Econômica Federal", "short": "Caixa", "segment": "Caixa Singular", "code": "104", "id_code": "CEF", "primary_color": "#005CA9"},
+        "xp": {"name": "XP Investimentos", "short": "XP", "segment": "XP Private", "code": "102", "id_code": "XP", "primary_color": "#000000"}
+    }
+    
+    entry = KNOWN_BRANDS.get(b_id)
+    if not entry:
+        inferred_name = brand_name or b_id.capitalize()
+        inferred_short = re.sub(r"^Banco\s+", "", inferred_name, flags=re.IGNORECASE)
+        entry = {
+            "name": inferred_name,
+            "short": inferred_short,
+            "segment": f"{inferred_short} Private",
+            "code": "999",
+            "id_code": re.sub(r"[-_]bank$", "", b_id, flags=re.IGNORECASE).upper()
+        }
+    elif brand_name:
+        entry = dict(entry)
+        entry["name"] = brand_name
+        entry["short"] = re.sub(r"^Banco\s+", "", brand_name, flags=re.IGNORECASE)
+
+    b_short = entry["short"]
+    b_upper = b_short.upper()
+    b_id_code = entry.get("id_code", b_id.upper())
+    
+    # Invert competitors so current brand is never listed as external competitor
+    if "btg" in b_id:
+        competitors = ["Itaú Unibanco", "XP Investimentos"]
+        competitor_label = "Itaú & XP"
+        competitors_summary = "Banco Itaú (R$ 120k) + XP Investimentos (R$ 210k)"
+    elif any(k in b_id for k in ("xp", "santander", "bradesco", "nubank", "brasil", "bb", "cymbal", "inter", "c6", "safra", "caixa")):
+        competitors = ["Itaú Unibanco", "BTG Pactual"]
+        competitor_label = "Itaú & BTG"
+        competitors_summary = "Banco Itaú (R$ 120k) + BTG Pactual (R$ 210k)"
+    else:
+        competitors = ["BTG Pactual", "XP Investimentos"]
+        competitor_label = "BTG & XP"
+        competitors_summary = "BTG Pactual (R$ 120k) + XP Investimentos (R$ 210k)"
+
+    card_tier = f"{b_short} Mastercard Black"
+    prefix_key = b_id_code.lower()
+
+    return {
+        "id": b_id,
+        "id_upper": b_id_code,
+        "name": entry["name"],
+        "short": b_short,
+        "upper": b_upper,
+        "segment": entry["segment"],
+        "competitors": competitors,
+        "competitor_label": competitor_label,
+        "competitors_summary": competitors_summary,
+        "card_tier": card_tier,
+        "prefix_key": prefix_key,
+        "primary_color": entry.get("primary_color", "#FF6423"),
+        "account_id": f"{b_id_code}-7749-00912"
+    }
+
+def get_brand_tool_handlers(brand_ctx: Dict[str, Any]) -> Dict[str, Any]:
+    b_short = brand_ctx["short"]
+    b_name = brand_ctx["name"]
+    b_id_upper = brand_ctx["id_upper"]
+    b_prefix = brand_ctx["prefix_key"]
+    b_card_tier = brand_ctx["card_tier"]
+    b_competitors = brand_ctx["competitors"]
+    b_comp_str = " e ".join(b_competitors)
+
+    return {
+        "get_account_info": lambda _args: {
+            "customer": "Roberto Silva",
+            f"{b_prefix}_accounts": {
+                "checking_balance": "48.950,20 reais",
+                "cdb_di_investments": "85.000,00 reais (100% CDI Liquidez Diaria)",
+                f"total_{b_prefix}_liquid": "133.950,20 reais",
+                "mastercard_black_available_limit": "72.569,50 reais",
+                "mastercard_black_total_limit": "85.000,00 reais",
+                "mastercard_black_outstanding_balance": "12.430,50 reais",
+                "mastercard_black_next_invoice_due": "28/09/2026",
+                "scheduled_debits_next_thursday": "38.000,00 reais"
+            },
+            "open_finance_status": "NOT_RETRIEVED_YET",
+            "status": f"{b_id_upper}_BALANCES_ONLY_RETRIEVED",
+            "guidance": f"Only {b_name} balances are returned. Prompt customer to ask for Open Finance data to check market rates."
+        },
+        "pull_open_finance": lambda _args: {
+            "status": "OPEN_FINANCE_CATEGORIES_ACTIVE",
+            "categories_available": ["cdi_balances", "debt_balances"],
+            "message": "Open Finance connected. Awaiting cardholder choice between debt balances or CDI balances."
+        },
+        "quote_open_finance_cdi": lambda _args: {
+            "status": "CDI_IMPROVEMENTS_QUOTED",
+            "external_liquid_assets": f"330.000,00 reais ({b_comp_str})",
+            "competitor_yield": "85% do CDI",
+            f"{b_prefix}_cdb_di_yield": "100% do CDI (Liquidez Diária)",
+            "yield_spread_gain": "+15% do CDI",
+            "annual_additional_gain": "5.940,00 reais / ano",
+            "action_required": "Cardholder approval: 'ok, let's make that change' / 'I approve'"
+        },
+        "confirm_cdi_transfer": lambda _args: {
+            "status": "TRANSFER_CONFIRMED",
+            "amount_transferred": "330.000,00 reais",
+            "source_accounts": b_competitors,
+            "destination": f"CDB DI {b_short} (100% do CDI)",
+            "annual_gain_secured": "5.940,00 reais / ano (+15% do CDI)",
+            f"new_total_{b_prefix}_balance": "463.950,20 reais",
+            "settlement_rail": "Open Finance / CIP Interbank Transfer"
+        },
+        "get_card_benefits": lambda _args: {
+            "card_name": b_card_tier,
+            "vip_lounges": "Acesso ilimitado à Sala VIP Mastercard Black no Terminal 3 de Guarulhos + 4 passes LoungeKey na Europa",
+            "medical_insurance": "30.000 euros de cobertura médica internacional Schengen (USD 150.000)",
+            "car_rental": "Masterseguro de Automóveis CDW/LDW incluso",
+            "concierge": "Mastercard Concierge 24 horas"
+        },
+        "activate_travel_mode": lambda _args: {
+            "status": "ATIVO",
+            "destinations": ["Portugal", "Espanha"],
+            "daily_international_pos_limit": "50.000,00 reais",
+            "fraud_suppression": "Bloqueios indevidos em terminais estrangeiros desativados com sucesso"
+        },
+        "explain_predictive_alert": lambda _args: {
+            "status": "SHORTFALL_ANALYZED",
+            "projected_shortfall": "13.050,00 reais",
+            "scheduled_debits_thursday": "38.000,00 reais",
+            "cdb_di_liquidity": "85.000,00 reais",
+            "recommended_sweep": "15.000,00 reais"
+        },
+        "confirm_cdb_sweep": lambda _args: {
+            "status": "AGENDADO",
+            "sweep_amount": "15.000,00 reais",
+            "scheduled_time": "Quinta-feira 06:00 BRT",
+            "source": "CDB DI Liquidez Diaria",
+            "lis_overdraft_saved": "184,60 reais"
+        },
+        "sweep_cdb": lambda _args: {
+            "status": "AGENDADO",
+            "sweep_amount": "15.000,00 reais",
+            "scheduled_time": "Quinta-feira 06:00 BRT",
+            "source": "CDB DI Liquidez Diaria",
+            "lis_overdraft_saved": "184,60 reais"
+        },
+        "refinance_open_finance": lambda _args: {
+            "status": "OPEN_FINANCE_RATE_OPTIMIZATION_READY",
+            "debt_refinancing_comparison": {
+                "competitor_debt_balance": "18.000,00 reais",
+                "competitor_interest_rate_paying": "11,20% a.m.",
+                f"{b_prefix}_sob_medida_rate_offered": "1,69% a.m.",
+                "rate_spread_savings": "9,51% a.m.",
+                "monthly_cash_savings": "680,40 reais / mês",
+                "total_contract_savings": "14.280,00 reais",
+                "mechanism": "CCB Digital (Lei 10.931)"
+            }
+        }
+    }
+
+TOOL_HANDLERS = get_brand_tool_handlers(get_brand_context("itau"))
+
 @app.get("/api/banking/profile")
-async def get_banking_profile(user: Dict[str, Any] = Depends(get_authenticated_user)):
+async def get_banking_profile(
+    brand: Optional[str] = "itau",
+    brand_name: Optional[str] = None,
+    user: Dict[str, Any] = Depends(get_authenticated_user)
+):
     """Returns customer profile, balances, limits, and cards."""
-    return BANKING_PROFILE
+    user_id = user.get("email") or user.get("sub") or "developer@google.com"
+    session_state = get_user_session_state(user_id)
+    brand_ctx = get_brand_context(brand, brand_name)
+    prof = copy.deepcopy(session_state["profile"])
+    prof["account_id"] = brand_ctx["account_id"]
+    prof["segment"] = brand_ctx["segment"]
+    for c in prof.get("cards", []):
+        if c.get("id") == "card_01":
+            c["name"] = brand_ctx["card_tier"]
+    return prof
 
 @app.get("/api/banking/alerts")
-async def get_banking_alerts(user: Dict[str, Any] = Depends(get_authenticated_user)):
+async def get_banking_alerts(
+    brand: Optional[str] = "itau",
+    brand_name: Optional[str] = None,
+    user: Dict[str, Any] = Depends(get_authenticated_user)
+):
     """Returns active banking alerts and security incidents."""
-    return ACTIVE_ALERTS
+    user_id = user.get("email") or user.get("sub") or "developer@google.com"
+    session_state = get_user_session_state(user_id)
+    brand_ctx = get_brand_context(brand, brand_name)
+    alerts = copy.deepcopy(session_state["alerts"])
+    for a in alerts:
+        a["description"] = a["description"].replace("Itaú Concierge System", f"{brand_ctx['short']} Concierge System").replace("Itaú", brand_ctx['short'])
+    return alerts
 
 @app.post("/api/banking/action")
 async def execute_banking_action(payload: BankingActionRequest, user: Dict[str, Any] = Depends(get_authenticated_user)):
-    """Executes deterministic banking safety actions."""
+    """Executes deterministic banking safety actions within the isolated user session."""
     action = payload.action_type
     target = payload.target_id
+    user_id = user.get("email") or user.get("sub") or "developer@google.com"
+    session_state = get_user_session_state(user_id)
+    user_profile = session_state["profile"]
+    user_alerts = session_state["alerts"]
 
     if action == "freeze_card":
-        for card in BANKING_PROFILE["cards"]:
+        for card in user_profile["cards"]:
             if card["id"] == target or target == "all":
                 card["status"] = "frozen"
         return {"status": "success", "message": "Card successfully frozen. Virtual token deactivated."}
 
     elif action == "unfreeze_card":
-        for card in BANKING_PROFILE["cards"]:
+        for card in user_profile["cards"]:
             if card["id"] == target:
                 card["status"] = "active"
         return {"status": "success", "message": "Card reactivated with biometric validation."}
 
     elif action == "block_pix":
-        for alert in ACTIVE_ALERTS:
+        for alert in user_alerts:
             if alert["id"] == target:
                 alert["status"] = "blocked_and_reversed"
         return {"status": "success", "message": "Pix transfer blocked and funds safeguarded under MED rules."}
 
     elif action == "approve_pix":
-        for alert in ACTIVE_ALERTS:
+        for alert in user_alerts:
             if alert["id"] == target:
                 alert["status"] = "approved_by_user"
         return {"status": "success", "message": "Pix transfer authorized by Cardholder."}
@@ -265,8 +492,14 @@ async def execute_banking_action(payload: BankingActionRequest, user: Dict[str, 
             new_limit = float(raw_limit)
         except (ValueError, TypeError):
             raise HTTPException(status_code=400, detail="Invalid new_night_limit value. Must be a numeric amount.")
-        BANKING_PROFILE["pix_night_limit"] = new_limit
+        user_profile["pix_night_limit"] = new_limit
         return {"status": "success", "message": f"Night Pix limit updated to R$ {new_limit:,.2f}"}
+
+    elif action == "file_med_dispute":
+        for alert in user_alerts:
+            if alert["id"] == target:
+                alert["status"] = "dispute_filed"
+        return {"status": "success", "message": "MED dispute opened with Central Bank."}
 
     return {"status": "error", "message": f"Unknown action type '{action}'"}
 
@@ -274,106 +507,50 @@ class ChatRequest(BaseModel):
     message: str
     context: Optional[Dict[str, Any]] = None
     lang: Optional[str] = "pt"
-
-# Modular Tool Execution Registry for Gemini Multimodal Live API
-TOOL_HANDLERS = {
-    "get_account_info": lambda _args: {
-        "customer": "Roberto Silva",
-        "itau_personnalite_accounts": {
-            "checking_balance": "48.950,20 reais",
-            "cdb_di_investments": "85.000,00 reais (100% CDI Liquidez Diaria)",
-            "total_itau_liquid": "133.950,20 reais",
-            "mastercard_black_available_limit": "72.569,50 reais",
-            "mastercard_black_total_limit": "85.000,00 reais",
-            "mastercard_black_outstanding_balance": "12.430,50 reais",
-            "mastercard_black_next_invoice_due": "28/09/2026",
-            "scheduled_debits_next_thursday": "38.000,00 reais"
-        },
-        "open_finance_status": "NOT_RETRIEVED_YET",
-        "status": "ITAU_BALANCES_ONLY_RETRIEVED",
-        "guidance": "Only Itaú balances are returned. Prompt customer to ask for Open Finance data to check market rates."
-    },
-    "pull_open_finance": lambda _args: {
-        "status": "OPEN_FINANCE_CATEGORIES_ACTIVE",
-        "categories_available": ["cdi_balances", "debt_balances"],
-        "message": "Open Finance connected. Awaiting cardholder choice between debt balances or CDI balances."
-    },
-    "quote_open_finance_cdi": lambda _args: {
-        "status": "CDI_IMPROVEMENTS_QUOTED",
-        "external_liquid_assets": "330.000,00 reais (BTG Pactual e XP Investimentos)",
-        "competitor_yield": "85% do CDI",
-        "itau_cdb_di_yield": "100% do CDI (Liquidez Diária)",
-        "yield_spread_gain": "+15% do CDI",
-        "annual_additional_gain": "5.940,00 reais / ano",
-        "action_required": "Cardholder approval: 'ok, let's make that change' / 'I approve'"
-    },
-    "confirm_cdi_transfer": lambda _args: {
-        "status": "TRANSFER_CONFIRMED",
-        "amount_transferred": "330.000,00 reais",
-        "source_accounts": ["BTG Pactual", "XP Investimentos"],
-        "destination": "CDB DI Itaú Personnalité (100% do CDI)",
-        "annual_gain_secured": "5.940,00 reais / ano (+15% do CDI)",
-        "new_total_itau_balance": "463.950,20 reais",
-        "settlement_rail": "Open Finance / CIP Interbank Transfer"
-    },
-    "get_card_benefits": lambda _args: {
-        "card_name": "Itaú Personnalité Mastercard Black",
-        "vip_lounges": "Acesso ilimitado à Sala VIP Mastercard Black no Terminal 3 de Guarulhos + 4 passes LoungeKey na Europa",
-        "medical_insurance": "30.000 euros de cobertura médica internacional Schengen (USD 150.000)",
-        "car_rental": "Masterseguro de Automóveis CDW/LDW incluso",
-        "concierge": "Mastercard Concierge 24 horas"
-    },
-    "activate_travel_mode": lambda _args: {
-        "status": "ATIVO",
-        "destinations": ["Portugal", "Espanha"],
-        "daily_international_pos_limit": "50.000,00 reais",
-        "fraud_suppression": "Bloqueios indevidos em terminais estrangeiros desativados com sucesso"
-    },
-    "explain_predictive_alert": lambda _args: {
-        "status": "SHORTFALL_ANALYZED",
-        "projected_shortfall": "13.050,00 reais",
-        "scheduled_debits_thursday": "38.000,00 reais",
-        "cdb_di_liquidity": "85.000,00 reais",
-        "recommended_sweep": "15.000,00 reais"
-    },
-    "confirm_cdb_sweep": lambda _args: {
-        "status": "AGENDADO",
-        "sweep_amount": "15.000,00 reais",
-        "scheduled_time": "Quinta-feira 06:00 BRT",
-        "source": "CDB DI Liquidez Diaria",
-        "lis_overdraft_saved": "184,60 reais"
-    },
-    "sweep_cdb": lambda _args: {
-        "status": "AGENDADO",
-        "sweep_amount": "15.000,00 reais",
-        "scheduled_time": "Quinta-feira 06:00 BRT",
-        "source": "CDB DI Liquidez Diaria",
-        "lis_overdraft_saved": "184,60 reais"
-    },
-    "refinance_open_finance": lambda _args: {
-        "status": "OPEN_FINANCE_RATE_OPTIMIZATION_READY",
-        "debt_refinancing_comparison": {
-            "competitor_debt_balance": "18.000,00 reais",
-            "competitor_interest_rate_paying": "11,20% a.m.",
-            "itau_sob_medida_rate_offered": "1,69% a.m.",
-            "rate_spread_savings": "9,51% a.m.",
-            "monthly_cash_savings": "680,40 reais / mês",
-            "total_contract_savings": "14.280,00 reais",
-            "mechanism": "CCB Digital (Lei 10.931)"
-        }
-    }
-}
+    brand: Optional[str] = "itau"
+    brand_name: Optional[str] = None
 
 @app.websocket("/ws/live")
-async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
+async def websocket_live_endpoint(
+    websocket: WebSocket,
+    lang: str = "pt",
+    brand: str = "itau",
+    brand_name: Optional[str] = None
+):
     """
     Bidirectional WebSocket connection to Gemini Multimodal Live API
     on Gemini Enterprise Agent Platform (fka Vertex AI Platform).
     Accepts 16kHz PCM audio or text from browser, streams back 24kHz PCM audio,
     text transcripts, and tool execution events.
     """
+    # Origin validation against allowed origins
+    client_origin = websocket.headers.get("origin")
+    if client_origin:
+        origin_lower = client_origin.lower()
+        is_allowed = False
+        if "localhost" in origin_lower or "127.0.0.1" in origin_lower:
+            is_allowed = True
+        elif any(origin_lower.startswith(allowed.lower()) for allowed in allowed_origins):
+            is_allowed = True
+        elif os.getenv("APP_ENV", "local").lower() == "local":
+            is_allowed = True
+        
+        if not is_allowed:
+            logger.warning(f"WebSocket rejected from unauthorized origin: {client_origin}")
+            await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+            return
+
     await websocket.accept()
-    logger.info(f"Client connected to Gemini Live WebSocket (lang: {lang})")
+    logger.info(f"Client connected to Gemini Live WebSocket (lang: {lang}, brand: {brand})")
+
+    brand_ctx = get_brand_context(brand, brand_name)
+    b_short = brand_ctx["short"]
+    b_name = brand_ctx["name"]
+    b_upper = brand_ctx["upper"]
+    b_segment = brand_ctx["segment"]
+    b_comp_pt = " e ".join(brand_ctx["competitors"])
+    b_comp_en = " and ".join(brand_ctx["competitors"])
+    session_tool_handlers = get_brand_tool_handlers(brand_ctx)
 
     # Define tools for Live session matching the exact demo narrative
     live_tools = [
@@ -391,11 +568,11 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
                 ),
                 types.FunctionDeclaration(
                     name="get_account_info",
-                    description="Call this IMMEDIATELY whenever the cardholder asks to see or hear their balances. Reads off ONLY their balances with Itaú (checking R$ 48,950.20, CDB DI R$ 85,000.00, total R$ 133,950.20). Does NOT show or mention any Open Finance data! Then offers to pull Open Finance data to check if getting the best rates.",
+                    description=f"Call this IMMEDIATELY whenever the cardholder asks to see or hear their balances. Reads off ONLY their balances with {b_name} (checking R$ 48,950.20, CDB DI R$ 85,000.00, total R$ 133,950.20). Does NOT show or mention any Open Finance data! Then offers to pull Open Finance data to check if getting the best rates.",
                     parameters=types.Schema(
                         type=types.Type.OBJECT,
                         properties={
-                            "query_type": types.Schema(type=types.Type.STRING, description="'itau_only'")
+                            "query_type": types.Schema(type=types.Type.STRING, description=f"'{brand_ctx['id']}_only'")
                         }
                     )
                 ),
@@ -411,7 +588,7 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
                 ),
                 types.FunctionDeclaration(
                     name="quote_open_finance_cdi",
-                    description="Call this IMMEDIATELY when the cardholder says 'cdi', 'CDI', 'cdi balances', or asks about CDI yield. Displays the CDI Yield comparison screen and quotes the improvements (competitor 85% CDI vs Itaú 100% CDI, +15% CDI yield advantage, +R$ 5,940/year on R$ 330,000 liquid funds).",
+                    description=f"Call this once when the cardholder asks about CDI yield or CDI balances. Displays the CDI Yield comparison screen and quotes the improvements (competitor 85% CDI vs {b_short} 100% CDI, +15% CDI yield advantage, +R$ 5,940/year on R$ 330,000 liquid funds).",
                     parameters=types.Schema(
                         type=types.Type.OBJECT,
                         properties={
@@ -421,7 +598,7 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
                 ),
                 types.FunctionDeclaration(
                     name="confirm_cdi_transfer",
-                    description="Call this IMMEDIATELY when the cardholder approves the CDI transfer by saying 'ok, let's make that change', 'I approve', 'aprovo', 'pode fazer a mudança', 'confirmo', or similar. Confirms the transfer of R$ 330,000 from external accounts to Itaú CDB DI at 100% CDI.",
+                    description=f"Call this IMMEDIATELY when the cardholder approves the CDI transfer by saying 'ok, let's make that change', 'I approve', 'aprovo', 'pode fazer a mudança', 'confirmo', or similar. Confirms the transfer of R$ 330,000 from external accounts to {b_short} CDB DI at 100% CDI.",
                     parameters=types.Schema(
                         type=types.Type.OBJECT,
                         properties={
@@ -462,7 +639,7 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
                 ),
                 types.FunctionDeclaration(
                     name="refinance_open_finance",
-                    description="Call this if the cardholder chooses to check debt balances rather than CDI. Compares 11.2%/mo competitor loan with 1.69%/mo Itaú Sob Medida CCB.",
+                    description=f"Call this if the cardholder chooses to check debt balances rather than CDI. Compares 11.2%/mo competitor loan with 1.69%/mo {b_short} Sob Medida CCB.",
                     parameters=types.Schema(
                         type=types.Type.OBJECT,
                         properties={
@@ -475,7 +652,7 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
     ]
 
     system_prompt = f"""
-    You are Itaú Concierge, the elite personal banking AI concierge for Mr. Silva / Sr. Silva (Roberto Silva, Itaú Personnalité).
+    You are {b_short} Concierge, the elite personal banking AI concierge for Mr. Silva / Sr. Silva (Roberto Silva, {b_segment}).
     Language: {'English' if lang == 'en' else 'Portuguese (pt-BR)'}.
 
     CORE ROLE & DEMO FLOW PROGRESSION:
@@ -494,17 +671,17 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
       * In English: "All set, Mr. Silva! I have scheduled the automatic sweep of 15,000 reais from your Daily Liquidity CDB for Thursday morning at 6 AM. Your checking account is protected from overdraft, and your funds will keep earning 100% of CDI until then. Would you like to review your current balances?"
       * In Portuguese: "Tudo pronto, Sr. Silva! Agendei o resgate automático de R$ 15.000,00 do seu CDB DI para quinta-feira de manhã às 6h. Sua conta corrente está protegida do cheque especial e seus recursos continuam rendendo 100% do CDI até lá. Gostaria de revisar seus saldos atuais?"
 
-    STEP 2. ASK TO SEE BALANCES (STRICTLY ONLY BALANCES WITH ITAÚ):
+    STEP 2. ASK TO SEE BALANCES (STRICTLY ONLY BALANCES WITH {b_upper}):
     - Trigger: Cardholder asks to see or hear their balances (e.g. "Can I see my balances?", "Show me my balances", "Quero ver meus saldos", "Yes, review balances").
     - Action: Call `get_account_info`.
-    - CRITICAL RULE: Read off ONLY balances with Itaú! Do NOT mention or show any Open Finance data!
-      * Itaú Checking: R$ 48.950,20
-      * Itaú Daily Liquidity CDB DI (100% CDI): R$ 85.000,00
-      * Total Itaú: R$ 133.950,20
+    - CRITICAL RULE: Read off ONLY balances with {b_name}! Do NOT mention or show any Open Finance data!
+      * {b_short} Checking: R$ 48.950,20
+      * {b_short} Daily Liquidity CDB DI (100% CDI): R$ 85.000,00
+      * Total {b_short}: R$ 133.950,20
     - MUST THEN STATE: You can pull Open Finance data to check if they are getting the best rates, AND explicitly ask if they want you to pull it!
     - Spoken response: Speak the full text completely through to the end:
-      * In English: "Mr. Silva, at Banco Itaú you currently have 133,950 reais in total liquid assets: 48,950 reais in your checking account, and 85,000 reais in your Daily Liquidity CDB earning 100% of CDI. I can also pull your Open Finance data if you would like to check if you are getting the best rates across the market. Would you like me to pull your Open Finance data?"
-      * In Portuguese: "Sr. Silva, no Banco Itaú você possui atualmente R$ 133.950,20 em patrimônio líquido: R$ 48.950,20 na conta corrente e R$ 85.000,00 no CDB DI com liquidez diária rendendo 100% do CDI. Eu posso puxar seus dados do Open Finance se você quiser verificar se está recebendo as melhores taxas do mercado. Gostaria que eu consultasse para você?"
+      * In English: "Mr. Silva, at {b_name} you currently have 133,950 reais in total liquid assets: 48,950 reais in your checking account, and 85,000 reais in your Daily Liquidity CDB earning 100% of CDI. I can also pull your Open Finance data if you would like to check if you are getting the best rates across the market. Would you like me to pull your Open Finance data?"
+      * In Portuguese: "Sr. Silva, no {b_name} você possui atualmente R$ 133.950,20 em patrimônio líquido: R$ 48.950,20 na conta corrente e R$ 85.000,00 no CDB DI com liquidez diária rendendo 100% do CDI. Eu posso puxar seus dados do Open Finance se você quiser verificar se está recebendo as melhores taxas do mercado. Gostaria que eu consultasse para você?"
 
     STEP 3. CARDHOLDER SAYS YES TO PULLING OPEN FINANCE:
     - Trigger: Cardholder says "yes", "sure", "sim", "pode puxar", "quero ver".
@@ -517,19 +694,19 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
     - Trigger: Cardholder says "cdi", "CDI", "cdi balances", "saldos em cdi".
     - Action: Call `quote_open_finance_cdi`.
     - Spoken response: Quote the improvements you can offer!
-      * External accounts at BTG Pactual and XP Investimentos total R$ 330,000 earning only 85% of CDI.
-      * Itaú Personnalité CDB DI offers 100% of CDI with daily liquidity.
+      * External accounts at {b_comp_pt} total R$ 330,000 earning only 85% of CDI.
+      * {b_short} CDB DI offers 100% of CDI with daily liquidity.
       * That is an extra +15% CDI yield difference, generating an additional R$ 5,940.00 per year.
       * Ask: "Would you like me to make that change?"
-      * In English: "Mr. Silva, through Open Finance I found 330,000 reais in liquid assets across BTG Pactual and XP earning only 85% of CDI. By moving these funds to your Itaú Daily Liquidity CDB, you'll earn 100% of CDI—an immediate 15% CDI yield improvement, generating an additional 5,940 reais per year with daily liquidity. Would you like me to make that change?"
-      * In Portuguese: "Sr. Silva, pelo Open Finance identifiquei R$ 330.000,00 em ativos líquidos no BTG Pactual e na XP rendendo apenas 85% do CDI. Ao transferir esses recursos para o seu CDB DI Itaú com liquidez diária, você passará a render 100% do CDI—um ganho adicional de 15% do CDI, que representa R$ 5.940,00 a mais por ano com liquidez diária. Posso fazer essa mudança?"
+      * In English: "Mr. Silva, through Open Finance I found 330,000 reais in liquid assets across {b_comp_en} earning only 85% of CDI. By moving these funds to your {b_short} Daily Liquidity CDB, you'll earn 100% of CDI—an immediate 15% CDI yield improvement, generating an additional 5,940 reais per year with daily liquidity. Would you like me to make that change?"
+      * In Portuguese: "Sr. Silva, pelo Open Finance identifiquei R$ 330.000,00 em ativos líquidos no {b_comp_pt} rendendo apenas 85% do CDI. Ao transferir esses recursos para o seu CDB DI {b_short} com liquidez diária, você passará a render 100% do CDI—um ganho adicional de 15% do CDI, que representa R$ 5.940,00 a mais por ano com liquidez diária. Posso fazer essa mudança?"
 
     STEP 5. CARDHOLDER APPROVES ("ok, let's make that change" / "I approve"):
     - Trigger: Cardholder says "ok, let's make that change", "I approve", "aprovo", "pode fazer a mudança", "ok, pode transferir".
     - Action: Call `confirm_cdi_transfer`.
     - Spoken response: Confirm the transfer!
-      * In English: "Transfer confirmed, Mr. Silva! I have initiated the transfer of 330,000 reais from your external accounts to your Itaú CDB DI at 100% CDI. Your funds will begin earning the higher rate immediately, keeping daily liquidity."
-      * In Portuguese: "Transferência confirmada, Sr. Silva! Iniciei a transferência de R$ 330.000,00 das suas contas externas para o seu CDB DI Itaú a 100% do CDI. Seus recursos já começarão a render a taxa otimizada imediatamente, com liquidez diária mantida."
+      * In English: "Transfer confirmed, Mr. Silva! I have initiated the transfer of 330,000 reais from your external accounts to your {b_short} CDB DI at 100% CDI. Your funds will begin earning the higher rate immediately, keeping daily liquidity."
+      * In Portuguese: "Transferência confirmada, Sr. Silva! Iniciei a transferência de R$ 330.000,00 das suas contas externas para o seu CDB DI {b_short} a 100% do CDI. Seus recursos já começarão a render a taxa otimizada imediatamente, com liquidez diária mantida."
 
     STEP 6. CARDHOLDER ALERTS TO TRAVEL:
     - Trigger: Cardholder mentions upcoming travel (e.g. "I'm traveling to Portugal and Spain next week", "Vou viajar para Portugal e Espanha semana que vem").
@@ -552,6 +729,10 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
       * Whenever invoking an action tool (like `confirm_cdb_sweep` or `confirm_cdi_transfer`), ALWAYS speak the designated confirmation out loud. NEVER output empty speech, `<no speech>`, or remain silent after calling a tool.
       * Always finish each response with the designated follow-up question so the conversation flows naturally into the next step of the demo.
       * Do not repeat the same response back-to-back once you have finished delivering it.
+    - STRICT SINGLE TOOL INVOCATION & NO DUPLICATE SPEECH:
+      * Invoke each required tool EXACTLY ONCE per turn at the start. NEVER invoke the same tool twice.
+      * NEVER speak meta filler or preambles before calling a tool (e.g. do NOT say "Let me check those details", "I'll take care of that", or "I have successfully retrieved your data"). Call the tool silently and immediately deliver ONLY the step's designated spoken response.
+      * Once you finish speaking the response for a step, STOP IMMEDIATELY. Never repeat or loop words.
     - ZERO-THOUGHT & ZERO-FILLER DIRECTIVE:
       * NEVER vocalize internal thoughts, meta-reasoning, or commentary out loud (such as "This insight doesn't require narration", "Checking the latest totals for you", "Per my protocol", etc.).
       * Call tools silently and speak ONLY the designated polished response for that step.
@@ -587,17 +768,27 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
                         while True:
                             try:
                                 raw_msg = await websocket.receive_text()
+                                if len(raw_msg) > 500_000:
+                                    logger.warning(f"Rejecting oversized WebSocket message ({len(raw_msg)} bytes)")
+                                    continue
                                 msg = json.loads(raw_msg)
                                 
                                 # Client-initiated manual interruption / barge-in
                                 if msg.get("interrupt"):
                                     logger.info("Cardholder manual interruption triggered")
+                                    try:
+                                        await session.send_realtime_input(activity_start=types.ActivityStart())
+                                        await session.send_realtime_input(activity_end=types.ActivityEnd())
+                                    except Exception as int_err:
+                                        logger.warning(f"Error signaling interrupt to Gemini Live: {int_err}")
 
                                 # Text input from browser
                                 elif "text_input" in msg:
-                                    raw_text = msg["text_input"].strip()
+                                    raw_text = str(msg["text_input"]).strip()
                                     if not raw_text:
                                         continue
+                                    if len(raw_text) > 2000:
+                                        raw_text = raw_text[:2000]
                                     logger.info(f"Cardholder Text Input: '{raw_text}'")
                                     await session.send_client_content(
                                         turns=types.Content(
@@ -610,6 +801,9 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
                                 # 16kHz PCM Realtime Audio from microphone (Full Duplex)
                                 elif "realtime_audio_pcm_16k" in msg:
                                     base64_pcm = msg["realtime_audio_pcm_16k"]
+                                    if not isinstance(base64_pcm, str) or len(base64_pcm) > 131_072:
+                                        logger.warning("Rejecting invalid or oversized audio frame")
+                                        continue
                                     raw_bytes = base64.b64decode(base64_pcm)
                                     await session.send_realtime_input(
                                         audio=types.Blob(data=raw_bytes, mime_type="audio/pcm;rate=16000")
@@ -627,6 +821,8 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
                         logger.error(f"Error in client_to_gemini task: {e}")
 
                 async def gemini_to_client():
+                    last_tool_name = None
+                    last_tool_time = 0.0
                     try:
                         while True:
                             async for response in session.receive():
@@ -653,29 +849,40 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
                                         for fc in response.tool_call.function_calls:
                                             tool_name = fc.name
                                             tool_args = fc.args or {}
-                                            logger.info(f"Tool Call: {tool_name} with args: {tool_args}")
-                                            
-                                            handler = TOOL_HANDLERS.get(tool_name)
-                                            if handler:
-                                                try:
-                                                    tool_result_payload = handler(tool_args)
-                                                except Exception as tool_e:
-                                                    logger.error(f"Error executing tool {tool_name}: {tool_e}")
-                                                    tool_result_payload = {"status": "error", "error": str(tool_e)}
-                                            else:
-                                                tool_result_payload = {"status": "success", "result": f"Executed {tool_name} successfully"}
+                                            now = time.time()
+                                            is_duplicate = (tool_name == last_tool_name and (now - last_tool_time) < 5.0)
+                                            last_tool_name = tool_name
+                                            last_tool_time = now
 
-                                            # Send tool call event to frontend phone UI immediately
-                                            try:
-                                                await websocket.send_json({
-                                                    "tool_call": {
-                                                        "name": tool_name,
-                                                        "args": tool_args,
-                                                        "payload": tool_result_payload
-                                                    }
-                                                })
-                                            except Exception as ws_err:
-                                                logger.warning(f"Failed to send tool_call to client: {ws_err}")
+                                            if is_duplicate:
+                                                logger.warning(f"Suppressing duplicate tool call: {tool_name} (invoked {now - last_tool_time:.2f}s ago)")
+                                                tool_result_payload = {
+                                                    "status": "already_executed",
+                                                    "instruction": "This tool was already invoked. Do NOT repeat or restart your spoken response."
+                                                }
+                                            else:
+                                                logger.info(f"Tool Call: {tool_name} with args: {tool_args}")
+                                                handler = session_tool_handlers.get(tool_name) or TOOL_HANDLERS.get(tool_name)
+                                                if handler:
+                                                    try:
+                                                        tool_result_payload = handler(tool_args)
+                                                    except Exception as tool_e:
+                                                        logger.error(f"Error executing tool {tool_name}: {tool_e}")
+                                                        tool_result_payload = {"status": "error", "error": str(tool_e)}
+                                                else:
+                                                    tool_result_payload = {"status": "success", "result": f"Executed {tool_name} successfully"}
+
+                                                # Send tool call event to frontend phone UI immediately
+                                                try:
+                                                    await websocket.send_json({
+                                                        "tool_call": {
+                                                            "name": tool_name,
+                                                            "args": tool_args,
+                                                            "payload": tool_result_payload
+                                                        }
+                                                    })
+                                                except Exception as ws_err:
+                                                    logger.warning(f"Failed to send tool_call to client: {ws_err}")
 
                                             # Send tool response confirmation back to Gemini Live
                                             try:
@@ -761,7 +968,7 @@ async def websocket_live_endpoint(websocket: WebSocket, lang: str = "pt"):
 @app.post("/api/chat")
 async def chat_endpoint(payload: ChatRequest, user: Dict[str, Any] = Depends(get_authenticated_user)):
     """
-    Multimodal Gemini Conversational Endpoint for Itaú Concierge.
+    Multimodal Gemini Conversational Endpoint for White-Label Banking Concierge.
     Supports Portuguese and English across all 4 autonomous scenarios:
     1. Cash Flow Forecasting & CDB DI Sweeping
     2. Travel Notice & Mastercard Black Limit Elevation
@@ -770,10 +977,17 @@ async def chat_endpoint(payload: ChatRequest, user: Dict[str, Any] = Depends(get
     """
     lang = payload.lang or "pt"
     user_msg = payload.message.lower()
+    brand_ctx = get_brand_context(payload.brand or "itau", payload.brand_name)
+    b_short = brand_ctx["short"]
+    b_name = brand_ctx["name"]
+    b_upper = brand_ctx["upper"]
+    b_segment = brand_ctx["segment"]
+    b_comp_pt = " e ".join(brand_ctx["competitors"])
+    b_comp_en = " and ".join(brand_ctx["competitors"])
 
-    # System instruction tailored for Itaú Concierge persona
+    # System instruction tailored for active Brand Concierge persona
     system_prompt = f"""
-    You are Itaú Concierge, the elite AI Banking Concierge & Multi-Agent Orchestrator for Mr. Silva / Sr. Silva (Roberto Silva, Itaú Personnalité).
+    You are {b_short} Concierge, the elite AI Banking Concierge & Multi-Agent Orchestrator for Mr. Silva / Sr. Silva (Roberto Silva, {b_segment}).
     Language Mode: {'English' if lang == 'en' else 'Portuguese (pt-BR)'}.
     
     Customer Profile:
@@ -783,21 +997,21 @@ async def chat_endpoint(payload: ChatRequest, user: Dict[str, Any] = Depends(get
     - Mastercard Black (last 4: 8841): Available Limit R$ 72.569,50
     - Scheduled Debits next Thursday (D+4): R$ 38.000,00 (Condo Pix R$ 3.850 + Mastercard Black Bill R$ 34.150)
     - Connected Open Finance Debt: R$ 18.000,00 at Competitor Bank charging 11.2%/month (CET > 240% APR)
-    - Pre-Approved Itaú Sob Medida Line: 1.69%/month (Total savings: R$ 14.280,00 / R$ 680,40 monthly)
+    - Pre-Approved {b_short} Sob Medida Line: 1.69%/month (Total savings: R$ 14.280,00 / R$ 680,40 monthly)
 
     Rules & Brazilian Banking Identity:
-    1. You represent Banco Itaú, Brazil's leading private bank and wealth management franchise (Itaú Personnalité).
+    1. You represent {b_name}, Brazil's premier banking and wealth management franchise ({b_segment}).
     2. Always address the customer respectfully using their honorific and last name: **"Mr. Silva"** in English, and **"Sr. Silva"** in Portuguese. NEVER use "Robert".
     3. Currency & Pronunciation: Currency is Brazilian Real / Reais (written BRL or R$). ALWAYS say "Real" (singular) or "reais" (plural), NEVER dollars or pounds.
        CRITICAL PRONUNCIATION RULE: Whenever pronouncing ANY plural Real figure (e.g. "reais", 38,000 reais, 85,000 reais, 15,000 reais, 330,000 reais, 5,940 reais, 50,000 reais, etc.), it MUST ALWAYS be pronounced phonetically as "Ray-Ice", NOT "Ray-AHL". The singular (1 Real) is "Ray-AHL", but all plural figures MUST be pronounced "Ray-Ice", never "Ray-AHL" or "reals".
-    4. Pronounce "Itaú", "Personnalité", "Pix", "CDB DI", and "Guarulhos" with authentic Brazilian Portuguese executive cadence.
+    4. Pronounce "{b_short}", "{b_segment}", "Pix", "CDB DI", and "Guarulhos" with authentic Brazilian Portuguese executive cadence.
     5. Respond with executive precision, warm and conversational tone, zero markdown asterisks in spoken numbers where possible.
     6. DEMO FLOW PROGRESSION:
        - Step 1: Predictive Balance Alert & Cash Flow Sweep offer (38k reais debits, 85k reais CDB, 15k reais sweep offer).
-       - Step 2: Current Balances Inquiry (Reads off ONLY Itaú balances: Checking 48,950 reais + CDB DI 85,000 reais = 133,950 reais; NO Open Finance data. Offers to pull Open Finance for best rates).
+       - Step 2: Current Balances Inquiry (Reads off ONLY {b_short} balances: Checking 48,950 reais + CDB DI 85,000 reais = 133,950 reais; NO Open Finance data. Offers to pull Open Finance for best rates).
        - Step 3: Open Finance Choice (User says yes -> Agent asks: check debt balances or CDI balances?).
-       - Step 4: CDI Yield Improvements (User says CDI -> Quotes competitor 85% CDI vs Itaú 100% CDI, +15% CDI difference, +5,940 reais/year).
-       - Step 5: User Approves ("ok, let's make that change" / "I approve") -> Confirms transfer of 330k reais to Itaú CDB DI.
+       - Step 4: CDI Yield Improvements (User says CDI -> Quotes competitor 85% CDI vs {b_short} 100% CDI, +15% CDI difference, +5,940 reais/year).
+       - Step 5: User Approves ("ok, let's make that change" / "I approve") -> Confirms transfer of 330k reais to {b_short} CDB DI.
        - Step 6: Travel Notice (Portugal & Spain, POS limit 50,000 reais, fraud suppression -> Asks about Mastercard Black travel benefits).
        - Step 7: Mastercard Black Benefits (GRU T3 VIP Lounge, 4 LoungeKey passes, €30k Schengen insurance, Masterseguro car rental).
     """
@@ -823,11 +1037,11 @@ async def chat_endpoint(payload: ChatRequest, user: Dict[str, Any] = Depends(get
         else:
             reply = "Olá Sr. Silva. Emiti este Alerta Preventivo de Saldo porque seus débitos agendados para a próxima quinta-feira somam R$ 38.000,00—o condomínio de R$ 3.850,00 e a fatura do Mastercard Black de R$ 34.150,00. Com as despesas previstas, isso causará um déficit no cheque especial. Identifiquei R$ 85.000,00 no seu CDB DI com liquidez diária. Deseja agendar um resgate automático de R$ 15.000,00 para quinta-feira de manhã para manter seu dinheiro rendendo 100% do CDI até a compensação?"
     elif "saldo" in user_msg or "balance" in user_msg or "conta" in user_msg or "extrato" in user_msg:
-        # Step 2: Strictly Itaú balances only!
+        # Step 2: Strictly active brand balances only!
         if lang == "en":
-            reply = "Mr. Silva, at Banco Itaú you currently have 133,950 reais in total liquid assets: 48,950 reais in your checking account, and 85,000 reais in your Daily Liquidity CDB earning 100% of CDI. I can also pull your Open Finance data if you would like to check if you are getting the best rates across the market."
+            reply = f"Mr. Silva, at {b_name} you currently have 133,950 reais in total liquid assets: 48,950 reais in your checking account, and 85,000 reais in your Daily Liquidity CDB earning 100% of CDI. I can also pull your Open Finance data if you would like to check if you are getting the best rates across the market."
         else:
-            reply = "Sr. Silva, no Banco Itaú você possui atualmente R$ 133.950,20 em patrimônio líquido: R$ 48.950,20 na conta corrente e R$ 85.000,00 no CDB DI com liquidez diária rendendo 100% do CDI. Eu posso puxar seus dados do Open Finance se você quiser verificar se está recebendo as melhores taxas do mercado."
+            reply = f"Sr. Silva, no {b_name} você possui atualmente R$ 133.950,20 em patrimônio líquido: R$ 48.950,20 na conta corrente e R$ 85.000,00 no CDB DI com liquidez diária rendendo 100% do CDI. Eu posso puxar seus dados do Open Finance se você quiser verificar se está recebendo as melhores taxas do mercado."
     elif "sim" == user_msg or "yes" == user_msg or "pode puxar" in user_msg or "open finance" in user_msg or "best rate" in user_msg or "melhor taxa" in user_msg:
         # Step 3: Offer choice between debt or CDI
         if lang == "en":
@@ -837,15 +1051,15 @@ async def chat_endpoint(payload: ChatRequest, user: Dict[str, Any] = Depends(get
     elif "cdi" in user_msg:
         # Step 4: Quote CDI improvements
         if lang == "en":
-            reply = "Mr. Silva, through Open Finance I found 330,000 reais in liquid assets across BTG Pactual and XP earning only 85% of CDI. By moving these funds to your Itaú Daily Liquidity CDB, you'll earn 100% of CDI—an immediate 15% CDI yield improvement, generating an additional 5,940 reais per year with daily liquidity. Would you like me to make that change?"
+            reply = f"Mr. Silva, through Open Finance I found 330,000 reais in liquid assets across {b_comp_en} earning only 85% of CDI. By moving these funds to your {b_short} Daily Liquidity CDB, you'll earn 100% of CDI—an immediate 15% CDI yield improvement, generating an additional 5,940 reais per year with daily liquidity. Would you like me to make that change?"
         else:
-            reply = "Sr. Silva, pelo Open Finance identifiquei R$ 330.000,00 em ativos líquidos no BTG Pactual e na XP rendendo apenas 85% do CDI. Ao transferir esses recursos para o seu CDB DI Itaú com liquidez diária, você passará a render 100% do CDI—um ganho adicional de 15% do CDI, que representa R$ 5.940,00 a mais por ano com liquidez diária. Posso fazer essa mudança?"
+            reply = f"Sr. Silva, pelo Open Finance identifiquei R$ 330.000,00 em ativos líquidos no {b_comp_pt} rendendo apenas 85% do CDI. Ao transferir esses recursos para o seu CDB DI {b_short} com liquidez diária, você passará a render 100% do CDI—um ganho adicional de 15% do CDI, que representa R$ 5.940,00 a mais por ano com liquidez diária. Posso fazer essa mudança?"
     elif "change" in user_msg or "approve" in user_msg or "aprovo" in user_msg or "mudança" in user_msg or "transfere" in user_msg or "transferir" in user_msg:
         # Step 5: Confirm CDI transfer
         if lang == "en":
-            reply = "Transfer confirmed, Mr. Silva! I have initiated the transfer of 330,000 reais from your external accounts to your Itaú CDB DI at 100% CDI. Your funds will begin earning the higher rate immediately, keeping daily liquidity."
+            reply = f"Transfer confirmed, Mr. Silva! I have initiated the transfer of 330,000 reais from your external accounts to your {b_short} CDB DI at 100% CDI. Your funds will begin earning the higher rate immediately, keeping daily liquidity."
         else:
-            reply = "Transferência confirmada, Sr. Silva! Iniciei a transferência de R$ 330.000,00 das suas contas externas para o seu CDB DI Itaú a 100% do CDI. Seus recursos já começarão a render a taxa otimizada imediatamente, com liquidez diária mantida."
+            reply = f"Transferência confirmada, Sr. Silva! Iniciei a transferência de R$ 330.000,00 das suas contas externas para o seu CDB DI {b_short} a 100% do CDI. Seus recursos já começarão a render a taxa otimizada imediatamente, com liquidez diária mantida."
     elif "benef" in user_msg or "black" in user_msg or "lounge" in user_msg or "seguro" in user_msg or "insuran" in user_msg or "guarulhos" in user_msg or "schengen" in user_msg:
         # Step 7: Mastercard Black Benefits details
         if lang == "en":
@@ -859,7 +1073,7 @@ async def chat_endpoint(payload: ChatRequest, user: Dict[str, Any] = Depends(get
         else:
             reply = "Tudo pronto, Sr. Silva! Ativei o Aviso Viagem para Portugal e Espanha no seu Mastercard Black, elevei seu limite internacional diário para R$ 50.000,00 e suprimi bloqueios indevidos no exterior. Gostaria de ouvir sobre os benefícios de viagem do seu Mastercard Black para a viagem?"
     else:
-        reply = "Sr. Silva, o Itaú Concierge está monitorando suas contas e proteções em tempo real com conformidade total às diretrizes do Banco Central."
+        reply = f"Sr. Silva, o {b_short} Concierge está monitorando suas contas e proteções em tempo real com conformidade total às diretrizes do Banco Central."
 
     return {"reply": reply, "model": "local-orchestrator"}
 
@@ -874,17 +1088,25 @@ async def ai_assistant(payload: AiAssistRequest, user: Dict[str, Any] = Depends(
     return {"response": res["reply"], "model": res["model"]}
 
 @app.get("/api/banking/decision-graph")
-async def get_decision_graph(user: Dict[str, Any] = Depends(get_authenticated_user)):
+async def get_decision_graph(
+    brand: Optional[str] = "itau",
+    brand_name: Optional[str] = None,
+    user: Dict[str, Any] = Depends(get_authenticated_user)
+):
     """Returns knowledge graph node data for anti-fraud visualizer."""
+    brand_ctx = get_brand_context(brand, brand_name)
+    b_short = brand_ctx["short"]
+    b_segment = brand_ctx["segment"]
+
     nodes = [
         {
             "id": "customer",
-            "name": "Roberto Silva (Personnalité)",
+            "name": f"Roberto Silva ({b_short})",
             "group": "Profile",
             "layer": "Input",
-            "color": "#FF6423",
+            "color": brand_ctx.get("primary_color", "#FF6423"),
             "val": 28,
-            "details": "Itaú Personnalité • Score: 980 • Trusted Device: iPhone 16 Pro"
+            "details": f"{b_segment} • Score: 980 • Trusted Device: iPhone 16 Pro"
         },
         {
             "id": "anomaly_event",
@@ -906,7 +1128,7 @@ async def get_decision_graph(user: Dict[str, Any] = Depends(get_authenticated_us
         },
         {
             "id": "ai_guard_engine",
-            "name": "Itaú Concierge AI Risk Engine",
+            "name": f"{b_short} Concierge AI Risk Engine",
             "group": "Decision",
             "layer": "Decision",
             "color": "#070707",

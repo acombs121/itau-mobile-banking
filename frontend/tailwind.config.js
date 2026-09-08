@@ -7,8 +7,10 @@ export default {
   theme: {
     extend: {
       colors: {
-        'brand-orange': '#FF6423',
-        'brand-orange-hover': '#D2531C',
+        'brand-orange': 'rgb(var(--brand-orange-rgb, 255 100 35) / <alpha-value>)',
+        'brand-orange-hover': 'rgb(var(--brand-orange-hover-rgb, 210 83 28) / <alpha-value>)',
+        'brand-primary': 'var(--brand-primary, #FF6423)',
+        'brand-secondary': 'var(--brand-secondary, #002D62)',
         'hero-bg': '#070707',
         'body-bg': '#F3F3F3',
         'text-main': '#070707',

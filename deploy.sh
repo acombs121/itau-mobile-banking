@@ -26,8 +26,19 @@ set +a
 : "${GEMINI_LIVE_MODEL:=gemini-3.5-flash-live-preview}"
 : "${IAP_ALLOWED_DOMAINS:=google.com}"
 
+# Ensure valid gcloud authentication token (with ADC fallback)
+if [[ -z "${CLOUDSDK_AUTH_ACCESS_TOKEN:-}" ]]; then
+  ADC_TOKEN=$(gcloud auth application-default print-access-token 2>/dev/null || true)
+  if [[ -n "${ADC_TOKEN}" ]]; then
+    export CLOUDSDK_AUTH_ACCESS_TOKEN="${ADC_TOKEN}"
+  fi
+fi
+
 # Determine IAP Allowed Member for GCP IAM (defaulting to current gcloud user if unspecified)
 CURRENT_ACCOUNT=$(gcloud config get-value account 2>/dev/null || true)
+if [[ -z "${CURRENT_ACCOUNT}" && -n "${CLOUDSDK_AUTH_ACCESS_TOKEN:-}" ]]; then
+  CURRENT_ACCOUNT=$(curl -s -H "Authorization: Bearer ${CLOUDSDK_AUTH_ACCESS_TOKEN}" "https://www.googleapis.com/oauth2/v1/userinfo" | grep -o '"email": *"[^"]*"' | head -n 1 | cut -d'"' -f4 || true)
+fi
 IAP_ALLOWED_MEMBER="${IAP_ALLOWED_MEMBER:-}"
 
 # Intercept and correct if user specified domain:google.com in IAM member

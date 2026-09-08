@@ -14,28 +14,47 @@ export interface LocalizedSubAgentItem {
 export const translations = {
   pt: {
     header: {
-      brandTitle: "Banco Itaú",
-      brandSub: "Painel de Orquestração & Itaú Concierge em Tempo Real",
+      brandTitle: "{{BRAND_NAME}}",
+      brandSub: "Painel de Orquestração & {{BRAND_SHORT}} Concierge em Tempo Real",
       saveSession: "Salvar Sessão",
       resetSession: "Reiniciar Demonstração",
       confirmResetTitle: "Reiniciar Demonstração?",
       confirmResetDescription: "Todas as mitigações ativas, execuções de sub-agentes e registros de telemetria retornarão ao estado inicial.",
       confirmResetAction: "Reiniciar Agora",
       cancelAction: "Cancelar",
-      callAi: "Chamar Itaú Concierge",
+      callAi: "Chamar {{BRAND_SHORT}} Concierge",
       hangUp: "Encerrar Chamada",
       customer: "Roberto Silva",
       account: "Ag. 7749 • CC 00912-8",
       scenarioSelectorTitle: "Cenário Ativo:",
       adminPanelTitle: "Painel do Administrador",
       adminPanelSubtitle: "Recursos de Apresentação e Governança",
-      brandKitButton: "Brand Kit & Tipografia Itaú",
-      brandKitDesc: "Tipografia oficial Itaú Display & Itaú Text, paleta e diretrizes",
+      brandKitButton: "Brand Kit & Tipografia {{BRAND_SHORT}}",
+      brandKitDesc: "Tipografia oficial, paleta e diretrizes",
       demoScriptButton: "Roteiro da Demonstração (Demo Script)",
       demoScriptDesc: "Roteiro executivo completo em 5 atos para apresentações C-Level",
       scenariosMatrixButton: "Catálogo de Cenários (BACEN / MED)",
       scenariosMatrixDesc: "Matriz de governança, resolução 147 e telemetria de sub-agentes",
       openInNewTab: "Abre em nova aba",
+    },
+    admin: {
+      title: "Painel de Configuração & Demonstração",
+      mode_label: "Modo de Execução dos Agentes",
+      mode_hybrid: "Híbrido (Gemini Enterprise com Fallback Instantâneo)",
+      mode_hybrid_desc: "Usa Gemini Enterprise Agent Platform (fka Vertex AI Platform) via ADC; recorre a dados determinísticos se offline.",
+      mode_live: "Estritamente Live (Requer Gemini Enterprise / GCP ADC)",
+      mode_live_desc: "Requer credenciais ativas do Google Cloud para todos os agentes.",
+      mode_simulated: "Simulação Offline de Alta Fidelidade",
+      mode_simulated_desc: "Garante 100% de estabilidade para demonstrações executivas sem internet.",
+      delay_label: "Latência de Demonstração por Agente (ms)",
+      connection_status: "Status da Conexão com Google Cloud",
+      model_label: "Modelo Foundation Ativo",
+      gcp_region_label: "Região GCP",
+      apply_config: "Aplicar Configuração",
+      saved_badge: "Salvo!",
+      close: "Fechar Painel",
+      status_live_badge: "Gemini Enterprise Live",
+      status_simulated_badge: "Simulated Fallback"
     },
     tabs: {
       agents: "Sub-Agentes Ativos",
@@ -60,7 +79,7 @@ export const translations = {
           secondaryActionType: "view_cash_flow"
         },
         telemetryPayload: {
-          account: "ITAU-7749-00912",
+          account: "{{BRAND_ID}}-7749-00912",
           projected_date: "2026-08-25 (Quinta-Feira)",
           projected_shortfall: 13050.00,
           source_asset: "CDB_DI_LIQUIDEZ_DIARIA",
@@ -73,7 +92,7 @@ export const translations = {
         graphNodes: [
           {
             id: "customer",
-            name: "Roberto Silva (Personnalité)",
+            name: "Roberto Silva ({{BRAND_SEGMENT_SHORT}})",
             group: "Perfil do Titular",
             layer: "Input",
             color: "#FF6423",
@@ -129,9 +148,9 @@ export const translations = {
           secondaryActionType: "view_limits"
         },
         telemetryPayload: {
-          account_id: "ITAU-7749-00912",
+          account_id: "{{BRAND_ID}}-7749-00912",
           customer_name: "Roberto Silva",
-          segment: "Itaú Personnalité",
+          segment: "{{BRAND_SEGMENT}}",
           checking_balance_brl: 48950.20,
           cdb_di_balance_brl: 85000.00,
           total_consolidated_liquid_patrimony_brl: 463950.20,
@@ -142,7 +161,7 @@ export const translations = {
         graphNodes: [
           {
             id: "customer",
-            name: "Roberto Silva (Personnalité)",
+            name: "Roberto Silva ({{BRAND_SEGMENT_SHORT}})",
             group: "Perfil do Titular",
             layer: "Input",
             color: "#FF6423",
@@ -191,7 +210,7 @@ export const translations = {
         alert: {
           badge: "Oportunidade Open Finance Identificada",
           title: "Economia Projetada: R$ 14.280,00",
-          description: "Saldo rotativo de R$ 18.000,00 no banco concorrente a 11,2% a.m. pode ser refinanciado no Itaú Sob Medida por 1,69% a.m.",
+          description: "Saldo rotativo de R$ 18.000,00 no banco concorrente a 11,2% a.m. pode ser refinanciado no {{BRAND_SHORT}} Sob Medida por 1,69% a.m.",
           primaryActionLabel: "Refinanciar & Emitir CCB (Economizar R$ 14k)",
           primaryActionType: "refinance_open_finance",
           secondaryActionLabel: "Simular Parcelamento",
@@ -200,7 +219,7 @@ export const translations = {
         telemetryPayload: {
           competitor_debt_balance_brl: 18000.00,
           competitor_interest_rate_monthly: "11.20%",
-          itau_sob_medida_rate_monthly: "1.69%",
+          brand_sob_medida_rate_monthly: "1.69%",
           monthly_interest_savings_brl: 680.40,
           total_interest_avoided_brl: 14280.00,
           instrument_type: "CCB_DIGITAL_LEI_10931",
@@ -217,12 +236,12 @@ export const translations = {
             details: "Saldo devedor R$ 18.000,00 em banco concorrente • Taxa rotativa 11,2% a.m."
           },
           {
-            id: "itau_rating",
-            name: "Rating Personnalité (Score 980)",
-            group: "Crédito Itaú",
+            id: "brand_rating",
+            name: "Rating {{BRAND_SEGMENT_SHORT}} (Score 980)",
+            group: "Crédito {{BRAND_SHORT}}",
             layer: "Input",
             color: "#64748B",
-            details: "Linha Itaú Sob Medida pré-aprovada com taxa diferenciada de 1,69% a.m."
+            details: "Linha {{BRAND_SHORT}} Sob Medida pré-aprovada com taxa diferenciada de 1,69% a.m."
           },
           {
             id: "lei_ccb",
@@ -277,7 +296,7 @@ export const translations = {
         graphNodes: [
           {
             id: "customer",
-            name: "Roberto Silva (Personnalité)",
+            name: "Roberto Silva ({{BRAND_SEGMENT_SHORT}})",
             group: "Perfil do Titular",
             layer: "Input",
             color: "#FF6423",
@@ -324,7 +343,7 @@ export const translations = {
         tag: "MASTERCARD_BLACK_BENEFITS",
         agentId: "card_benefits_agent",
         alert: {
-          badge: "Benefícios Exclusivos Personnalité",
+          badge: "Benefícios Exclusivos {{BRAND_SEGMENT_SHORT}}",
           title: "Proteção Schengen & Salas VIP",
           description: "Acesso ilimitado à Sala VIP GRU Terminal 3, 4 acessos LoungeKey na Europa e seguro médico Schengen de €30.000 inclusos.",
           primaryActionLabel: "Ver Benefícios Mastercard Black",
@@ -333,7 +352,7 @@ export const translations = {
           secondaryActionType: "view_schengen_certificate"
         },
         telemetryPayload: {
-          card_tier: "Mastercard Black Personnalité",
+          card_tier: "{{BRAND_SHORT}} Mastercard Black",
           vip_lounge_gru: "UNLIMITED_T3",
           loungekey_passes_europe: 4,
           schengen_coverage_eur: 30000.00,
@@ -408,7 +427,7 @@ export const translations = {
           description: "Projeta fluxos de caixa da conta, antecipa compromissos de débitos futuros e calcula a distribuição ótima entre conta corrente e aplicações de liquidez diária.",
           capabilities: ["Previsão de Fluxo de Caixa", "Prevenção de Déficits", "Resgates Automáticos de Liquidez"],
           defaultResult: {
-            account: "ITAU-7749-00912",
+            account: "{{BRAND_ID}}-7749-00912",
             forecast_window: "D+30",
             projected_shortfall: 13050.00,
             recommended_sweep_source: "CDB_DI_LIQUIDEZ_DIARIA",
@@ -436,7 +455,7 @@ export const translations = {
           description: "Apresenta benefícios de categorias de alta renda, emissão de apólices de seguro viagem, acesso a salas VIP globais e proteções de compra.",
           capabilities: ["Seguro Médico Internacional", "Programas de Salas VIP", "Seguro de Viagem e Bagagem", "Masterseguro de Automóveis"],
           defaultResult: {
-            card_tier: "Itaú Personnalité Mastercard Black",
+            card_tier: "{{BRAND_SHORT}} Mastercard Black",
             travel_medical_insurance: {
               schengen_compliant: true,
               max_coverage_usd: 150000.00,
@@ -473,7 +492,7 @@ export const translations = {
     actionPlan: {
       title: "Plano de Salvaguarda & Ações Confirmadas",
       subtitle: "Medidas protetivas e otimizações registradas na conta corrente e dispositivos do cliente",
-      emptyState: "Nenhuma ação executada ainda. Interaja no app ou acione o Itaú Concierge.",
+      emptyState: "Nenhuma ação executada ainda. Interaja no app ou acione o {{BRAND_SHORT}} Concierge.",
       statusConfirmed: "Confirmado",
       statusSafeguarded: "Protegido",
       statusPending: "Pendente",
@@ -485,7 +504,7 @@ export const translations = {
           title: "Previsão de Liquidez & Yield — Saldo Monitorado",
           description: "R$ 85.000,00 alocados em CDB DI 100% CDI com resgate automatizado programado para compensação de débitos.",
           status: "Safeguarded",
-          details: "Zero LIS Overdraft • 100% CDI Rentabilidade"
+          details: "Zero Overdraft • 100% CDI Rentabilidade"
         },
         {
           id: "act_02",
@@ -522,27 +541,27 @@ export const translations = {
       ]
     },
     modal: {
-      title: "Itaú Concierge Live",
+      title: "{{BRAND_SHORT}} Concierge Live",
       subtitle: "Assistente Multimodal de Operações Financeiras & Segurança Proativa",
-      initialGreeting: "Olá Sr. Silva. Sou o Itaú Concierge. Como posso ajudar com suas contas, previsão de liquidez ou planos de viagem hoje?",
+      initialGreeting: "Olá Sr. Silva. Sou o {{BRAND_SHORT}} Concierge. Como posso ajudar com suas contas, previsão de liquidez ou planos de viagem hoje?",
       micHelp: "Fale diretamente sobre saldo, compras de passagens aéreas ou refinanciamento.",
       endCall: "Encerrar Chamada",
-      speaking: "Itaú Concierge Falando...",
+      speaking: "{{BRAND_SHORT}} Concierge Falando...",
       listening: "Ouvindo...",
       processing: "Analisando telemetria financeira...",
       suggestionsTitle: "Perguntas de Demonstração Rápidas",
       suggestions: [
         "Vou comprar 2 passagens para Lisboa por R$ 24.000. Meus débitos da próxima semana vão compensar?",
-        "Qual é a previsão de saldo para quinta-feira e como evitar juros de cheque especial (LIS)?",
+        "Qual é a previsão de saldo para quinta-feira e como evitar juros de cheque especial?",
         "Ative o aviso de viagem para Portugal e Espanha e eleve o limite do meu Mastercard Black.",
         "Como posso economizar refinanciando a dívida externa pelo Open Finance?"
       ]
     },
     notifications: {
       cdbSweepTitle: "Resgate CDB DI Programado",
-      cdbSweepSubtitle: "R$ 15.000,00 agendados para 25/08 às 06:00 BRT (Zero Juros LIS).",
+      cdbSweepSubtitle: "R$ 15.000,00 agendados para 25/08 às 06:00 BRT (Zero Juros Cheque Especial).",
       cdiTransferTitle: "Transferência CDI Concluída",
-      cdiTransferSubtitle: "R$ 330.000,00 transferidos para CDB DI Itaú a 100% do CDI (+R$ 5.940/ano).",
+      cdiTransferSubtitle: "R$ 330.000,00 transferidos para CDB DI {{BRAND_SHORT}} a 100% do CDI (+R$ 5.940/ano).",
       travelModeTitle: "Aviso de Viagem Ativado",
       travelModeSubtitle: "Modo Viagem ativo para Portugal e Espanha. Limite elevado para R$ 50.000.",
       openFinanceTitle: "Portabilidade CCB Executada",
@@ -563,28 +582,47 @@ export const translations = {
   },
   en: {
     header: {
-      brandTitle: "Banco Itaú",
-      brandSub: "Multi-Agent Orchestration & Real-Time Itaú Concierge",
+      brandTitle: "{{BRAND_NAME}}",
+      brandSub: "Multi-Agent Orchestration & Real-Time {{BRAND_SHORT}} Concierge",
       saveSession: "Save Session",
       resetSession: "Reset Demo",
       confirmResetTitle: "Reset Demo to Baseline?",
       confirmResetDescription: "All active mitigations, sub-agent executions, and telemetry logs will be restored to the initial baseline state.",
       confirmResetAction: "Reset Now",
       cancelAction: "Cancel",
-      callAi: "Call Itaú Concierge",
+      callAi: "Call {{BRAND_SHORT}} Concierge",
       hangUp: "End Call",
       customer: "Roberto Silva",
       account: "Br. 7749 • Acct 00912-8",
       scenarioSelectorTitle: "Active Scenario:",
       adminPanelTitle: "Admin & Presenter Panel",
       adminPanelSubtitle: "Demonstration Tools & Governance Resources",
-      brandKitButton: "Itaú Brand Kit & Typography",
-      brandKitDesc: "Official Itaú Display & Itaú Text typography, brand colors & guidelines",
+      brandKitButton: "{{BRAND_SHORT}} Brand Kit & Typography",
+      brandKitDesc: "Official typography, brand colors & guidelines",
       demoScriptButton: "Executive Demo Script",
       demoScriptDesc: "Complete 5-act presentation narrative for executive & C-suite demos",
       scenariosMatrixButton: "Scenarios Matrix (BACEN / MED)",
       scenariosMatrixDesc: "Regulatory compliance matrix, Resolution 147 & sub-agent telemetry",
       openInNewTab: "Opens in new tab",
+    },
+    admin: {
+      title: "Configuration & Demo Settings",
+      mode_label: "Agent Execution Mode",
+      mode_hybrid: "Hybrid (Gemini Enterprise with Instant Fallback)",
+      mode_hybrid_desc: "Uses Gemini Enterprise Agent Platform (fka Vertex AI Platform) via ADC; falls back to deterministic data if offline.",
+      mode_live: "Strict Live (Requires Gemini Enterprise / GCP ADC)",
+      mode_live_desc: "Requires active Google Cloud credentials for all agents.",
+      mode_simulated: "High-Fidelity Offline Simulation",
+      mode_simulated_desc: "Ensures 100% stability for executive presentations without internet.",
+      delay_label: "Simulated Agent Latency (ms)",
+      connection_status: "Google Cloud Connection Status",
+      model_label: "Active Foundation Model",
+      gcp_region_label: "GCP Region",
+      apply_config: "Apply Configuration",
+      saved_badge: "Saved!",
+      close: "Close Panel",
+      status_live_badge: "Gemini Enterprise Live",
+      status_simulated_badge: "Simulated Fallback"
     },
     tabs: {
       agents: "Active Sub-Agents",
@@ -609,7 +647,7 @@ export const translations = {
           secondaryActionType: "view_cash_flow"
         },
         telemetryPayload: {
-          account: "ITAU-7749-00912",
+          account: "{{BRAND_ID}}-7749-00912",
           projected_date: "2026-08-25 (Thursday)",
           projected_shortfall: 13050.00,
           source_asset: "CDB_DI_LIQUIDEZ_DIARIA",
@@ -622,7 +660,7 @@ export const translations = {
         graphNodes: [
           {
             id: "customer",
-            name: "Roberto Silva (Personnalité)",
+            name: "Roberto Silva ({{BRAND_SEGMENT_SHORT}})",
             group: "Cardholder Profile",
             layer: "Input",
             color: "#FF6423",
@@ -678,9 +716,9 @@ export const translations = {
           secondaryActionType: "view_limits"
         },
         telemetryPayload: {
-          account_id: "ITAU-7749-00912",
+          account_id: "{{BRAND_ID}}-7749-00912",
           customer_name: "Roberto Silva",
-          segment: "Itaú Personnalité",
+          segment: "{{BRAND_SEGMENT}}",
           checking_balance_brl: 48950.20,
           cdb_di_balance_brl: 85000.00,
           total_consolidated_liquid_patrimony_brl: 463950.20,
@@ -691,7 +729,7 @@ export const translations = {
         graphNodes: [
           {
             id: "customer",
-            name: "Roberto Silva (Personnalité)",
+            name: "Roberto Silva ({{BRAND_SEGMENT_SHORT}})",
             group: "Cardholder Profile",
             layer: "Input",
             color: "#FF6423",
@@ -740,7 +778,7 @@ export const translations = {
         alert: {
           badge: "Open Finance Opportunity Identified",
           title: "Projected Savings: R$ 14,280.00",
-          description: "R$ 18,000.00 revolving balance at competitor bank at 11.2%/mo can be refinanced under Itaú Sob Medida for 1.69%/mo.",
+          description: "R$ 18,000.00 revolving balance at competitor bank at 11.2%/mo can be refinanced under {{BRAND_SHORT}} Sob Medida for 1.69%/mo.",
           primaryActionLabel: "Refinance & Issue CCB (Save R$ 14k)",
           primaryActionType: "refinance_open_finance",
           secondaryActionLabel: "Simulate Installments",
@@ -749,7 +787,7 @@ export const translations = {
         telemetryPayload: {
           competitor_debt_balance_brl: 18000.00,
           competitor_interest_rate_monthly: "11.20%",
-          itau_sob_medida_rate_monthly: "1.69%",
+          brand_sob_medida_rate_monthly: "1.69%",
           monthly_interest_savings_brl: 680.40,
           total_interest_avoided_brl: 14280.00,
           instrument_type: "CCB_DIGITAL_LEI_10931",
@@ -766,12 +804,12 @@ export const translations = {
             details: "Outstanding balance R$ 18,000.00 at competitor • Revolving rate 11.2%/mo"
           },
           {
-            id: "itau_rating",
-            name: "Personnalité Rating (Score 980)",
-            group: "Itaú Credit",
+            id: "brand_rating",
+            name: "{{BRAND_SEGMENT_SHORT}} Rating (Score 980)",
+            group: "{{BRAND_SHORT}} Credit",
             layer: "Input",
             color: "#64748B",
-            details: "Pre-approved Itaú Sob Medida line with preferential rate of 1.69%/mo"
+            details: "Pre-approved {{BRAND_SHORT}} Sob Medida line with preferential rate of 1.69%/mo"
           },
           {
             id: "lei_ccb",
@@ -826,7 +864,7 @@ export const translations = {
         graphNodes: [
           {
             id: "customer",
-            name: "Roberto Silva (Personnalité)",
+            name: "Roberto Silva ({{BRAND_SEGMENT_SHORT}})",
             group: "Cardholder Profile",
             layer: "Input",
             color: "#FF6423",
@@ -873,7 +911,7 @@ export const translations = {
         tag: "MASTERCARD_BLACK_BENEFITS",
         agentId: "card_benefits_agent",
         alert: {
-          badge: "Exclusive Personnalité Benefits",
+          badge: "Exclusive {{BRAND_SEGMENT_SHORT}} Benefits",
           title: "Schengen Coverage & VIP Lounges",
           description: "Unlimited VIP lounge access at GRU Terminal 3, 4 LoungeKey passes in Europe, and €30,000 Schengen medical insurance included.",
           primaryActionLabel: "View Mastercard Black Benefits",
@@ -882,7 +920,7 @@ export const translations = {
           secondaryActionType: "view_schengen_certificate"
         },
         telemetryPayload: {
-          card_tier: "Mastercard Black Personnalité",
+          card_tier: "{{BRAND_SHORT}} Mastercard Black",
           vip_lounge_gru: "UNLIMITED_T3",
           loungekey_passes_europe: 4,
           schengen_coverage_eur: 30000.00,
@@ -957,7 +995,7 @@ export const translations = {
           description: "Forecasts account cash flows, models upcoming debit obligations, and calculates optimal balance allocation between checking and interest-earning liquidity accounts.",
           capabilities: ["Time-Series Cash Flow Forecasting", "Overdraft Deficit Prevention", "Automated Liquidity Sweeps"],
           defaultResult: {
-            account: "ITAU-7749-00912",
+            account: "{{BRAND_ID}}-7749-00912",
             forecast_window: "D+30",
             projected_shortfall: 13050.00,
             recommended_sweep_source: "CDB_DI_LIQUIDEZ_DIARIA",
@@ -985,7 +1023,7 @@ export const translations = {
           description: "Advises cardholders on premium tier card benefits, automated travel insurance policies, worldwide VIP airport lounge access, and purchase protections.",
           capabilities: ["International Travel Medical Coverage", "VIP Airport Lounge Programs", "Trip Cancellation & Baggage Insurance", "Vehicle Rental Coverage"],
           defaultResult: {
-            card_tier: "Itaú Personnalité Mastercard Black",
+            card_tier: "{{BRAND_SHORT}} Mastercard Black",
             travel_medical_insurance: {
               schengen_compliant: true,
               max_coverage_usd: 150000.00,
@@ -1034,7 +1072,7 @@ export const translations = {
           title: "Liquidity & Yield Forecasting — Monitored Balances",
           description: "R$ 85,000.00 invested in 100% CDI with automated sweep scheduled to prevent overdraft fees.",
           status: "Safeguarded",
-          details: "Zero LIS Overdraft • 100% CDI Daily Yield"
+          details: "Zero Overdraft • 100% CDI Daily Yield"
         },
         {
           id: "act_02",
@@ -1071,18 +1109,18 @@ export const translations = {
       ]
     },
     modal: {
-      title: "Itaú Concierge Live",
+      title: "{{BRAND_SHORT}} Concierge Live",
       subtitle: "Multimodal Proactive Banking & Security Assistant",
-      initialGreeting: "Hello Mr. Silva. I am Itaú Concierge. How can I assist with your accounts, liquidity forecast, or travel plans today?",
+      initialGreeting: "Hello Mr. Silva. I am {{BRAND_SHORT}} Concierge. How can I assist with your accounts, liquidity forecast, or travel plans today?",
       micHelp: "Speak directly about balances, flight ticket purchases, or debt refinancing.",
       endCall: "End Call",
-      speaking: "Itaú Concierge Speaking...",
+      speaking: "{{BRAND_SHORT}} Concierge Speaking...",
       listening: "Listening...",
       processing: "Analyzing financial telemetry...",
       suggestionsTitle: "Quick Demo Inquiries",
       suggestions: [
         "I am buying 2 tickets to Lisbon for R$ 24,000. Will my scheduled payments clear next week?",
-        "What is my balance forecast for Thursday and how do I avoid LIS overdraft fees?",
+        "What is my balance forecast for Thursday and how do I avoid overdraft fees?",
         "Activate travel notice for Portugal and Spain and raise my Mastercard Black limit.",
         "How can I save money by refinancing my external loan through Open Finance?"
       ]
@@ -1091,7 +1129,7 @@ export const translations = {
       cdbSweepTitle: "CDB DI Sweep Scheduled",
       cdbSweepSubtitle: "R$ 15,000.00 scheduled for 25/08 at 06:00 BRT (Zero Overdraft Fees).",
       cdiTransferTitle: "CDI Transfer Executed",
-      cdiTransferSubtitle: "R$ 330,000.00 transferred to Itaú CDB DI at 100% CDI (+R$ 5,940/yr).",
+      cdiTransferSubtitle: "R$ 330,000.00 transferred to {{BRAND_SHORT}} CDB DI at 100% CDI (+R$ 5,940/yr).",
       travelModeTitle: "Travel Shield Activated",
       travelModeSubtitle: "Travel mode active for Portugal & Spain. Daily limit elevated to R$ 50,000.",
       openFinanceTitle: "Portability CCB Executed",

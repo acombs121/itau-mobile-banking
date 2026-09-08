@@ -1,11 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { RotateCcw } from 'lucide-react';
 import { CockpitHeader } from './components/CockpitHeader';
 import { PhoneContainer } from './components/PhoneContainer';
 import { AgentOrchestratorPanel } from './components/AgentOrchestratorPanel';
 import { BankingProfile } from './types/banking';
-import { SubAgent, SecurityActionItem, TelemetryLog, ScenarioId } from './types/itau_concierge';
-import { Language, translations } from './i18n/translations';
+import { SecurityActionItem, TelemetryLog, ScenarioId } from './types/itau_concierge';
+import { Language } from './i18n/translations';
+import { BrandProvider, useBrand, getBrandAccountPrefix, getBrandSegment } from './context/BrandContext';
+import { LanguageProvider, useLanguage } from './context/LanguageContext';
+import { AdminDrawer } from './components/layout/AdminDrawer';
+import { AdminConfig } from './types/brand';
+import { fetchAdminConfig } from './lib/api';
 
 const DEFAULT_PROFILE: BankingProfile = {
   account_id: "ITAU-7749-00912",
@@ -58,12 +63,18 @@ const DEFAULT_PROFILE: BankingProfile = {
   ]
 };
 
-export const App: React.FC = () => {
-  // Read persisted language and theme from localStorage
-  const [currentLang, setCurrentLang] = useState<Language>(() => {
-    const savedLang = localStorage.getItem('itau_cockpit_lang');
-    return (savedLang === 'en' || savedLang === 'pt') ? savedLang : 'pt';
-  });
+const AppContent: React.FC = () => {
+  const { lang: currentLang, setLang, t } = useLanguage();
+  const { activeBrand } = useBrand();
+
+  const [adminOpen, setAdminOpen] = useState(false);
+  const [adminConfig, setAdminConfig] = useState<AdminConfig | undefined>(undefined);
+
+  useEffect(() => {
+    fetchAdminConfig()
+      .then(setAdminConfig)
+      .catch(err => console.warn('Failed to load admin config:', err));
+  }, []);
 
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     const savedTheme = localStorage.getItem('itau_cockpit_theme');
@@ -84,10 +95,46 @@ export const App: React.FC = () => {
     open_finance_optimizer: { status: 'idle' }
   });
 
-  const [profile, setProfile] = useState<BankingProfile>(DEFAULT_PROFILE);
-  const subAgents: SubAgent[] = [];
-  const [actionItems, setActionItems] = useState<SecurityActionItem[]>([]);
-  const [telemetryLogs, setTelemetryLogs] = useState<TelemetryLog[]>([]);
+  const [profile, setProfile] = useState<BankingProfile>(() => ({
+    ...DEFAULT_PROFILE,
+    account_id: `${getBrandAccountPrefix(activeBrand.id)}-7749-00912`,
+    segment: getBrandSegment(activeBrand),
+    cards: DEFAULT_PROFILE.cards.map(c => ({
+      ...c,
+      name: `${activeBrand.name.replace(/^Banco\s+/i, '')} Mastercard Black`
+    }))
+  }));
+
+  // Update profile when activeBrand changes
+  useEffect(() => {
+    setProfile(prev => ({
+      ...prev,
+      account_id: `${getBrandAccountPrefix(activeBrand.id)}-7749-00912`,
+      segment: getBrandSegment(activeBrand),
+      cards: prev.cards.map(c => ({
+        ...c,
+        name: `${activeBrand.name.replace(/^Banco\s+/i, '')} Mastercard Black`
+      }))
+    }));
+  }, [activeBrand]);
+
+  const actionItemsRef = useRef<SecurityActionItem[]>([]);
+  const setActionItems = useCallback((updater: SecurityActionItem[] | ((prev: SecurityActionItem[]) => SecurityActionItem[])) => {
+    if (typeof updater === 'function') {
+      actionItemsRef.current = updater(actionItemsRef.current);
+    } else {
+      actionItemsRef.current = updater;
+    }
+  }, []);
+
+  const telemetryLogsRef = useRef<TelemetryLog[]>([]);
+  const setTelemetryLogs = useCallback((updater: TelemetryLog[] | ((prev: TelemetryLog[]) => TelemetryLog[])) => {
+    if (typeof updater === 'function') {
+      telemetryLogsRef.current = updater(telemetryLogsRef.current);
+    } else {
+      telemetryLogsRef.current = updater;
+    }
+  }, []);
 
   // Scenario Resolution Flags
   const [isCdbSweepScheduled, setIsCdbSweepScheduled] = useState(false);
@@ -115,7 +162,7 @@ export const App: React.FC = () => {
         status: 'running',
         lastRun: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' BRT',
         liveResult: {
-          account: "ITAU-7749-00912",
+          account: `${activeBrand.id.toUpperCase()}-7749-00912`,
           alert: "PREDICTIVE_BALANCE_ALERT",
           scheduled_debits_next_thursday: 38000.00,
           projected_shortfall: 13050.00,
@@ -130,7 +177,7 @@ export const App: React.FC = () => {
 
   // Sync lang changes to localStorage
   const handleToggleLang = (newLang: Language) => {
-    setCurrentLang(newLang);
+    setLang(newLang);
     localStorage.setItem('itau_cockpit_lang', newLang);
   };
 
@@ -151,8 +198,8 @@ export const App: React.FC = () => {
 
   // Initial Actions in Plan
   useEffect(() => {
-    setActionItems(translations[currentLang].actionPlan.initialItems);
-  }, [currentLang]);
+    setActionItems(t.actionPlan.initialItems);
+  }, [t]);
 
   // In-phone popups disabled by user preference
   const triggerNotification = (_title: string, _subtitle: string) => {
@@ -161,11 +208,12 @@ export const App: React.FC = () => {
 
   // User Spoken Query -> Log to Telemetry (UI screens are driven exclusively by the agent's tool calls)
   const handleUserQuery = (query: string) => {
+    const brandShort = activeBrand.name.replace(/^Banco\s+/i, '');
     const newLog: TelemetryLog = {
       id: "log_" + Date.now(),
       timestamp: new Date().toLocaleTimeString(),
-      agentId: "itau_concierge",
-      agentName: currentLang === 'en' ? "Itaú Concierge Voice" : "Concierge de Voz Itaú",
+      agentId: "concierge_agent",
+      agentName: currentLang === 'en' ? `${brandShort} Concierge Voice` : `Concierge de Voz ${brandShort}`,
       action: "CARDHOLDER_INPUT",
       status: "info",
       payload: { query }
@@ -196,7 +244,7 @@ export const App: React.FC = () => {
   // Scenario Switcher Handler
   const handleSelectScenario = (scenarioId: ScenarioId) => {
     setActiveScenario(scenarioId);
-    const scenarioDef = translations[currentLang].scenarios.find(s => s.id === scenarioId);
+    const scenarioDef = t.scenarios.find(s => s.id === scenarioId);
     if (scenarioDef) {
       setActiveRunningAgentId(scenarioDef.agentId);
       const newLog: TelemetryLog = {
@@ -214,7 +262,7 @@ export const App: React.FC = () => {
 
   // Central Action Handler driven by tool calls
   const handleBankingAction = (actionType: string, targetId?: string, customPayload?: Record<string, any>) => {
-    const tNotif = translations[currentLang].notifications;
+    const tNotif = t.notifications;
     const nowTime = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + ' BRT';
 
     if (actionType === 'get_account_info' || actionType === 'view_statements' || actionType === 'view_limits') {
@@ -236,7 +284,7 @@ export const App: React.FC = () => {
       setActiveScenario('account_info');
       
       const payloadData = customPayload || {
-        account_id: "ITAU-7749-00912",
+        account_id: `${activeBrand.id.toUpperCase()}-7749-00912`,
         customer: "Roberto Silva",
         checking_balance_brl: 48950.20,
         cdb_di_balance_brl: 85000.00,
@@ -289,7 +337,7 @@ export const App: React.FC = () => {
       setActiveScenario('cash_flow');
       
       const payloadData = customPayload || {
-        account: "ITAU-7749-00912",
+        account: `${activeBrand.id.toUpperCase()}-7749-00912`,
         alert: "PREDICTIVE_BALANCE_ALERT",
         scheduled_debits_next_thursday: 38000.00,
         projected_shortfall: 13050.00,
@@ -422,8 +470,11 @@ export const App: React.FC = () => {
       setActiveRunningAgentId('card_benefits_agent');
       setActiveDynamicCardId('card_benefits_agent');
       
+      const brandShort = activeBrand.name.replace(/^Banco\s+/i, '');
+      const brandCardTier = `${brandShort} Mastercard Black`;
+
       const payloadData = customPayload || {
-        card_tier: "Itaú Personnalité Mastercard Black",
+        card_tier: brandCardTier,
         travel_medical_insurance: {
           schengen_compliant: true,
           max_coverage_usd: 150000.00,
@@ -505,14 +556,15 @@ export const App: React.FC = () => {
 
       triggerNotification(tNotif.openFinanceTitle, tNotif.openFinanceSubtitle);
 
+      const brandRateName = activeBrand.id === 'itau' ? 'Personnalité' : activeBrand.name.replace(/^Banco\s+/i, '');
       const newAction: SecurityActionItem = {
         id: "act_" + Date.now(),
         time: nowTime,
         type: "open_finance_ccb",
         title: currentLang === 'en' ? "Debt Portability CCB Executed — R$ 14,280 Saved" : "Portabilidade CCB Executada — R$ 14.280 Salvos",
-        description: currentLang === 'en' ? "Settled R$ 18,000 revolving balance at competitor via electronic CCB (Lei 10.931). Locked Personnalité rate at 1.69%/mo." : "Liquidado saldo rotativo de R$ 18.000 em concorrente via CCB eletrônica (Lei 10.931). Taxa Personnalité 1,69% a.m.",
+        description: currentLang === 'en' ? `Settled R$ 18,000 revolving balance at competitor via electronic CCB (Lei 10.931). Locked ${brandRateName} rate at 1.69%/mo.` : `Liquidado saldo rotativo de R$ 18.000 em concorrente via CCB eletrônica (Lei 10.931). Taxa ${brandRateName} 1,69% a.m.`,
         status: "Safeguarded",
-        details: "CCB #2026-ITAU-CCB-8819 • Rail: CIP/STR"
+        details: `CCB #2026-${getBrandAccountPrefix(activeBrand.id)}-CCB-8819 • Rail: CIP/STR`
       };
       setActionItems(prev => [newAction, ...prev]);
 
@@ -564,11 +616,21 @@ export const App: React.FC = () => {
       setActiveDynamicCardId('open_finance_cdi');
       setActiveScenario('open_finance');
       
+      const bId = activeBrand.id.toLowerCase();
+      const competitorInstitutions = bId.includes('btg')
+        ? ["Itaú Unibanco", "XP Investimentos"]
+        : (bId === 'itau'
+            ? ["BTG Pactual", "XP Investimentos"]
+            : ["Itaú Unibanco", "BTG Pactual"]);
+
+      const brandCdbYield = "100% do CDI (Liquidez Diária)";
+      const brandYieldKey = `${getBrandAccountPrefix(activeBrand.id).toLowerCase()}_cdb_di_yield`;
+
       const payloadData = customPayload || {
         external_liquid_assets: 330000.00,
-        connected_institutions: ["BTG Pactual", "XP Investimentos"],
+        connected_institutions: competitorInstitutions,
         competitor_cdi_yield: "85% do CDI",
-        itau_cdb_di_yield: "100% do CDI (Liquidez Diária)",
+        [brandYieldKey]: brandCdbYield,
         spread_advantage: "+15% do CDI",
         projected_annual_gain: 5940.00,
         status: "CDI_IMPROVEMENT_QUOTED"
@@ -606,9 +668,21 @@ export const App: React.FC = () => {
         investments_balance_brl: 415000.00
       }));
 
+      const bId = activeBrand.id.toLowerCase();
+      const competitorInstitutions = bId.includes('btg')
+        ? ["Itaú Unibanco", "XP Investimentos"]
+        : (bId === 'itau'
+            ? ["BTG Pactual", "XP Investimentos"]
+            : ["Itaú Unibanco", "BTG Pactual"]);
+
+      const competitorLabel = bId.includes('btg')
+        ? "Itaú & XP"
+        : (bId === 'itau' ? "BTG & XP" : "Itaú & BTG");
+      const brandShort = activeBrand.name.replace(/^Banco\s+/i, '');
+
       const payloadData = customPayload || {
         amount_transferred_brl: 330000.00,
-        source_institutions: ["BTG Pactual", "XP Investimentos"],
+        source_institutions: competitorInstitutions,
         destination_asset: "CDB_DI_LIQUIDEZ_DIARIA_100_CDI",
         additional_annual_yield_brl: 5940.00,
         new_consolidated_balance_brl: 463950.20,
@@ -635,9 +709,11 @@ export const App: React.FC = () => {
         time: nowTime,
         type: "cdi_transfer",
         title: currentLang === 'en' ? "CDI Yield Transfer Confirmed — +R$ 5,940/yr" : "Transferência CDI Concluída — +R$ 5.940/ano",
-        description: currentLang === 'en' ? "Transferred R$ 330,000.00 from BTG & XP to Itaú CDB DI (100% CDI). +15% CDI yield advantage secured with daily liquidity." : "Transferidos R$ 330.000,00 de BTG e XP para CDB DI Itaú (100% CDI). Ganho de +15% do CDI garantido com liquidez diária.",
+        description: currentLang === 'en' 
+          ? `Transferred R$ 330,000.00 from ${competitorLabel} to ${brandShort} CDB DI (100% CDI). +15% CDI yield advantage secured with daily liquidity.` 
+          : `Transferidos R$ 330.000,00 de ${competitorLabel} para CDB DI ${brandShort} (100% CDI). Ganho de +15% do CDI garantido com liquidez diária.`,
         status: "Safeguarded",
-        details: "CIP #2026-ITAU-TRF-9921 • 100% CDI Daily Yield"
+        details: `CIP #2026-${getBrandAccountPrefix(activeBrand.id)}-TRF-9921 • 100% CDI Daily Yield`
       };
       setActionItems(prev => [newAction, ...prev]);
 
@@ -684,7 +760,7 @@ export const App: React.FC = () => {
 
     setTimeout(() => {
       setIsProcessingAgent(null);
-      const agentObj = translations[currentLang].subagents.list.find(a => a.id === agentId);
+      const agentObj = t.subagents.list.find(a => a.id === agentId);
       
       setAgentStates(prev => ({
         ...prev,
@@ -696,8 +772,8 @@ export const App: React.FC = () => {
       }));
 
       triggerNotification(
-        translations[currentLang].notifications.agentTriggeredTitle,
-        `${translations[currentLang].notifications.agentTriggeredSubtitle} ${agentObj?.name || agentId}`
+        t.notifications.agentTriggeredTitle,
+        `${t.notifications.agentTriggeredSubtitle} ${agentObj?.name || agentId}`
       );
 
       const newLog: TelemetryLog = {
@@ -715,7 +791,16 @@ export const App: React.FC = () => {
 
   // Reset Demo to Baseline
   const handleResetDemo = () => {
-    setProfile(DEFAULT_PROFILE);
+    const brandShort = activeBrand.name.replace(/^Banco\s+/i, '');
+    setProfile({
+      ...DEFAULT_PROFILE,
+      account_id: `${getBrandAccountPrefix(activeBrand.id)}-7749-00912`,
+      segment: getBrandSegment(activeBrand),
+      cards: DEFAULT_PROFILE.cards.map(c => ({
+        ...c,
+        name: `${brandShort} Mastercard Black`
+      }))
+    });
     setIsCdbSweepScheduled(false);
     setIsTravelModeActive(false);
     setIsCdiTransferDone(false);
@@ -733,11 +818,11 @@ export const App: React.FC = () => {
       card_benefits_agent: { status: 'idle' },
       open_finance_optimizer: { status: 'idle' }
     });
-    setActionItems(translations[currentLang].actionPlan.initialItems);
+    setActionItems(t.actionPlan.initialItems);
     setTelemetryLogs([]);
     triggerNotification(
-      translations[currentLang].notifications.demoResetTitle,
-      translations[currentLang].notifications.demoResetSubtitle
+      t.notifications.demoResetTitle,
+      t.notifications.demoResetSubtitle
     );
   };
 
@@ -747,8 +832,8 @@ export const App: React.FC = () => {
     setTimeout(() => {
       setIsSaving(false);
       triggerNotification(
-        translations[currentLang].notifications.sessionSavedTitle,
-        translations[currentLang].notifications.sessionSavedSubtitle
+        t.notifications.sessionSavedTitle,
+        t.notifications.sessionSavedSubtitle
       );
     }, 800);
   };
@@ -771,6 +856,7 @@ export const App: React.FC = () => {
         isSaving={isSaving}
         activeScenario={activeScenario}
         onSelectScenario={handleSelectScenario}
+        onOpenAdmin={() => setAdminOpen(true)}
       />
 
       {/* Main Dual-Column Cockpit Canvas */}
@@ -810,9 +896,6 @@ export const App: React.FC = () => {
           {/* Right Column: Multi-Agent Telemetry & Orchestrator Panel */}
           <div className="flex-1 w-full min-w-0 h-[730px] max-h-[86vh] flex items-center justify-center min-h-0">
             <AgentOrchestratorPanel
-              subAgents={subAgents}
-              actionItems={actionItems}
-              telemetryLogs={telemetryLogs}
               currentLang={currentLang}
               theme={theme}
               activeScenario={activeScenario}
@@ -841,7 +924,7 @@ export const App: React.FC = () => {
                 <RotateCcw className="w-5 h-5 text-brand-orange" />
               </div>
               <h3 className="text-base sm:text-lg font-bold tracking-tight">
-                {translations[currentLang].header.confirmResetTitle}
+                {t.header.confirmResetTitle}
               </h3>
             </div>
             <p
@@ -849,7 +932,7 @@ export const App: React.FC = () => {
                 theme === 'dark' ? 'text-white/70' : 'text-slate-600'
               }`}
             >
-              {translations[currentLang].header.confirmResetDescription}
+              {t.header.confirmResetDescription}
             </p>
             <div className="flex items-center justify-end gap-2.5">
               <button
@@ -861,7 +944,7 @@ export const App: React.FC = () => {
                     : 'border-slate-300 text-slate-700 hover:bg-slate-100'
                 }`}
               >
-                {translations[currentLang].header.cancelAction}
+                {t.header.cancelAction}
               </button>
               <button
                 type="button"
@@ -871,15 +954,34 @@ export const App: React.FC = () => {
                 }}
                 className="px-4 py-1.5 text-xs sm:text-sm font-semibold rounded-[4px] bg-brand-orange text-white hover:bg-brand-orange/90 transition-colors shadow-sm"
               >
-                {translations[currentLang].header.confirmResetAction}
+                {t.header.confirmResetAction}
               </button>
             </div>
           </div>
         </div>
       )}
 
+      {/* Admin Configuration & White-Label Drawer */}
+      <AdminDrawer 
+        isOpen={adminOpen}
+        onClose={() => setAdminOpen(false)}
+        config={adminConfig}
+        onConfigUpdated={setAdminConfig}
+      />
+
     </div>
   );
 };
 
+export const App: React.FC = () => {
+  return (
+    <BrandProvider>
+      <LanguageProvider>
+        <AppContent />
+      </LanguageProvider>
+    </BrandProvider>
+  );
+};
+
 export default App;
+
