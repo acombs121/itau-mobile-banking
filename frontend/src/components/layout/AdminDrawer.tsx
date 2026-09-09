@@ -14,7 +14,6 @@ import {
   RefreshCw, 
   Palette, 
   Terminal, 
-  FileText, 
   Upload,
   RotateCcw,
   Pipette,
@@ -28,7 +27,6 @@ import {
   Cloud
 } from 'lucide-react';
 import { DemoScriptModal } from '../admin/DemoScriptModal';
-import { BrandKitModal } from '../admin/BrandKitModal';
 
 interface AdminDrawerProps {
   isOpen: boolean;
@@ -109,7 +107,6 @@ export const AdminDrawer: React.FC<AdminDrawerProps> = ({
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Additional Modals
-  const [brandKitModalOpen, setBrandKitModalOpen] = useState<boolean>(false);
   const [demoScriptOpen, setDemoScriptOpen] = useState<boolean>(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -1033,28 +1030,6 @@ export const AdminDrawer: React.FC<AdminDrawerProps> = ({
                   </div>
                 </form>
               )}
-
-              {/* Auxiliary Spec Link Card */}
-              <div className="p-3 rounded-[5px] bg-white/5 border border-white/10 flex items-center justify-between gap-3 text-xs">
-                <div className="flex items-center gap-2">
-                  <FileText className="size-4 text-white" />
-                  <div className="flex flex-col">
-                    <strong className="text-white font-semibold">
-                      {lang === 'pt' ? 'Design Tokens & Vocabulário Regulatório BACEN' : 'Design Tokens & BACEN Regulatory Lexicon'}
-                    </strong>
-                    <span className="text-[10px] text-[#798B97]">
-                      {lang === 'pt' ? 'Hex codes, contraste WCAG AAA e termos jurídicos da CCB' : 'WCAG contrast, tokens, and CCB legal terminology'}
-                    </span>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setBrandKitModalOpen(true)}
-                  className="px-2.5 py-1 rounded-[3px] bg-white/10 hover:bg-white/15 text-[11px] font-mono text-white/90 border border-white/15 transition-all shrink-0 cursor-pointer"
-                >
-                  {lang === 'pt' ? 'Ver Specs' : 'View Specs'}
-                </button>
-              </div>
             </div>
           )}
 
@@ -1243,11 +1218,6 @@ export const AdminDrawer: React.FC<AdminDrawerProps> = ({
       </div>
 
       {/* Auxiliary Modals */}
-      <BrandKitModal 
-        isOpen={brandKitModalOpen} 
-        onClose={() => setBrandKitModalOpen(false)} 
-      />
-
       <DemoScriptModal 
         isOpen={demoScriptOpen} 
         onClose={() => setDemoScriptOpen(false)} 
